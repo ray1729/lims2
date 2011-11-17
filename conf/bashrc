@@ -1,0 +1,48 @@
+#!/bin/bash
+
+export ALL_PROXY=http://wwwcache.sanger.ac.uk:3128/
+export HTTP_PROXY="${ALL_PROXY}"
+export http_proxy="${ALL_PROXY}"
+export HTTPS_PROXY="${ALL_PROXY}"
+export https_proxy="${ALL_PROXY}"
+export FTP_PROXY="${ALL_PROXY}"
+export ftp_proxy="${ALL_PROXY}"
+
+export PGHOST="pgsrv5"
+export PGPORT=5437
+export PGDATABASE=lims2_devel
+
+export PERLBREW_ROOT=/opt/t87/software/perlbrew
+export MODULEBUILDRC=
+export PERL_MM_OPT=
+
+PERL5LIB=
+PATH="/usr/local/bin:/usr/bin:/bin"
+
+source ${PERLBREW_ROOT}/etc/bashrc
+
+perlbrew use 5.14.2
+
+for LIBDIR in packages/*/lib; do
+    if test -d "${LIBDIR}"; then
+        if test -z "$PERL5LIB"; then
+            PERL5LIB="${LIBDIR}"
+        else
+            PERL5LIB="${LIBDIR}:${PERL5LIB}"
+        fi
+    fi
+done
+
+export PERL5LIB
+
+for BINDIR in packages/*/bin packages/*/script; do
+    if test -d "${BINDIR}"; then
+        if test -z "${PATH}"; then
+            PATH="${BINDIR}"
+        else
+            PATH="${BINDIR}:${PATH}"
+        fi
+    fi
+done
+
+export PATH
