@@ -1,29 +1,39 @@
 #!/bin/bash
 
-export ALL_PROXY=http://wwwcache.sanger.ac.uk:3128/
-export HTTP_PROXY="${ALL_PROXY}"
-export http_proxy="${ALL_PROXY}"
-export HTTPS_PROXY="${ALL_PROXY}"
-export https_proxy="${ALL_PROXY}"
-export FTP_PROXY="${ALL_PROXY}"
-export ftp_proxy="${ALL_PROXY}"
+if test -z "${EPREFIX}"; then
+    echo "lims2 environment setup should be run inside Gentoo prefix" >&2
+    exit 1
+fi
+
+if ! test -d packages; then
+    echo "lims2 environment setup should be run in the directory containing the lims2 packages" >&2
+    exit 1
+fi
 
 export PGHOST="pgsrv5"
 export PGPORT=5437
 export PGDATABASE=lims2_devel
 
-export PERLBREW_ROOT=/opt/t87/software/perlbrew
 export MODULEBUILDRC=
 export PERL_MM_OPT=
 
 PERL5LIB=
-PATH="/usr/local/bin:/usr/bin:/bin"
 
-source ${PERLBREW_ROOT}/etc/bashrc
+#
+# Add EnsEMBL Perl modules to PERL5LIB
+#
+for m in ${EPREFIX}/usr/local/ensembl/current/*/modules; do
+        if test -d "$m"; then
+                    if test -z "${PERL5LIB}"; then
+            PERL5LIB="$m"
+        else
+            PERL5LIB="${PERL5LIB}:$m"
+        fi
+    fi
+done
+export PERL5LIB
 
-perlbrew use 5.14.2
-
-for LIBDIR in packages/*/lib; do
+for LIBDIR in $(pwd)/packages/*/lib; do
     if test -d "${LIBDIR}"; then
         if test -z "$PERL5LIB"; then
             PERL5LIB="${LIBDIR}"
@@ -35,7 +45,7 @@ done
 
 export PERL5LIB
 
-for BINDIR in packages/*/bin packages/*/script; do
+for BINDIR in $(pwd)/packages/*/bin $(pwd)/packages/*/script; do
     if test -d "${BINDIR}"; then
         if test -z "${PATH}"; then
             PATH="${BINDIR}"
@@ -46,3 +56,6 @@ for BINDIR in packages/*/bin packages/*/script; do
 done
 
 export PATH
+
+export LIMS2_DBCONNECT_CONFIG="$(pwd)/conf/dbconnect.yaml"
+export LIMS2_DB="LIMS2_DEVEL"
