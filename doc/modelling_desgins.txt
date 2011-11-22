@@ -1,0 +1,141 @@
+* clone_libraries
+  - clone_library
+
+* chromosomes
+  - chromosome
+  
+* bacs
+  - bac_clone_id
+  - remte_clone_id
+  - clone_library => clone_libraries(clone_library)
+  - chromosome => chromosomes(chromosome)
+  - bac_start
+  - bac_end
+  - bac_midpoint
+  - build_id
+** Can bac_midpoint be computed from bac_start and bac_end?
+** What is build_id referring to?
+
+* design_bac
+  - design_id => designs(design_id)
+  - bac_clone_id => bacs(bac_clone_id)
+  - midpoint_diff
+  - allocate_to_instance
+** What is midpoint_diff?
+** What does allocate_to_instance mean?
+
+* design_group
+  - desgin_group_id
+  - name
+** What is this?
+
+* design_design_group
+  - design_id
+  - design_group_id
+** What is the purpose of design_grop?
+
+* design_instance_bac
+  - design_instance_id
+  - bac_clone_id
+  - bac_plate
+** Don't plan to store design_instance in the new LIMS; should we attach bac_clone_id to a design_well? 
+** What is bac_plate+
+
+* design_instance
+  - design_instance_id
+  - plate
+  - well
+  - source
+  - design_id
+** I'd like to drop this altogether, but what is 'source'?
+
+* design_note & design_note_type_dict
+** Seem to be logs of computational activity. Is this of interest to anyone?
+
+* design_parameter
+  - design_parameter_id  
+  - parameter_name
+  - parameter_value
+** Do we need to preserve this?
+
+* design
+  - design_id
+  - target_id
+  - build_id
+  - design_name
+  - pseudo_plate
+  - final_plate
+  - well_loc
+  - design_parameter_id
+  - locus_id
+  - start_exon_id
+  - end_exon_id
+  - gene_build_id
+  - random_name
+  - created_user
+  - sp
+  - tm
+  - phase
+  - pi
+  - design_type
+  - subtype
+  - subtype_description
+  - validated_by_annotation
+  - edited_date
+  - edited_by
+  - has_ensembl_image
+  - created_date
+** Which of these columns do we need to preserve?
+
+* design_status_dict
+  - design_status_id
+  - description
+
+* design_status
+  - design_status_id => design_status_dict(design_status_id)
+  - desgin_id => design(design_id)
+  - status_date
+  - is_current
+  - id_role 
+** Do we need to track historical status changes?
+** What is 'id_role'?
+
+* design_taqman_assay & design_taqman_plate
+** Data relating to Tony's Taqman assays. Saj knows everything about these.
+
+* design_user_comment_categories
+ - category_id
+ - category_name
+
+* design_user_comments
+  - desgin_id => design(design_id)
+  - category_id => design_user_comment_categories(category_id)
+  - design_comment
+  - visibility
+  - edited_user
+  - edited_date
+
+* feature_data, feature_data_type, feature, feature_type
+** Recombineering, PCR primers, etc. Split into separate tables?
+** Store name, type and sequence. Store locus (where applicable) in a different table,
+associate with an assembly. This replaces display_feature.
+
+* gene_comment
+  - gene_comment_id
+  - gene_id
+  - mgi_gene_id
+  - gene_comment
+  - visibility
+  - edited_user
+  - edited_date
+
+* gene_user
+  - gene_user_id
+  - mgi_gene_id
+  - ext_user_id
+  - edited_user
+  - edited_date
+  - priority_type
+** Do we need to track this? Where should it fit in the new model?
+
+

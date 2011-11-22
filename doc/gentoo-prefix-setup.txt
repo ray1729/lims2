@@ -1,0 +1,263 @@
+
+# Running everything on t87-dev
+
+# Mostly following instructions from <http://www.gentoo.org/proj/en/gentoo-alt/prefix/bootstrap-solaris.xml>
+
+#
+# All software is installed as t87-adm
+#
+sudo -u t87adm -H -s
+export SHELL=/bin/bash
+cd
+
+#
+# This is the base of the Gentoo prefix
+#
+export EPREFIX=/opt/t87
+
+export PATH="${EPREFIX}/usr/bin:${EPREFIX}/bin:${EPREFIX}/tmp/usr/bin:${EPREFIX}/tmp/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+
+#
+# Proxy through the Sanger firewall
+#
+export ALL_PROXY=http://wwwcache.sanger.ac.uk:3128/
+export HTTP_PROXY="${ALL_PROXY}"
+export http_proxy="${ALL_PROXY}"
+export HTTPS_PROXY="${ALL_PROXY}"
+export https_proxy="${ALL_PROXY}"
+export FTP_PROXY="${ALL_PROXY}"
+export ftp_proxy="${ALL_PROXY}"
+
+#
+# Download the bootstrap script and make it executable
+#
+wget http://overlays.gentoo.org/proj/alt/browser/trunk/prefix-overlay/scripts/bootstrap-prefix.sh?format=txt -O bootstrap-prefix.sh
+
+chmod a+x bootstrap-prefix.sh
+
+#
+# Bootstrop the things we need to get portage going (in a temporary directory)
+#
+./bootstrap-prefix.sh $EPREFIX tree
+./bootstrap-prefix.sh $EPREFIX/tmp make
+./bootstrap-prefix.sh $EPREFIX/tmp wget
+./bootstrap-prefix.sh $EPREFIX/tmp sed
+./bootstrap-prefix.sh $EPREFIX/tmp coreutils6
+./bootstrap-prefix.sh $EPREFIX/tmp findutils5
+./bootstrap-prefix.sh $EPREFIX/tmp tar22
+./bootstrap-prefix.sh $EPREFIX/tmp patch
+./bootstrap-prefix.sh $EPREFIX/tmp grep
+./bootstrap-prefix.sh $EPREFIX/tmp gawk
+./bootstrap-prefix.sh $EPREFIX/tmp bash
+./bootstrap-prefix.sh $EPREFIX/tmp zlib
+./bootstrap-prefix.sh $EPREFIX/tmp python
+./bootstrap-prefix.sh $EPREFIX portage
+
+hash -r
+
+#
+# Now that we've got portage, bootstrap the prefix
+#
+emerge --oneshot sed
+emerge --oneshot --nodeps bash
+emerge --oneshot --nodeps xz-utils
+emerge --oneshot wget
+
+emerge --oneshot --nodeps sys-apps/baselayout-prefix
+emerge --oneshot --nodeps sys-devel/m4
+emerge --oneshot --nodeps sys-devel/flex
+emerge --oneshot --nodeps sys-devel/bison
+emerge --oneshot --nodeps sys-devel/binutils-config
+emerge --oneshot --nodeps sys-devel/binutils
+emerge --oneshot --nodeps sys-devel/gcc-config
+emerge --oneshot --nodeps "=sys-devel/gcc-4.2*"
+
+emerge --oneshot sys-apps/coreutils
+emerge --oneshot sys-apps/findutils
+emerge --oneshot app-arch/tar
+emerge --oneshot sys-apps/grep
+emerge --oneshot sys-devel/patch
+emerge --oneshot sys-apps/gawk
+emerge --oneshot sys-devel/make
+emerge --oneshot sys-libs/zlib
+emerge --oneshot --nodeps sys-apps/file
+emerge --oneshot --nodeps app-admin/eselect
+emerge --oneshot app-misc/pax-utils
+
+#
+# Replace the bootstrapped portage with a properly-installed one
+#
+env FEATURES="-collision-protect" emerge --oneshot sys-apps/portage
+
+#
+# Delete the things we installed in the temporary directory
+#
+rm -Rf $EPREFIX/tmp/*
+hash -r
+
+#
+# We need to update the portage tree. This uses rsync, so we need to
+# tunnel through the Sanger firewall
+#
+ssh -L 8873:rsync.prefix.freens.org:873 -l raym -N urchin.earth.li
+
+echo "SYNC='rsync://localhost:8873/gentoo-portage-prefix'" >> ${EPREFIX}/etc/make.conf
+
+#
+# Addendum: emerge-webrsync might be a better option
+#
+emerge --sync
+
+#
+# Emerge all the packages for a basic system install
+#
+env USE=-git emerge -u system
+
+#
+# Update make.conf (settings suggested  by Asfand)
+#
+cat >> $EPREFIX/etc/make.conf <<EOT
+ACCEPT_KEYWORDS='~x86'
+MAKEOPTS='-j2'
+USE="bash-completion libnotify threads pch python perl"
+CFLAGS='-Os -pipe'
+CXXFLAGS=$CFLAGS
+VIDEO_CARDS=""
+LINGUAS="en_GB en_US en C"
+ACCEPT_LICENSE='*'
+APACHE2_MPMS='worker'
+APACHE2_MODULES="${APACHE2_MODULES} auth_digest proxy proxy_balancer proxy_connect proxy_ftp proxy_http"
+#PORTDIR_OVERLAY="${PORTDIR_OVERLAY} /var/tmp/gentoo/usr/local/portage/"
+EOT
+
+#
+# List available gcc versions
+#
+gcc-config -l
+
+#
+# Select the latest
+#
+gcc-config 2
+
+source /opt/t87/etc/profile
+
+#
+# Rebuild everything using the tools in the prefix
+#
+
+emerge -e system
+
+#
+# Create a helper script for using the Gentoo prefix
+#
+
+cd $EPREFIX/usr/portage/scripts
+./bootstrap-prefix.sh $EPREFIX startscript
+
+#
+# I think it's useful to have $EPREFIX at our disposal
+#
+cd ${EPREFIX}
+sed -i -e 's/^EPREFIX/export EPREFIX/' startprefix
+
+#
+# Add an init script to configure proxy environment variables
+#
+cat > /opt/t87/etc/profile.d/10-sanger.sh <<EOT
+#
+# Proxy through the Sanger firewall
+#
+export ALL_PROXY=http://wwwcache.sanger.ac.uk:3128/
+export HTTP_PROXY="${ALL_PROXY}"
+export http_proxy="${ALL_PROXY}"
+export HTTPS_PROXY="${ALL_PROXY}"
+export https_proxy="${ALL_PROXY}"
+export FTP_PROXY="${ALL_PROXY}"
+export ftp_proxy="${ALL_PROXY}"
+EOT
+
+#
+# Install DBD-Pg
+#
+emerge --autounmask-write DBD-Pg
+emerge DBD-PG
+
+#
+# Install BioPerl
+#
+emerge --autounmask-write bioperl
+emerge bioperl
+
+#
+# Install EnsEMBL Perl modules
+#
+cd ${EPREFIX}/usr/local
+wget 'http://cvs.sanger.ac.uk/cgi-bin/viewvc.cgi/ensembl.tar.gz?root=ensembl&only_with_tag=branch-ensembl-64&view=tar' -O ensembl.tar.gz
+mkdir -p ensembl/v64
+tar -C ensembl/v64 -x -f ensembl.tar.gz
+cd ensembl
+ln -s v64 current
+
+#
+# Configure PERL5LIB
+#
+cat >> ${EPREFIX}/etc/profile.d/10-sanger.sh <<EOF
+for m in ${EPREFIX}/usr/local/ensembl/current/*/modules; do
+    if test -d "$m"; then
+        if test -z "${PERL5LIB}"; then
+            PERL5LIB="$m"
+        else
+            PERL5LIB="${PERL5LIB}:$m"
+        fi
+    fi
+done
+export PERL5LIB
+EOF
+
+#
+# More Perl modules. Install through portage when available, otherwise try g-cpan
+#
+emerge List-MoreUtils
+emerge g-cpan
+g-cpan -i Const::Fast
+emerge --autounmask-write MooseX-ClassAttribute
+emerge MooseX-ClassAttribute
+emerge --autounmask-write Test-use-ok
+g-cpan -i MooseX::Types::URI
+g-cpan -i Hash::MoreUtils
+g-cpan -i Iterator::Simple
+g-cpan -i Class::Data::Inheritable
+emerge Config-Any
+g-cpan -i File::ShareDir::Install
+g-cpan -i Dist::Zilla
+emerge DBD-SQLite
+g-cpan -i YAML::XS
+g-cpan -i MooseX::MarkAsMethods
+emerge DBIx-Class
+g-cpan -i MooseX::NonMoose
+# Edited /opt/t87/etc/portage/package.keywords to add
+# =virtual/mysql-5.1 **
+# then:
+emerge mysql
+emerge DBD-mysql
+g-cpan -i MooseX::App::Cmd
+g-cpan -i Log::Log4perl
+g-cpan -i MooseX::Log::Log4perl
+g-cpan -i MooseX::Types::URI
+emerge ack
+
+#
+# Install cpanm - not sure we'll use this, but handy to have around
+#
+curl -L http://cpanmin.us | perl - App::cpanminus
+
+
+#
+# TODO: the startscript tries to write to /dev/stderr, but when
+# invoked under sudo this fails with a permissions error as the
+# underlying device node is owned by the originating user
+#
+# TODO: Iterator::Simple imports UNIVERSAL qw(isa) which is triggering
+# a warning from the new version of Perl. UNIVERSAL docs suggest using
+# Scalar::Ref reftype instead. Maybe patch and send upstream?
