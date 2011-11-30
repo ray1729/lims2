@@ -4,7 +4,10 @@ use strict;
 use warnings FATAL => 'all';
 
 use Sub::Exporter -setup => {
-    exports => [ 'iyaml' ]
+    exports => [ 'iyaml' ],
+    groups => {
+        default => [ 'iyaml' ]
+    }
 };
 
 use Carp qw( confess );

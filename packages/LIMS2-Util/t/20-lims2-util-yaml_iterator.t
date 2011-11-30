@@ -10,7 +10,7 @@ use IO::String;
 use Test::Most;
 use YAML::Any;
 
-use_ok 'LIMS2::Util::YAMLIterator', 'iyaml';
+use_ok 'LIMS2::Util::YAMLIterator';
 
 const my @DATA => (
     {
