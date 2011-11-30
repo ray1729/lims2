@@ -18,11 +18,11 @@ sub config_is_fresh {
     my $class = shift;
 
     return $class->CachedConfig
-        and $class->CachedConfig->{filename}
-            and $class->ConfigFile
-                and $class->CachedConfig->{filename} eq $class->ConfigFile
-                    and $class->CachedConfig->{mtime}
-                        and $class->CachedConfig->{mtime} >= stat( $class->ConfigFile )->mtime;
+        && $class->CachedConfig->{filename}
+            && $class->ConfigFile
+                && $class->CachedConfig->{filename} eq $class->ConfigFile
+                    && $class->CachedConfig->{mtime}
+                        && $class->CachedConfig->{mtime} >= stat( $class->ConfigFile )->mtime;
 }
 
 sub read_config {
