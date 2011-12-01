@@ -1,0 +1,15 @@
+DROP TABLE genotyping_primers
+DROP TABLE genotyping_primer_types
+DROP TABLE gene_comments
+DROP TABLE design_comments
+DROP TABLE design_comment_categories
+DROP TABLE design_oligo_loci
+DROP TABLE design_oligos
+DROP TABLE design_oligo_types
+DROP TABLE designs
+DROP TABLE design_types
+DROP TABLE bac_clone_loci
+DROP TABLE bac_clones
+DROP TABLE bac_libraries
+DROP TABLE chromosomes
+DROP TABLE assemblies
