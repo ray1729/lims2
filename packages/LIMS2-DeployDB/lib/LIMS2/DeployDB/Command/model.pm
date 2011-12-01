@@ -33,7 +33,7 @@ has components => (
 
 has role => (
     is         => 'rw',
-    isa        => 'Maybe[Str]',
+    isa        => 'Str',
     traits     => [ 'Getopt' ],
     lazy_build => 1
 );
