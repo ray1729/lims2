@@ -86,22 +86,7 @@ __PACKAGE__->set_primary_key("bac_clone_id");
 
 =head1 RELATIONS
 
-=head2 bac_clone_locis
-
-Type: has_many
-
-Related object: L<LIMS2::Schema::Result::BacCloneLoci>
-
-=cut
-
-__PACKAGE__->has_many(
-  "bac_clone_locis",
-  "LIMS2::Schema::Result::BacCloneLoci",
-  { "foreign.bac_clone_id" => "self.bac_clone_id" },
-  { cascade_copy => 0, cascade_delete => 0 },
-);
-
-=head2 bac_library
+=head2 bac_library_rel
 
 Type: belongs_to
 
@@ -110,15 +95,30 @@ Related object: L<LIMS2::Schema::Result::BacLibrary>
 =cut
 
 __PACKAGE__->belongs_to(
-  "bac_library",
+  "bac_library_rel",
   "LIMS2::Schema::Result::BacLibrary",
   { bac_library => "bac_library" },
   { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
+=head2 loci
 
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2011-12-01 12:57:51
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:dxUpURoMqLaCzZhYm1t1Aw
+Type: has_many
+
+Related object: L<LIMS2::Schema::Result::BacCloneLocus>
+
+=cut
+
+__PACKAGE__->has_many(
+  "loci",
+  "LIMS2::Schema::Result::BacCloneLocus",
+  { "foreign.bac_clone_id" => "self.bac_clone_id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2011-12-01 14:22:36
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:HI1rxMeYTghWHEff9Jzn8Q
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

@@ -97,24 +97,6 @@ __PACKAGE__->belongs_to(
   { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
-=head2 design_oligo_locis
-
-Type: has_many
-
-Related object: L<LIMS2::Schema::Result::DesignOligoLoci>
-
-=cut
-
-__PACKAGE__->has_many(
-  "design_oligo_locis",
-  "LIMS2::Schema::Result::DesignOligoLoci",
-  {
-    "foreign.design_id"         => "self.design_id",
-    "foreign.design_oligo_type" => "self.design_oligo_type",
-  },
-  { cascade_copy => 0, cascade_delete => 0 },
-);
-
 =head2 design_oligo_type
 
 Type: belongs_to
@@ -130,9 +112,27 @@ __PACKAGE__->belongs_to(
   { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
+=head2 loci
 
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2011-12-01 12:56:05
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Cc7j0FnTqAlMSJBAduxgNg
+Type: has_many
+
+Related object: L<LIMS2::Schema::Result::DesignOligoLocus>
+
+=cut
+
+__PACKAGE__->has_many(
+  "loci",
+  "LIMS2::Schema::Result::DesignOligoLocus",
+  {
+    "foreign.design_id"         => "self.design_id",
+    "foreign.design_oligo_type" => "self.design_oligo_type",
+  },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2011-12-01 14:22:36
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:bPu7a7ckLjbMS64dsiveOg
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

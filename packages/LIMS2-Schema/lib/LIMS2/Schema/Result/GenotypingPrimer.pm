@@ -109,7 +109,7 @@ __PACKAGE__->belongs_to(
   { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
-=head2 genotyping_primer_type
+=head2 genotyping_primer_type_rel
 
 Type: belongs_to
 
@@ -118,15 +118,15 @@ Related object: L<LIMS2::Schema::Result::GenotypingPrimerType>
 =cut
 
 __PACKAGE__->belongs_to(
-  "genotyping_primer_type",
+  "genotyping_primer_type_rel",
   "LIMS2::Schema::Result::GenotypingPrimerType",
   { genotyping_primer_type => "genotyping_primer_type" },
   { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2011-12-01 12:56:05
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:F0TmLl2wSyH3iMn5tODTGA
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2011-12-01 14:22:37
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:fviK8jZcO+mtMkyFZYXjJw
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

@@ -61,24 +61,24 @@ __PACKAGE__->set_primary_key("chromosome");
 
 =head1 RELATIONS
 
-=head2 bac_clone_locis
+=head2 bac_clone_loci
 
 Type: has_many
 
-Related object: L<LIMS2::Schema::Result::BacCloneLoci>
+Related object: L<LIMS2::Schema::Result::BacCloneLocus>
 
 =cut
 
 __PACKAGE__->has_many(
-  "bac_clone_locis",
-  "LIMS2::Schema::Result::BacCloneLoci",
+  "bac_clone_loci",
+  "LIMS2::Schema::Result::BacCloneLocus",
   { "foreign.chromosome" => "self.chromosome" },
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2011-12-01 12:57:51
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:iL123cW9TyUYBLbqh3QTfQ
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2011-12-01 14:22:36
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:pxGtM+c9f21FwyP63ZmPdw
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
