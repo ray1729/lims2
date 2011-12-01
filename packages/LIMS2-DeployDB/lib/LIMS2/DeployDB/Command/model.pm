@@ -38,6 +38,45 @@ has role => (
     lazy_build => 1
 );
 
+
+has moniker_map => (
+    is         => 'ro',
+    isa        => 'HashRef',
+    traits     => [ 'NoGetopt' ],
+    default    => sub {
+        +{
+            # Singular problems            
+            bac_clone_loci    => 'BacCloneLocus',
+            design_oligo_loci => 'DesignOligoLocus',
+        }
+    }
+);
+
+has rel_name_map => (
+    is         => 'ro',
+    isa        => 'HashRef',
+    traits     => [ 'NoGetopt' ],
+    default    => sub {
+        +{
+            # Bad plurals, prefer shorter method name
+            BacClone => {
+                bac_clone_locis => 'loci'
+            },
+            DesignOligo => {
+                design_oligo_locis => 'loci'
+            },
+            # Bad plurals
+            bac_clone_locis        => 'bac_clone_loci',
+            design_oligo_locis     => 'design_oligo_loci',
+            # Clashes with column names
+            design_type            => 'design_type_rel',
+            chromosome             => 'chromosome_rel',
+            bac_library            => 'bac_library_rel',
+            genotyping_primer_type => 'genotyping_primer_type_rel',
+        }
+    }
+);
+
 sub _build_role {
     my $self = shift;
 
@@ -66,6 +105,8 @@ sub execute {
             db_schema      => $self->schema,
             components     => $self->components,
             use_moose      => 1,
+            moniker_map    => $self->moniker_map,
+            rel_name_map   => $self->rel_name_map
         },
         [ $self->dsn, $self->user, $self->password, {}, \%extra_opts ]
     );
