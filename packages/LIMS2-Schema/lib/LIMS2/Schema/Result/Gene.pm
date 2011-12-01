@@ -71,6 +71,21 @@ __PACKAGE__->set_primary_key("gene_id");
 
 =head1 RELATIONS
 
+=head2 gene_comments
+
+Type: has_many
+
+Related object: L<LIMS2::Schema::Result::GeneComment>
+
+=cut
+
+__PACKAGE__->has_many(
+  "gene_comments",
+  "LIMS2::Schema::Result::GeneComment",
+  { "foreign.gene_id" => "self.gene_id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
 =head2 mgi_gene_maps
 
 Type: has_many
@@ -87,8 +102,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07012 @ 2011-11-17 11:35:04
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:TiTshAu4LrWar4vXLHjsVA
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2011-12-01 12:56:05
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ZXjyWDkCpqWBnMTtsp6kZQ
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

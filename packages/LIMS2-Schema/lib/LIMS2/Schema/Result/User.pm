@@ -92,6 +92,51 @@ __PACKAGE__->add_unique_constraint("users_user_name_key", ["user_name"]);
 
 =head1 RELATIONS
 
+=head2 design_comments
+
+Type: has_many
+
+Related object: L<LIMS2::Schema::Result::DesignComment>
+
+=cut
+
+__PACKAGE__->has_many(
+  "design_comments",
+  "LIMS2::Schema::Result::DesignComment",
+  { "foreign.created_by" => "self.user_id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 designs
+
+Type: has_many
+
+Related object: L<LIMS2::Schema::Result::Design>
+
+=cut
+
+__PACKAGE__->has_many(
+  "designs",
+  "LIMS2::Schema::Result::Design",
+  { "foreign.created_user" => "self.user_id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 gene_comments
+
+Type: has_many
+
+Related object: L<LIMS2::Schema::Result::GeneComment>
+
+=cut
+
+__PACKAGE__->has_many(
+  "gene_comments",
+  "LIMS2::Schema::Result::GeneComment",
+  { "foreign.created_by" => "self.user_id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
 =head2 user_roles
 
 Type: has_many
@@ -108,8 +153,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07012 @ 2011-11-17 11:35:04
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Dsv5SqNvItnuhC5Jw7C2Bg
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2011-12-01 12:56:06
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:RHXQC9gsNSEiAwHsj+2m1Q
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
