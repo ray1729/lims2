@@ -62,8 +62,8 @@ CREATE TABLE bac_clone_loci (
        bac_start        INTEGER NOT NULL,
        bac_end          INTEGER NOT NULL
 );
-GRANT SELECT ON bac_clones TO :ro_role;
-GRANT SELECT, INSERT, UPDATE, DELETE ON bac_clones TO :rw_role;
+GRANT SELECT ON bac_clone_loci TO :ro_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON bac_clone_loci TO :rw_role;
 
 CREATE TABLE design_types (
        design_type        TEXT PRIMARY KEY
