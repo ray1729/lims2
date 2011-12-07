@@ -120,6 +120,20 @@ __PACKAGE__->has_many(
 # Created by DBIx::Class::Schema::Loader v0.07014 @ 2011-12-01 14:22:36
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:HI1rxMeYTghWHEff9Jzn8Q
 
+sub as_hash {
+    my $self = shift;
+    my $include_kids = shift;
+
+    my %h = map { $_ => $self->$_ } qw( bac_clone_id bac_library bac_name );
+
+    if ( $include_kids ) {
+        for my $locus ( $self->loci ) {
+            push @{ $h{loci} }, $locus->as_hash;
+        }
+    }
+
+    return \%h;
+}
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;
