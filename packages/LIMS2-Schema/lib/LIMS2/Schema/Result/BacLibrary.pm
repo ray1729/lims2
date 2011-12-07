@@ -82,7 +82,7 @@ __PACKAGE__->has_many(
 
 sub as_hash {
     my $self = shift;
-    my $incude_kids = shift;
+    my $include_kids = shift;
 
     my %h = map { $_ => $self->$_ } qw( bac_library );
 
