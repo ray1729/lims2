@@ -12,7 +12,7 @@ CREATE TABLE changeset_entries (
        rank                    INTEGER NOT NULL,
        action                  TEXT NOT NULL CHECK (action IN ( 'create', 'update', 'delete' )),
        uri                     TEXT NOT NULL,
-       data                    TEXT NOT NULL DEFAULT '{}',
+       entity                  TEXT NOT NULL DEFAULT '{}',
        PRIMARY KEY(changeset_id, rank)                               
 );
 GRANT SELECT ON changeset_entries TO :ro_role;

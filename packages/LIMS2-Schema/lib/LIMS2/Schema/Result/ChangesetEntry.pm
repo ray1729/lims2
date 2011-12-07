@@ -59,7 +59,7 @@ __PACKAGE__->table("changeset_entries");
   data_type: 'text'
   is_nullable: 0
 
-=head2 data
+=head2 entity
 
   data_type: 'text'
   default_value: '{}'
@@ -76,7 +76,7 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 0 },
   "uri",
   { data_type => "text", is_nullable => 0 },
-  "data",
+  "entity",
   { data_type => "text", default_value => "{}", is_nullable => 0 },
 );
 
@@ -112,8 +112,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2011-12-07 10:44:26
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:kaNYxBwx/q1l3Ta8nynQSA
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2011-12-07 11:20:12
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:NgMMeD0gK8R0ZDpKR4qZyA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
