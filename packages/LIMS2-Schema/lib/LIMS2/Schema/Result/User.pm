@@ -92,6 +92,21 @@ __PACKAGE__->add_unique_constraint("users_user_name_key", ["user_name"]);
 
 =head1 RELATIONS
 
+=head2 changesets
+
+Type: has_many
+
+Related object: L<LIMS2::Schema::Result::Changeset>
+
+=cut
+
+__PACKAGE__->has_many(
+  "changesets",
+  "LIMS2::Schema::Result::Changeset",
+  { "foreign.user_id" => "self.user_id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
 =head2 design_comments
 
 Type: has_many
@@ -153,8 +168,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2011-12-01 12:56:06
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:RHXQC9gsNSEiAwHsj+2m1Q
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2011-12-07 10:44:27
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:6/0yr3W0eeZ2P2iymIE2iw
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
