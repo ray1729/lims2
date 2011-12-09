@@ -17,9 +17,23 @@ has fields => (
     isa     => 'HashRef',
     traits  => [ 'Hash' ],
     handles => {
-        add_field => 'set'
+        add_field  => 'set',
+        has_fields => 'count'
     }
 );
+
+around message => sub {
+    my $orig = shift;
+    my $self = shift;
+
+    my $str = $self->$orig;
+
+    while ( my ( $field, $error ) = each %{ $self->fields } ) {
+        $str .= "\n  $field: $error";
+    }
+
+    return $str;
+};
 
 __PACKAGE__->meta->make_immutable( inline_constructor => 0 );
 
