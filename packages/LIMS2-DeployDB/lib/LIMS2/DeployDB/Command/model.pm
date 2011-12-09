@@ -69,6 +69,7 @@ has rel_name_map => (
             bac_clone_locis        => 'bac_clone_loci',
             design_oligo_locis     => 'design_oligo_loci',
             # Clashes with column names
+            assembly               => 'assembly_rel',
             design_type            => 'design_type_rel',
             chromosome             => 'chromosome_rel',
             bac_library            => 'bac_library_rel',
