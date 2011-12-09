@@ -29,7 +29,7 @@ has validators => (
             assembly    => 'validate_assembly',
             bac_end     => 'validate_integer',
             bac_library => 'validate_bac_library',
-            bac_loci    => 'validate_bac_loci',
+            bac_loci    => 'validate_arrayref',
             bac_locus   => 'validate_bac_locus',
             bac_name    => 'validate_non_empty_str',
             bac_start   => 'validate_integer',
@@ -43,7 +43,7 @@ sub _param_name_and_validator {
 
     my ( $param_name, $validator_name );
     if ( ref $param ) {
-        ( $param_name, $validator_name ) = @{$param};
+        ( $param_name, $validator_name ) = %{$param};
     }
     else {
         ( $param_name, $validator_name ) = ( $param ) x 2;
@@ -186,17 +186,11 @@ sub validate_bac_locus {
     return;
 }
 
-sub validate_bac_loci {
-    my ( $self, $loci ) = @_;
+sub validate_arrayref {
+    my ( $self, $aref ) = @_;
 
-    unless ( defined $loci and ref $loci eq 'ARRAY' ) {
-        return 'BAC loci must be a reference to an array';
-    }
-    
-    for my $locus ( @{ $loci } ) {
-        if ( my $err = $self->validate_bac_locus( $locus ) ) {
-            return $err;
-        }
+    unless ( defined $aref and ref $aref eq 'ARRAY' ) {
+        return 'must be a reference to an array';
     }
     
     return;
@@ -215,7 +209,7 @@ sub validate_non_empty_str {
 sub validate_integer {
     my ( $self, $str ) = @_;
 
-    unless ( defined $str and $RE{num}{int}->match( $str ) ) {
+    unless ( defined $str and $RE{num}{int}->matches( $str ) ) {
         return "must be an integer";
     }
 
