@@ -49,7 +49,8 @@ INSERT INTO bac_libraries (bac_library) VALUES ( 'black6' );
 CREATE TABLE bac_clones (
        bac_clone_id     SERIAL PRIMARY KEY,
        bac_name         TEXT NOT NULL,
-       bac_library      TEXT NOT NULL REFERENCES bac_libraries(bac_library)
+       bac_library      TEXT NOT NULL REFERENCES bac_libraries(bac_library),
+       UNIQUE ( bac_library, bac_name )
 );
 GRANT SELECT ON bac_clones TO :ro_role;
 GRANT SELECT, INSERT, UPDATE, DELETE ON bac_clones TO :rw_role;
