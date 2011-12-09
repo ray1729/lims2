@@ -83,7 +83,7 @@ __PACKAGE__->add_columns(
 
 =head1 RELATIONS
 
-=head2 assembly
+=head2 assembly_rel
 
 Type: belongs_to
 
@@ -92,7 +92,7 @@ Related object: L<LIMS2::Schema::Result::Assembly>
 =cut
 
 __PACKAGE__->belongs_to(
-  "assembly",
+  "assembly_rel",
   "LIMS2::Schema::Result::Assembly",
   { assembly => "assembly" },
   { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
@@ -129,15 +129,25 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2011-12-01 14:22:36
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:XpGNJ0ymMSutP84jIA1OLQ
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2011-12-09 10:48:04
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:1ZQJAp6clv3whxe+JevBug
+
+__PACKAGE__->set_primary_key( qw( bac_clone_id assembly ) );
 
 sub as_hash {
     my $self = shift;
 
-    my %h = map { $_ => $self->$_ } qw( assembly chromosome bac_start bac_end );
+    return +{ map { $_ => $self->$_ } qw( assembly chromosome bac_start bac_end ) };
+}
 
-    return \%h;
+sub as_hash_full {
+    my $self = shift;
+
+    return +{
+        bac_library => $self->bac_clone->bac_library,
+        bac_name    => $self->bac_clone->bac_name,
+        locus       => $self->as_hash
+    };
 }
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

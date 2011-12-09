@@ -113,7 +113,7 @@ __PACKAGE__->set_primary_key("design_id", "design_oligo_type", "assembly");
 
 =head1 RELATIONS
 
-=head2 assembly
+=head2 assembly_rel
 
 Type: belongs_to
 
@@ -122,7 +122,7 @@ Related object: L<LIMS2::Schema::Result::Assembly>
 =cut
 
 __PACKAGE__->belongs_to(
-  "assembly",
+  "assembly_rel",
   "LIMS2::Schema::Result::Assembly",
   { assembly => "assembly" },
   { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
@@ -144,8 +144,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2011-12-01 14:16:24
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ZcTWRcvuOTzOO25WHo+cMg
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2011-12-09 10:48:04
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:0UPpbYav5CCar1XflI7GGQ
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

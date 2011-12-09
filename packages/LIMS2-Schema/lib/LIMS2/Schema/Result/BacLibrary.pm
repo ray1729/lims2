@@ -82,15 +82,8 @@ __PACKAGE__->has_many(
 
 sub as_hash {
     my $self = shift;
-    my $include_kids = shift;
 
     my %h = map { $_ => $self->$_ } qw( bac_library );
-
-    if ( $include_kids ) {
-        for my $clone ( $self->bac_clones ) {
-            push @{ $h{bac_clones} }, $clone->as_hash;
-        }
-    }
 
     return \%h;
 }

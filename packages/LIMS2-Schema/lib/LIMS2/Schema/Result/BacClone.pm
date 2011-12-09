@@ -84,6 +84,25 @@ __PACKAGE__->add_columns(
 
 __PACKAGE__->set_primary_key("bac_clone_id");
 
+=head1 UNIQUE CONSTRAINTS
+
+=head2 C<bac_clones_bac_library_bac_name_idx>
+
+=over 4
+
+=item * L</bac_library>
+
+=item * L</bac_name>
+
+=back
+
+=cut
+
+__PACKAGE__->add_unique_constraint(
+  "bac_clones_bac_library_bac_name_idx",
+  ["bac_library", "bac_name"],
+);
+
 =head1 RELATIONS
 
 =head2 bac_library_rel
@@ -117,19 +136,16 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2011-12-01 14:22:36
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:HI1rxMeYTghWHEff9Jzn8Q
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2011-12-09 10:48:04
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:f2BLvuUG+miInKns0WfIoQ
 
 sub as_hash {
     my $self = shift;
-    my $include_kids = shift;
 
     my %h = map { $_ => $self->$_ } qw( bac_clone_id bac_library bac_name );
 
-    if ( $include_kids ) {
-        for my $locus ( $self->loci ) {
-            push @{ $h{loci} }, $locus->as_hash;
-        }
+    for my $locus ( $self->loci ) {
+        push @{ $h{loci} }, $locus->as_hash;
     }
 
     return \%h;

@@ -176,5 +176,12 @@ __PACKAGE__->has_many(
 
 __PACKAGE__->many_to_many( 'roles' => 'user_roles' => 'role' );
 
+sub has_role {
+    my ( $self, $role_name ) = @_;
+
+    grep $_->role_name eq $role_name, $self->roles;
+}
+
+
 __PACKAGE__->meta->make_immutable;
 1;
