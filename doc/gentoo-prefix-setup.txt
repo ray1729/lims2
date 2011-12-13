@@ -252,6 +252,15 @@ emerge ack
 #
 curl -L http://cpanmin.us | perl - App::cpanminus
 
+# Java
+
+# Download jdk-6u29-linux-x64.bin from
+# <http://www.oracle.com/technetwork/java/javase/downloads/jdk-6u29-download-513648.html>
+# and copy to /opt/t87/usr/portage/distfiles
+
+emerge sun-jdk
+
+
 
 #
 # TODO: the startscript tries to write to /dev/stderr, but when
@@ -261,3 +270,8 @@ curl -L http://cpanmin.us | perl - App::cpanminus
 # TODO: Iterator::Simple imports UNIVERSAL qw(isa) which is triggering
 # a warning from the new version of Perl. UNIVERSAL docs suggest using
 # Scalar::Ref reftype instead. Maybe patch and send upstream?
+
+# Updated /opt/t87/startprefix to set SHELL=bash unconditionally
+
+# Updated /opt/t87/etc/profile to add /opt/t87/usr/local/bin to PATH
+

@@ -5,9 +5,8 @@
   - chromosome
   
 * bacs
-  - bac_clone_id
-  - remte_clone_id
-  - clone_library => clone_libraries(clone_library)
+  - bac_name (was remote_clone_id)
+  - bac_library => clone_libraries(clone_library)
   - chromosome => chromosomes(chromosome)
   - bac_start
   - bac_end
@@ -15,6 +14,8 @@
   - build_id
 ** Can bac_midpoint be computed from bac_start and bac_end?
 ** What is build_id referring to?
+** Should we split the locus into a separate table? (then bac would
+have many loci, unique on (bac_clone_id, assembly).
 
 * design_bac
   - design_id => designs(design_id)
@@ -23,31 +24,40 @@
   - allocate_to_instance
 ** What is midpoint_diff?
 ** What does allocate_to_instance mean?
+** If we link the bac to the design well, do we need design_bac?
 
 * design_group
   - desgin_group_id
   - name
-** What is this?
+** What is this? - Lose it
 
 * design_design_group
   - design_id
   - design_group_id
-** What is the purpose of design_grop?
+** What is the purpose of design_grop? Lose it
 
 * design_instance_bac
   - design_instance_id
   - bac_clone_id
   - bac_plate
 ** Don't plan to store design_instance in the new LIMS; should we attach bac_clone_id to a design_well? 
-** What is bac_plate+
+** What is bac_plate?
 
+n <= 4 bacs ordered and assigned a plate A,B,C or D
+Appears in order sheet and nowhere else
+
+design_well_bacs
+ - design_well_id
+ - bac_plate (A,B,C,D)
+ - bac_clone_id
+ 
 * design_instance
   - design_instance_id
   - plate
   - well
   - source
   - design_id
-** I'd like to drop this altogether, but what is 'source'?
+** I'd like to drop this altogether, but what is 'source'? Lose this
 
 * design_note & design_note_type_dict
 ** Seem to be logs of computational activity. Is this of interest to anyone?
@@ -56,7 +66,7 @@
   - design_parameter_id  
   - parameter_name
   - parameter_value
-** Do we need to preserve this?
+** Do we need to preserve this? 
 
 * design
   - design_id
