@@ -1,21 +1,26 @@
-package LIMS2::CRUD;
+package LIMS2::EntityManager;
 
 use strict;
 use warnings FATAL => 'all';
 
 use Moose;
-use LIMS2::CRUD::Changeset;
-use LIMS2::CRUD::Error::Authorization;
-use LIMS2::CRUD::Error::Database;
-use LIMS2::CRUD::Error::NotFound;
-use LIMS2::CRUD::Error::Validation;
-use LIMS2::CRUD::Response;
-use LIMS2::CRUD::ValidationFactory;
+use MooseX::ClassAttribute;
+use LIMS2::EntityManager::Changeset;
+use LIMS2::EntityManager::Error::Authorization;
+use LIMS2::EntityManager::Error::Implementation;
+use LIMS2::EntityManager::Error::Database;
+use LIMS2::EntityManager::ValidationFactory;
 use LIMS2::DBConnect;
-use LIMS2::URI qw( uri_for );
 use Try::Tiny;
 use Scalar::Util qw( blessed );
+use JSON qw( from_json );
 use namespace::autoclean;
+
+class_has default_assembly => (
+    is      => 'ro',
+    isa     => 'Str',
+    default => 'NCBIM37'
+);
 
 has schema => (
     is         => 'ro',
@@ -45,7 +50,7 @@ sub _build_user {
     my $user_name = $self->user_name;    
     
     if ( ! defined $user_name ) {
-        LIMS2::CRUD::Error::Authorization->throw( 'User name or object must be provided' );
+        LIMS2::EntityManager::Error::Authorization->throw( 'User name or object must be provided' );
     }    
     
     my $user = $self->schema->resultset( 'User' )->find(
@@ -54,7 +59,7 @@ sub _build_user {
     );
 
     if ( ! $user ) {
-        LIMS2::CRUD::Error::Authorization->throw( "User $user_name not found" );
+        LIMS2::EntityManager::Error::Authorization->throw( "User $user_name not found" );
     }
 
     return $user;    
@@ -64,7 +69,7 @@ sub assert_has_role {
     my ( $self, $right ) = @_;
     
     if ( ! $self->user->has_role( $right ) ) {
-        LIMS2::CRUD::Error::Authorization->throw;
+        LIMS2::EntityManager::Error::Authorization->throw;
     }
 }
 
@@ -84,20 +89,20 @@ sub assert_in_txn {
     my ( $self ) = @_;
 
     if ( ! $self->in_txn ) {
-        LIMS2::CRUD::Error->throw( 'Updates can only be run inside a transaction' );
+        LIMS2::EntityManager::Error::Implementation->throw( 'Updates can only be run inside a transaction' );
     }
 }
 
 has changeset => (
     is         => 'ro',
-    isa        => 'LIMS2::CRUD::Changeset',
+    isa        => 'LIMS2::EntityManager::Changeset',
     init_arg   => undef,
     lazy_build => 1,
     handles    => [ 'add_changeset_entry' ]
 );
 
 sub _build_changeset {
-    return LIMS2::CRUD::Changeset->new( user => shift->user );
+    return LIMS2::EntityManager::Changeset->new( user => shift->user );
 }
 
 around txn_do => sub {
@@ -119,7 +124,7 @@ around txn_do => sub {
                 $_->throw;
             }
         }
-        LIMS2::CRUD::Error->throw( $_ );
+        LIMS2::EntityManager::Error::Database->throw( $_ );
     }
     finally {
         $self->end_txn;
@@ -128,7 +133,7 @@ around txn_do => sub {
 
 has validation_factory => (
     is         => 'ro',
-    isa        => 'LIMS2::CRUD::ValidationFactory',
+    isa        => 'LIMS2::EntityManager::ValidationFactory',
     init_arg   => undef,
     lazy_build => 1,
     handles    => [ 'validate' ]
@@ -137,176 +142,87 @@ has validation_factory => (
 sub _build_validation_factory {
     my $self = shift;
 
-    LIMS2::CRUD::ValidationFactory->new( schema => $self->schema );    
-}
-    
-for my $method ( __PACKAGE__->meta->get_method_list ) {
-    if ( $method =~ m/^create_/ ) {
-        around $method => sub {
-            my $orig = shift;
-            my $self = shift;
-            $self->assert_has_role( 'edit' );
-            $self->assert_in_txn;            
-            my $res = $self->$orig( @_ );
-            $self->add_changeset_entry( 'create', $res->uri, $res->entity );
-            return $res;
-        }
-    }
-    elsif ( $method =~ m/^read/ ) {
-        around $method = sub {
-            my $orig = shift;
-            my $self = shift;
-            $self->assert_has_role( 'read' );
-            $self->$orig(@_);
-        }
-    }    
-    elsif ( $method =~ m/^update_/ ) {
-        around $method => sub {
-            my $orig = shift;
-            my $self = shift;
-            $self->assert_has_role( 'edit' );
-            $self->assert_in_txn;            
-            my $res = $self->$orig( @_ );
-            $self->add_changeset_entry( 'update', $res->uri, $res->entity );
-            return $res;
-        }
-    }
-    elsif ( $method =~ m/^delete/ ) {
-        around $method => sub {
-            my $orig = shift;
-            my $self = shift;
-            $self->assert_has_role( 'edit' );
-            $self->assert_in_txn;            
-            my $res = $self->$orig( @_ );
-            $self->add_changeset_entry( 'delete', $res->uri );
-            return $res;            
-        }
-    }
+    LIMS2::EntityManager::ValidationFactory->new( schema => $self->schema );    
 }
 
-sub create_bac_clone {
-    my ( $self, $clone_data ) = @_;
-    
-    $self->validate( $clone_data,                               
-                     required => [ qw( bac_library bac_name ) ],
-                     optional => [ { loci => 'bac_loci' } ]
-                 );
+sub entity_class {
+    my ( $self, $what ) = @_;
 
-    my $bac_clone = $self->schema->resultset( 'BacClone' )->create(
+    my $entity_class = 'LIMS2::Entity::' . $what;
+
+    ( my $pm_path = $entity_class . '.pm' ) =~ s{::}{/}g;
+
+    unless ( exists $INC{$pm_path} ) {
+        eval "require $entity_class"
+            or LIMS2::EntityManager::Error::Implementation->throw( "Load $entity_class: $@" );
+    }
+
+    return $entity_class;
+}
+
+sub create {
+    my ( $self, $what, $data ) = @_;
+
+    $self->entity_class( $what )->create( $self, $data );
+}
+
+sub retrieve {
+    my ( $self, $what, $data ) = @_;
+    $self->entity_class( $what )->retrieve( $self, $data );
+}
+
+sub update {
+    my ( $self, $what, $data ) = @_;
+    my $obj = $self->entity_class( $what )->retrieve( $self, $data )->[0];
+    $obj->update( $data );
+}
+
+sub delete {
+    my ( $self, $what, $data ) = @_;
+    my $obj = $self->entity_class( $what )->retrieve( $self, $data )->[0];
+    $obj->delete;
+}
+
+sub reverse_changeset {
+    my ( $self, $changeset_id, @entry_ids ) = @_;
+
+    my $rs = $self->schema->resultset( 'ChangesetEntry' )->search_rs(
         {
-            bac_library => $clone_data->{bac_library},
-            bac_name    => $clone_data->{bac_name}
-        }
-    );
-
-    if ( exists $clone_data->{loci} ) {        
-        for my $locus ( @{ $clone_data->{loci} } ) {
-            $self->create_bac_clone_locus( { bac_library => $clone_data->{bac_library},
-                                             bac_name    => $clone_data->{bac_name},
-                                             locus       => $locus } );            
-        }
-    }
-    
-    return LIMS2::CRUD::Response->new( bac_clone => $bac_clone->as_hash );
-}
-
-sub _retrieve_bac_clone {
-    my ( $self, $bac_library, $bac_name ) = @_;
-
-    my $bac_clone = $self->schema->resultset( 'BacClone' )->find(
-        {
-            bac_library => $bac_library,
-            bac_name    => $bac_name
-        }
-    ) or LIMS2::CRUD::Error::NotFound->throw( "BAC clone $bac_library/$bac_name not found" );
-
-    return $bac_clone;
-}
-
-sub read_bac_clone {
-    my ( $self, $clone_data ) = @_;
-
-    $self->validate( $clone_data, required => [ qw( bac_library bac_name ) ] );
-
-    my $bac_clone = $self->_retrieve_bac_clone( @{$clone_data}{ qw( bac_library bac_name ) } );
-
-    return LIMS2::CRUD::Response->new( bac_clone => $bac_clone->as_hash );    
-}
-
-sub delete_bac_clone {
-    my ( $self, $clone_data ) = @_;
-
-    $self->validate( $clone_data, required => [ qw( bac_library bac_name ) ] );
-
-    my $bac_clone = $self->_retrieve_bac_clone( @{$clone_data}{ qw( bac_library bac_name ) } );
-
-    my $orig = $bac_clone->as_hash;
-    
-    $bac_clone->loci_rs->delete;
-    $bac_clone->delete;
-
-    return LIMS2::CRUD::Response->new( bac_clone => $orig );
-}
-
-sub create_bac_clone_locus {
-    my ( $self, $clone_data ) = @_;
-
-    $self->validate( $clone_data,
-                     required => [ qw( bac_library bac_name ), { locus => 'bac_locus' } ] );
-
-    my $bac_clone = $self->_retrieve_bac_clone( @{$clone_data}{ qw( bac_library bac_name ) } );
-    
-    my $locus = $bac_clone->create_related( loci => $clone_data->{locus} );
-
-    return LIMS2::CRUD::Response->new( bac_clone_locus => $locus->as_hash_full );
-}
-
-sub _retrieve_bac_clone_locus {
-    my ( $self, $bac_library, $bac_name, $assembly ) = @_;
-
-    my $locus = $self->schema->resultset( 'BacCloneLocus' )->find(
-        {
-            'bac_clone.bac_library' => $bac_library,
-            'bac_clone.bac_name'    => $bac_name,
-            'me.assembly'           => $assembly
+            changeset_id => $changeset_id
         },
         {
-            join => 'bac_clone'
+            order_by => { -desc => 'changeset_entry_id' }
         }
-    ) or LIMS2::CRUD::Error::NotFound->throw(
-        "Locus for BAC clone $bac_library/$bac_name on assembly $assembly not found"
     );
 
-    return $locus;
+    if ( @entry_ids ) {
+        $rs = $rs->search_rs( { changeset_entry_id => \@entry_ids } );
+    }
+
+    while ( my $entry = $rs->next ) {
+        my $action = $entry->action;
+        my $class  = $self->entity_class( $entry->class );
+        my $keys   = from_json( $entry->keys );
+        my $entity = from_json( $entry->entity );
+
+        my %params = zip( $class->audit_keys, @{$keys} );
+        
+        if ( $action eq 'create' ) {
+            my $obj = $class->retrieve( $self, \%params )->[0];
+            $obj->delete;
+        }
+        elsif ( $action eq 'update' ) {
+            my $obj = $class->retrieve( \%params )->[0];
+            $obj->update( $entity );
+        }
+        elsif ( $action eq 'delete' ) {
+            $class->create( $self, $entity );
+        }
+    }
 }
 
-sub update_bac_clone_locus {
-    my ( $self, $clone_data ) = @_;
-
-    $self->validate( $clone_data,
-                     required => [ qw( bac_library bac_name assembly chromosome bac_start bac_end ) ] );
-
-    my $locus = $self->_retrieve_bac_clone_locus( @{$clone_data}{ qw( bac_library bac_name assembly ) } );
-
-    $locus->update( $clone_data->{locus} );
-
-    return LIMS2::CRUD::Response->new( bac_clone_locus => $locus->as_hash_full );
-}
-
-sub delete_bac_clone_locus {
-    my ( $self, $clone_data ) = @_;
-
-    $self->validate( $clone_data,
-                     required => [ qw( bac_library bac_name assembly ) ],
-                     optional => [ qw( chromosome bac_start bac_end ) ] );
-
-    my $locus = $self->_retrieve_bac_clone_locus( @{$clone_data}{ qw( bac_library bac_name assembly ) } );
-
-    my $orig = $locus->as_hash_full;
-    
-    $locus->delete;
-
-    return LIMS2::CRUD::Response->new( bac_clone_locus => $orig );
-}
+__PACKAGE__->meta->make_immutable;
 
 1;
+
+__END__

@@ -7,9 +7,9 @@ use Test::Most;
 use Const::Fast;
 use Hash::MoreUtils qw( slice );
 
-use_ok 'LIMS2::CRUD';
+use_ok 'LIMS2::EntityManager';
 
-ok my $crud = LIMS2::CRUD->new( user_name => 'rm7' ), 'construct CRUD object';
+ok my $em = LIMS2::EntityManager->new( user_name => 'rm7' ), 'construct EntityManager object';
 
 {
     const my %clone_foo => ( bac_library => '129', bac_name => 'foo' );
@@ -28,57 +28,48 @@ ok my $crud = LIMS2::CRUD->new( user_name => 'rm7' ), 'construct CRUD object';
     );
     
     lives_ok {
-        $crud->txn_do(
+        $em->txn_do(
             sub {
-                my $res = $crud->create_bac_clone( \%clone_foo )
+                my $res = $em->create( BacClone => \%clone_foo )
             }
         )
     } 'create bac_clone (without locus)';
 
     lives_ok {
-        $crud->txn_do(
+        $em->txn_do(
             sub {
-                my $res = $crud->create_bac_clone( \%clone_bar );
+                my $res = $em->create( BacClone => \%clone_bar );
             }
         )
     } 'create bac_clone (with locus)';
 
     lives_ok {
-        $crud->txn_do(
+        $em->txn_do(
             sub {
-                $crud->delete_bac_clone_locus(
-                    {
-                        bac_library => $clone_bar{bac_library},
-                        bac_name    => $clone_bar{bac_name},
-                        assembly    => $clone_bar{loci}[0]{assembly}
-                    }
-                );
+                my $bac = $em->retrieve( BacClone => { bac_library => $clone_bar{bac_library}, bac_name => $clone_bar{bac_name} } )->[0];
+                $bac->delete_locus( { assembly => $clone_bar{loci}[0]{assembly} } );
             }
         )
     } 'delete bac_clone_locus';                                                 
     
     lives_ok {
-        $crud->txn_do(
+        $em->txn_do(
             sub {
                 for my $c ( \%clone_foo, \%clone_bar ) {
-                    ok $crud->delete_bac_clone( +{ slice( $c, qw( bac_library bac_name ) ) } ), 'delete clone';
+                    ok !$em->delete( BacClone => { slice( $c, qw( bac_library bac_name ) ) } ), 'delete clone';
                 }
             }
         );
     } 'delete bac_clones';
 
     throws_ok {
-        $crud->create_bac_clone( \%clone_foo )
+        $em->create( BacClone => \%clone_foo )
     } qr/Updates can only be run inside a transaction/;
 
     throws_ok {
-        $crud->txn_do( sub { die "testing" } );
+        $em->txn_do( sub { die "testing" } );
     } qr/testing/;
 
-    throws_ok {
-        $crud->create_bac_clone( \%clone_foo )
-    } qr/Updates can only be run inside a transaction/;
-    
 }
 
 done_testing;

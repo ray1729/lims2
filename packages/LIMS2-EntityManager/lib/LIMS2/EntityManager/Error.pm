@@ -1,4 +1,4 @@
-package LIMS2::CRUD::Error;
+package LIMS2::EntityManager::Error;
 
 use strict;
 use warnings FATAL => 'all';

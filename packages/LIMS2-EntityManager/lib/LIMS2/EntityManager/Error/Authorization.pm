@@ -1,4 +1,4 @@
-package LIMS2::CRUD::Error::Authorization;
+package LIMS2::EntityManager::Error::Authorization;
 
 use strict;
 use warnings FATAL => 'all';
@@ -6,7 +6,7 @@ use warnings FATAL => 'all';
 use Moose;
 use namespace::autoclean;
 
-extends qw( LIMS2::CRUD::Error );
+extends qw( LIMS2::EntityManager::Error );
 
 has '+message' => (
     default => 'You are not authorized to perform this operation'

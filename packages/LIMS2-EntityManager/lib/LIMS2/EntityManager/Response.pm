@@ -1,4 +1,4 @@
-package LIMS2::CRUD::Response;
+package LIMS2::EntityManager::Response;
 
 use strict;
 use warnings FATAL => 'all';

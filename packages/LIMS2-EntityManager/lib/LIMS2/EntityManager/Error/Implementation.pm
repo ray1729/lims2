@@ -1,4 +1,4 @@
-package LIMS2::EntityManager::Error::NotFound;
+package LIMS2::EntityManager::Error::Implementation;
 
 use strict;
 use warnings FATAL => 'all';

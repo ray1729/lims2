@@ -1,4 +1,4 @@
-package LIMS2::CRUD::ValidationFactory;
+package LIMS2::EntityManager::ValidationFactory;
 
 use strict;
 use warnings FATAL => 'all';
@@ -8,7 +8,9 @@ use Regexp::Common;
 use Try::Tiny;
 use DateTime::Format::ISO8601;
 use LIMS2::DBConnect;
-use LIMS2::CRUD::Error::Validation;
+use LIMS2::EntityManager::Error::Validation;
+use LIMS2::EntityManager::Error::Implementation;
+use Const::Fast;
 use namespace::autoclean;
 
 has schema => (
@@ -17,55 +19,10 @@ has schema => (
     default => sub { LIMS2::DBConnect->connect( 'LIMS2_DB' ) }
 );
 
-has validators => (
-    isa      => 'HashRef',
-    init_arg => undef,
-    traits   => [ 'Hash' ],
-    handles  => {
-        validator_for => 'get'
-    },
-    default  => sub {
-        +{
-            assembly    => 'validate_assembly',
-            bac_end     => 'validate_integer',
-            bac_library => 'validate_bac_library',
-            bac_loci    => 'validate_arrayref',
-            bac_locus   => 'validate_bac_locus',
-            bac_name    => 'validate_non_empty_str',
-            bac_start   => 'validate_integer',
-            chromosome  => 'validate_chromosome',
-        }
-    }
-);
-
-sub _param_name_and_validator {
-    my ( $self, $param, $required ) = @_;
-
-    my ( $param_name, $validator_name );
-    if ( ref $param ) {
-        ( $param_name, $validator_name ) = %{$param};
-    }
-    else {
-        ( $param_name, $validator_name ) = ( $param ) x 2;
-    }
-
-    return (
-        $param_name => {
-            validate => $self->validator_for( $validator_name ),
-            required => $required
-        }
-    );
-}
-
 sub validate {
-    my ( $self, $params, %args ) = @_;
+    my ( $self, $params, %param_spec ) = @_;
 
-    my %param_spec = (
-        map( $self->_param_name_and_validator( $_, 0 ), @{ $args{optional} } ),
-        map( $self->_param_name_and_validator( $_, 1 ), @{ $args{required} } )
-    );
-
-    my $err = LIMS2::CRUD::Error::Validation->new;
+    my $err = LIMS2::EntityManager::Error::Validation->new;
     
     for my $p ( grep $param_spec{$_}{required}, keys %param_spec ) {
         if ( not exists $params->{$p} ) {
@@ -79,18 +36,20 @@ sub validate {
             $err->add_field( $p, 'is not allowed here' );
             next;
         }
-        my $validate = $this_param_spec->{validate}
+        my $validate = 'validate_' . $this_param_spec->{validate}
             or next;
+        $self->can( $validate )
+            or LIMS2::EntityManager::Error::Implementation->throw( "$validate not implemented" );
         if ( my $mesg = $self->$validate( $v ) ) {
             $err->add_field( $p, $mesg );
         }
-    }
 
-    if ( $err->has_fields ) {
-        $err->throw;
-    }
+        if ( $err->has_fields ) {
+            $err->throw;
+        }
 
-    return;
+        return;
+    }
 }
 
 has valid_bac_libraries => (
@@ -169,18 +128,26 @@ sub validate_chromosome {
 }
 
 sub validate_bac_locus {
-    my ( $self, $locus ) = @_;
+    my ( $self, $params ) = @_;
 
-    unless ( defined $locus and ref $locus eq 'HASH' ) {
+    unless ( defined $params and ref $params eq 'HASH' ) {
         return 'BAC locus must be a reference to a hash';
     }
 
-    for my $field ( qw( assembly chromosome bac_start bac_end ) ) {
-        my $validate = $self->validator_for( $field )
-            or next;                       
-        if ( my $err = $self->$validate( $locus->{$field} ) ) {
-            return $field . ' ' . $err;
-        }
+    if ( my $assembly_err = $self->validate_assembly( $params->{assembly} ) ) {
+        return 'assembly - ' . $assembly_err;
+    }
+
+    if ( my $chromosome_err = $self->validate_chromosome( $params->{chromosome} ) ) {
+        return 'chromosome - ' . $chromosome_err;
+    }
+
+    if ( my $bac_start_err = $self->validate_integer( $params->{bac_start} ) ) {
+        return 'bac_start - ' . $bac_start_err;
+    }
+    
+    if ( my $bac_end_err = $self->validate_integer( $params->{bac_end} ) ) {
+        return 'bac_end - ' . $bac_end_err;
     }
 
     return;
@@ -193,6 +160,22 @@ sub validate_arrayref {
         return 'must be a reference to an array';
     }
     
+    return;
+}
+
+sub validate_bac_loci {
+    my ( $self, $loci ) = @_;
+
+    if ( my $err = $self->validate_arrayref( $loci ) ) {
+        return $err;
+    }
+
+    for my $locus ( @{ $loci } ) {
+        if ( my $err = $self->validate_bac_locus( $locus ) ) {
+            return $err;
+        }
+    }
+
     return;
 }
 

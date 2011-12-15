@@ -1,4 +1,4 @@
-package LIMS2::CRUD::Error::Database;
+package LIMS2::EntityManager::Error::Database;
 
 use strict;
 use warnings FATAL => 'all';
@@ -6,7 +6,7 @@ use warnings FATAL => 'all';
 use Moose;
 use namespace::autoclean;
 
-extends qw( LIMS2::CRUD::Error );
+extends qw( LIMS2::EntityManager::Error );
 
 __PACKAGE__->meta->make_immutable( inline_constructor => 0 );
 

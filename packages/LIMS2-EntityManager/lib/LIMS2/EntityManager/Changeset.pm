@@ -1,4 +1,4 @@
-package LIMS2::CRUD::Changeset;
+package LIMS2::EntityManager::Changeset;
 
 use strict;
 use warnings FATAL => 'all';
@@ -19,16 +19,6 @@ has _db_changeset => (
     lazy_build => 1
 );
 
-has _rank => (
-    is         => 'ro',
-    isa        => 'Num',
-    traits     => [ 'Counter' ],
-    default    => 0,
-    handles    => {
-        next_rank => 'inc'
-    }
-);
-
 sub _build__db_changeset {
     my ( $self ) = @_;
 
@@ -36,15 +26,17 @@ sub _build__db_changeset {
 }
 
 sub add_changeset_entry {
-    my ( $self, $action, $uri, $entity ) = @_;
+    my ( $self, $action, $class, $keys, $entity ) = @_;
 
     $entity ||= {};
 
+    $class =~ s/^LIMS2::Entity:://;
+    
     $self->_db_changeset->create_related(
         'changeset_entries' => {
-            rank   => $self->next_rank,
             action => $action,
-            uri    => $uri,
+            class  => $class,
+            keys   => to_json( $keys ),
             entity => to_json( $entity )
         }
     );
