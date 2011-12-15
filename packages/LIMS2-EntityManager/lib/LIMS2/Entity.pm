@@ -60,7 +60,13 @@ sub audit_key_cols {
 
 sub audit_key {
     my $self = shift;
-    [ map $self->$_, $self->audit_key_cols ];
+
+    my %k;
+    for my $col ( $self->audit_key_cols ) {
+        $k{$col} = $self->$col;
+    }
+
+    return \%k;
 }
 
 __PACKAGE__->meta->make_immutable;

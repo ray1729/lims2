@@ -202,17 +202,15 @@ sub reverse_changeset {
     while ( my $entry = $rs->next ) {
         my $action = $entry->action;
         my $class  = $self->entity_class( $entry->class );
-        my $keys   = from_json( $entry->keys );
+        my $key    = from_json( $entry->keys );
         my $entity = from_json( $entry->entity );
-
-        my %params = zip( $class->audit_keys, @{$keys} );
         
         if ( $action eq 'create' ) {
-            my $obj = $class->retrieve( $self, \%params )->[0];
+            my $obj = $class->retrieve( $self, $key )->[0];
             $obj->delete;
         }
         elsif ( $action eq 'update' ) {
-            my $obj = $class->retrieve( \%params )->[0];
+            my $obj = $class->retrieve( $key )->[0];
             $obj->update( $entity );
         }
         elsif ( $action eq 'delete' ) {

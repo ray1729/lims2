@@ -16,10 +16,16 @@ has dbic_obj => (
     ]
 );
 
-sub audit_key {
-    my $self = shift;
+override audit_key_cols => sub {
+    qw( bac_library bac_name assembly )
+};
 
-    [ $self->bac_clone->bac_library, $self->bac_clone->bac_name, $self->assembly ];
+sub bac_library {
+    shift->bac_clone->bac_library;
+}
+
+sub bac_name {
+    shift->bac_clone->bac_name;
 }
 
 augment create => sub {
@@ -94,7 +100,7 @@ augment delete => sub {
     return;
 };
 
-override retrieve => sub {
+augment retrieve => sub {
     my ( $class, $entity_manager, $params ) = @_;
 
     $entity_manager->validate(
