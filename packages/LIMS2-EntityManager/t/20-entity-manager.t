@@ -12,10 +12,10 @@ use_ok 'LIMS2::EntityManager';
 ok my $em = LIMS2::EntityManager->new( user_name => 'rm7' ), 'construct EntityManager object';
 
 {
-    const my %clone_foo => ( bac_library => '129', bac_name => 'foo' );
+    const my %clone_foo => ( bac_library => '130', bac_name => 'foo' );
 
     const my %clone_bar => (
-        bac_library => '129',
+        bac_library => '130',
         bac_name    => 'bar',
         loci => [
             {
@@ -26,6 +26,14 @@ ok my $em = LIMS2::EntityManager->new( user_name => 'rm7' ), 'construct EntityMa
             }
         ]
     );
+
+    lives_ok {
+        $em->txn_do(
+            sub {
+                $em->create( 'BacLibrary' => { bac_library => '130' } );
+            }
+        );
+    } 'create BAC library';    
     
     lives_ok {
         $em->txn_do(
@@ -62,6 +70,14 @@ ok my $em = LIMS2::EntityManager->new( user_name => 'rm7' ), 'construct EntityMa
         );
     } 'delete bac_clones';
 
+    lives_ok {
+        $em->txn_do(
+            sub {
+                $em->delete( BacLibrary => { bac_library => '130' } )
+            }
+        )
+    } 'delete BAC library';
+    
     throws_ok {
         $em->create( BacClone => \%clone_foo )
     } qr/Updates can only be run inside a transaction/;
