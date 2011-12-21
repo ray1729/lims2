@@ -139,10 +139,16 @@ __PACKAGE__->has_many(
 # Created by DBIx::Class::Schema::Loader v0.07014 @ 2011-12-09 10:48:04
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:f2BLvuUG+miInKns0WfIoQ
 
+sub locus {
+    my ( $self, $assembly ) = @_;
+
+    $self->search_related_rs( loci => { assembly => $assembly } )->first;
+}
+
 sub as_hash {
     my $self = shift;
 
-    my %h = map { $_ => $self->$_ } qw( bac_clone_id bac_library bac_name );
+    my %h = map { $_ => $self->$_ } qw( bac_library bac_name );
 
     for my $locus ( $self->loci ) {
         push @{ $h{loci} }, $locus->as_hash;
