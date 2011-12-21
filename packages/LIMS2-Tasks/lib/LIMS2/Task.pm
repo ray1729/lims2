@@ -65,6 +65,28 @@ sub _build_schema {
     LIMS2::DBConnect->connect( 'LIMS2_DB' );
 }
 
+has edit_user => (
+    is            => 'ro',
+    isa           => 'Str',
+    traits        => [ 'Getopt' ],
+    cmd_flag      => 'edit-user',
+    required      => 1,
+    default       => $ENV{USER}
+);
+
+has entity_manager => (
+    is            => 'ro',
+    isa           => 'LIMS2::EntityManager',
+    traits        => [ 'NoGetopt' ],
+    lazy_build    => 1
+);
+
+sub _build_entity_manager {
+    my $self = shift;
+    require LIMS2::EntityManager;
+    LIMS2::EntityManager->new( user_name => $self->edit_user, schema => $self->schema );
+}
+
 sub BUILD {
     my $self = shift;
 
