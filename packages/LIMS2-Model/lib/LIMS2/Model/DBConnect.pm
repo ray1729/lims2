@@ -1,4 +1,4 @@
-package LIMS2::DBConnect;
+package LIMS2::Model::DBConnect;
 
 use strict;
 use warnings FATAL => 'all';
