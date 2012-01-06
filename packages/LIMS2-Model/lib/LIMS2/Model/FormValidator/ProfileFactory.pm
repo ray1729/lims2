@@ -5,7 +5,7 @@ use warnings FATAL => 'all';
 
 use Moose;
 use Data::FormValidator::Constraints qw( :regexp_common );
-use LIMS2::Model::FormValidator::Constraints;
+require LIMS2::Model::FormValidator::ConstraintFactory;
 use namespace::autoclean;
 
 has schema => (
@@ -13,6 +13,19 @@ has schema => (
     isa      => 'LIMS2::Model::Schema',
     required => 1
 );
+
+has constraint_factory => (
+    is         => 'ro',
+    isa        => 'LIMS2::Model::FormValidator::ConstraintFactory',
+    lazy_build => 1,
+    handles    => [ 'constraint_for' ]
+);
+
+sub _build_constraint_factory {
+    my $self = shift;
+
+    return LIMS2::Model::FormValidator::ConstraintFactory->new( schema => $self->schema );
+}
 
 sub profile_for {
     my ( $self, $what ) = @_;
@@ -39,7 +52,7 @@ sub _profile_create_assembly {
     return {
         required => [ qw( assembly ) ],
         constraint_methods => {
-            assembly => qr/^\w+/
+            assembly => qr/^\w+$/
         }
     };
 }
@@ -62,8 +75,8 @@ sub _profile_create_bac_clone {
         required => [ qw( bac_library bac_name ) ],
         optional => [ qw( loci ) ],
         constraint_methods => {
-            bac_library => existing_bac_library( $self->schema ),
-            bac_name    => qr/^\w+$/
+            bac_library => $self->constraint_for( 'existing_bac_library' ),
+            bac_name    => qr/^[\w()-]+$/
         }
     };
 }
@@ -80,8 +93,8 @@ sub _profile_create_bac_locus {
     return {
         required => [ qw( assembly chromosome bac_start bac_end ) ],
         constraint_methods => {
-            assembly     => existing_assembly( $self->schema ),
-            chromosome   => existing_chromosome( $self->schema ),
+            assembly     => $self->constraint_for( 'existing_assembly' ),
+            chromosome   => $self->constraint_for( 'existing_chromosome' ),
             bac_start    => FV_num_int,
             bac_end      => FV_num_int
         }

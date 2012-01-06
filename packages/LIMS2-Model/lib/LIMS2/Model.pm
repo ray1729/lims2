@@ -11,17 +11,29 @@ require LIMS2::Model::Error::Validation;
 require LIMS2::Model::Error::NotFound;
 use namespace::autoclean;
 
-# This assumes we're using Catalyst::Model::Factory::PerRequest and
-# setting the audit_user when the LIMS2::Model object is
-# instantiated. If necessary, we could make audit_user rw and add a
-# trigger to call clear_schema() when the audit_user is changed.
-
 # XXX TODO: authorization checks?
 
+# This assumes we're using Catalyst::Model::Factory::PerRequest and
+# setting the audit_user when the LIMS2::Model object is
+# instantiated. If necessary, we could make audit_user rw and allow
+# the model object to be reused.
+
 has audit_user => (
-    is  => 'ro',
-    isa => 'Str',
+    is      => 'ro',
+    isa     => 'Str',
+    trigger => \&_audit_user_set
 );
+
+sub _audit_user_set {
+    my ( $self, $user, $old_user ) = @_;
+
+    $self->schema->storage->dbh_do(
+        sub {
+            my ( $storage, $dbh ) = @_;
+            $dbh->do( 'SET SESSION ROLE ' . $dbh->quote_identifier( $user ) );
+        }
+    );           
+}
 
 has schema => (
     is         => 'ro',
@@ -33,18 +45,7 @@ has schema => (
 sub _build_schema {
     my $self = shift;
 
-    my $schema = LIMS2::Model::DBConnect->connect( 'LIMS2_DB' );
-
-    if ( $self->audit_user ) {
-        $schema->storage->dbh_do(
-            sub {
-                my ( $storage, $dbh ) = @_;
-                $dbh->do( 'SET SESSION ROLE ' . $dbh->quote_identifier( $self->audit_user ) );
-            }
-        );        
-    }
-
-    return $schema;
+    return LIMS2::Model::DBConnect->connect( 'LIMS2_DB' );
 }
 
 has profile_factory => (
