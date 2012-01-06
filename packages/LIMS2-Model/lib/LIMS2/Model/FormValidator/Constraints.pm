@@ -20,46 +20,67 @@ use Sub::Exporter -setup => {
     }
 };
 
-sub existing_bac_library {
-    my ( $schema ) = @_;
+{
+    my $bac_libraries;    
 
-    return sub {
-        my $dfv = shift;
-        $dfv->name_this( 'existing_bac_library' );
+    sub existing_bac_library {
+        my ( $schema ) = @_;
+
+        unless ( $bac_libraries ) {
+            $bac_libraries = { map { $_->bac_library => 1 } $schema->resultset( 'BacLibrary' )->all };            
+        }
         
-        my $val = $dfv->get_current_constraint_value();
-        my $rs = $schema->resultset( 'BacLibrary' )->search_rs( { bac_library => $val } );
+        return sub {
+            my $dfv = shift;
+            $dfv->name_this( 'existing_bac_library' );
+        
+            my $val = $dfv->get_current_constraint_value();
 
-        return $rs->count > 0;
-    };
+            return $bac_libraries->{$val} || 0;
+        };
+    }
 }
 
-sub existing_assembly {
-    my ( $schema ) = @_;
+{
+    my $assemblies;
 
-    return sub {
-        my $dfv = shift;
-        $dfv->name_this( 'existing_assembly' );
+    sub existing_assembly {
+        my ( $schema ) = @_;
+
+        unless ( $assemblies ) {
+            $assemblies = { map { $_->assembly => 1 } $schema->resultset( 'Assembly' )->all };
+        }        
+
+        return sub {
+            my $dfv = shift;
+            $dfv->name_this( 'existing_assembly' );
         
-        my $val = $dfv->get_current_constraint_value();
-        my $rs = $schema->resultset( 'Assembly' )->search_rs( { assembly => $val } );
+            my $val = $dfv->get_current_constraint_value();
 
-        return $rs->count > 0;
-    };
+            return $assemblies->{$val} || 0;
+        };
+    }
 }
 
-sub existing_chromosome {
-    my ( $schema ) = @_;
+{
+    my $chromosomes;
+    
+    sub existing_chromosome {
+        my ( $schema ) = @_;
 
-    return sub {
-        my $dfv = shift;
-        $dfv->name_this( 'existing_chromosome' );
+        unless ( $chromosomes ) {
+            $chromosomes = { map { $_->chromosome => 1 } $schema->resultset( 'Chromosome' )->all };
+        }        
         
-        my $val = $dfv->get_current_constraint_value();
-        my $rs = $schema->resultset( 'Chromosome' )->search_rs( { chromosome => $val } );
+        return sub {
+            my $dfv = shift;
+            $dfv->name_this( 'existing_chromosome' );
+            
+            my $val = $dfv->get_current_constraint_value();
 
-        return $rs->count > 0;
-    };
+            return $chromosomes->{$val} || 0;
+        };
+    }
 }
 
 1;
