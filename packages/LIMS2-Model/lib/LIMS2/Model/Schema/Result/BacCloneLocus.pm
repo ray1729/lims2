@@ -165,8 +165,8 @@ sub as_hash {
     return {
         assembly   => $self->assembly,
         chr_name   => $self->chr_name,
-        chr_start  => $self->bac_start,
-        chr_end    => $self->bac_end
+        chr_start  => $self->chr_start,
+        chr_end    => $self->chr_end
     };
 }
 
