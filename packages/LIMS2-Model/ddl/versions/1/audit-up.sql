@@ -541,7 +541,7 @@ audit_user TEXT NOT NULL,
 audit_stamp TIMESTAMP NOT NULL,
 audit_txid INTEGER NOT NULL,
 design_comment_category_id integer,
-desgin_comment_category_name text
+design_comment_category_name text
 );
 GRANT SELECT ON audit.design_comment_categories TO lims2_ro;
 GRANT SELECT,INSERT ON audit.design_comment_categories TO lims2_rw;
@@ -597,7 +597,7 @@ gene_id integer,
 gene_comment text,
 is_public boolean,
 created_by integer,
-created_date timestamp without time zone
+created_at timestamp without time zone
 );
 GRANT SELECT ON audit.gene_comments TO lims2_ro;
 GRANT SELECT,INSERT ON audit.gene_comments TO lims2_rw;
@@ -654,7 +654,7 @@ design_id integer,
 design_comment text,
 is_public boolean,
 created_by integer,
-created_date timestamp without time zone
+created_at timestamp without time zone
 );
 GRANT SELECT ON audit.design_comments TO lims2_ro;
 GRANT SELECT,INSERT ON audit.design_comments TO lims2_rw;
