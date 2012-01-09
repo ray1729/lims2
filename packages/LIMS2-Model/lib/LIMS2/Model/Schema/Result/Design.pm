@@ -203,6 +203,8 @@ sub as_hash {
     return {
         design_id          => $self->design_id,
         design_name        => $self->design_name,
+        design_type        => $self->design_type,
+        phase              => $self->phase,
         created_by         => $self->created_by->user_name,
         created_at         => $self->created_at->iso6801,
         comments           => [ map { $_->as_hash } $self->design_comments ],
