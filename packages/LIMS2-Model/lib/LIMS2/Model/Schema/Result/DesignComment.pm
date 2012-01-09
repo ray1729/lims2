@@ -75,7 +75,7 @@ __PACKAGE__->table("design_comments");
   is_foreign_key: 1
   is_nullable: 0
 
-=head2 created_date
+=head2 created_at
 
   data_type: 'timestamp'
   default_value: current_timestamp
@@ -102,7 +102,7 @@ __PACKAGE__->add_columns(
   { data_type => "boolean", default_value => \"false", is_nullable => 0 },
   "created_by",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
-  "created_date",
+  "created_at",
   {
     data_type     => "timestamp",
     default_value => \"current_timestamp",
@@ -171,8 +171,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-05 09:46:51
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:BtXHrkzXQpreDyiXVhpeZw
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-09 16:47:00
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:WZVS2c7F02CJq5G0I819aA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

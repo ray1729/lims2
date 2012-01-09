@@ -233,7 +233,7 @@ CREATE TABLE design_comments (
        design_comment             TEXT NOT NULL DEFAULT '',
        is_public                  BOOLEAN NOT NULL DEFAULT FALSE,
        created_by                 INTEGER NOT NULL REFERENCES users(user_id),
-       created_date               TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+       created_at                 TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 GRANT SELECT ON design_comments TO lims2_ro;
 GRANT SELECT, INSERT, UPDATE, DELETE ON design_comments TO lims2_rw;
@@ -245,7 +245,7 @@ CREATE TABLE gene_comments (
        gene_comment        TEXT NOT NULL,
        is_public           BOOLEAN NOT NULL DEFAULT FALSE,
        created_by          INTEGER NOT NULL REFERENCES users(user_id),
-       created_date        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+       created_at          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 GRANT SELECT ON gene_comments TO lims2_ro;
 GRANT SELECT, INSERT, UPDATE, DELETE ON gene_comments TO lims2_rw;
