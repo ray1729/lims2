@@ -220,7 +220,7 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON design_oligo_loci TO lims2_rw;
 
 CREATE TABLE design_comment_categories (
        design_comment_category_id      SERIAL PRIMARY KEY,
-       desgin_comment_category_name    TEXT NOT NULL UNIQUE
+       design_comment_category_name    TEXT NOT NULL UNIQUE
 );
 GRANT SELECT ON design_comment_categories TO lims2_ro;
 GRANT SELECT, INSERT, UPDATE, DELETE ON design_comment_categories TO lims2_rw;
