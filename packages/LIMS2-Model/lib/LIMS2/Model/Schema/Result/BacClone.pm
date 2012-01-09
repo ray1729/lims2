@@ -38,13 +38,6 @@ __PACKAGE__->table("bac_clones");
 
 =head1 ACCESSORS
 
-=head2 bac_clone_id
-
-  data_type: 'integer'
-  is_auto_increment: 1
-  is_nullable: 0
-  sequence: 'bac_clones_bac_clone_id_seq'
-
 =head2 bac_name
 
   data_type: 'text'
@@ -59,13 +52,6 @@ __PACKAGE__->table("bac_clones");
 =cut
 
 __PACKAGE__->add_columns(
-  "bac_clone_id",
-  {
-    data_type         => "integer",
-    is_auto_increment => 1,
-    is_nullable       => 0,
-    sequence          => "bac_clones_bac_clone_id_seq",
-  },
   "bac_name",
   { data_type => "text", is_nullable => 0 },
   "bac_library",
@@ -76,32 +62,15 @@ __PACKAGE__->add_columns(
 
 =over 4
 
-=item * L</bac_clone_id>
-
-=back
-
-=cut
-
-__PACKAGE__->set_primary_key("bac_clone_id");
-
-=head1 UNIQUE CONSTRAINTS
-
-=head2 C<bac_clones_bac_library_bac_name_key>
-
-=over 4
+=item * L</bac_name>
 
 =item * L</bac_library>
 
-=item * L</bac_name>
-
 =back
 
 =cut
 
-__PACKAGE__->add_unique_constraint(
-  "bac_clones_bac_library_bac_name_key",
-  ["bac_library", "bac_name"],
-);
+__PACKAGE__->set_primary_key("bac_name", "bac_library");
 
 =head1 RELATIONS
 
@@ -131,13 +100,16 @@ Related object: L<LIMS2::Model::Schema::Result::BacCloneLocus>
 __PACKAGE__->has_many(
   "loci",
   "LIMS2::Model::Schema::Result::BacCloneLocus",
-  { "foreign.bac_clone_id" => "self.bac_clone_id" },
+  {
+    "foreign.bac_library" => "self.bac_library",
+    "foreign.bac_name"    => "self.bac_name",
+  },
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-05 09:46:51
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:dmiEM7pEqoavBwNw3X5ACw
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-09 16:33:44
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:FY6h1IRZYANetKX4yX2WPA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
@@ -145,12 +117,10 @@ __PACKAGE__->has_many(
 sub as_hash {
     my $self = shift;
 
-    my @loci = map { $_->as_hash } $self->loci;
-
     return {
         bac_library => $self->bac_library,
         bac_name    => $self->bac_name,
-        loci        => \@loci
+        loci        => [ map { $_->as_hash } $self->loci ],
     };
 }
 

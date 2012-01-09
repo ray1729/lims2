@@ -57,7 +57,7 @@ __PACKAGE__->table("genotyping_primers");
   is_foreign_key: 1
   is_nullable: 0
 
-=head2 seq
+=head2 genotyping_primer_seq
 
   data_type: 'text'
   is_nullable: 0
@@ -76,7 +76,7 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_foreign_key => 1, is_nullable => 0 },
   "design_id",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
-  "seq",
+  "genotyping_primer_seq",
   { data_type => "text", is_nullable => 0 },
 );
 
@@ -125,8 +125,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-05 09:46:51
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:qILNuDMSuX7NCPN1Dyoncw
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-09 16:33:44
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:FGRF8tnkq9KVuEB2RPtOug
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

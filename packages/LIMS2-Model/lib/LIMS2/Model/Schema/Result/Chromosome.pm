@@ -72,24 +72,30 @@ Related object: L<LIMS2::Model::Schema::Result::BacCloneLocus>
 __PACKAGE__->has_many(
   "bac_clone_loci",
   "LIMS2::Model::Schema::Result::BacCloneLocus",
-  { "foreign.chromosome" => "self.chromosome" },
+  { "foreign.chr_name" => "self.chromosome" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 design_oligo_loci
+
+Type: has_many
+
+Related object: L<LIMS2::Model::Schema::Result::DesignOligoLocus>
+
+=cut
+
+__PACKAGE__->has_many(
+  "design_oligo_loci",
+  "LIMS2::Model::Schema::Result::DesignOligoLocus",
+  { "foreign.chr_name" => "self.chromosome" },
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-05 09:46:51
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:lXxiokqJvdj4J74pIaUrrg
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-09 16:33:44
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:CBZjS5/nngnSe94ikopizQ
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
-
-sub as_hash {
-    my $self = shift;
-
-    return {
-        chromosome => $self->chromosome
-    };
-}
-
 __PACKAGE__->meta->make_immutable;
 1;

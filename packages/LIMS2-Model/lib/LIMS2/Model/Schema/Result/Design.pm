@@ -48,7 +48,7 @@ __PACKAGE__->table("designs");
   data_type: 'text'
   is_nullable: 1
 
-=head2 created_user
+=head2 created_by
 
   data_type: 'integer'
   is_foreign_key: 1
@@ -74,9 +74,8 @@ __PACKAGE__->table("designs");
 
 =head2 validated_by_annotation
 
-  data_type: 'boolean'
-  default_value: false
-  is_nullable: 0
+  data_type: 'text'
+  is_nullable: 1
 
 =cut
 
@@ -85,7 +84,7 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_nullable => 0 },
   "design_name",
   { data_type => "text", is_nullable => 1 },
-  "created_user",
+  "created_by",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
   "created_at",
   {
@@ -99,7 +98,7 @@ __PACKAGE__->add_columns(
   "phase",
   { data_type => "integer", is_nullable => 0 },
   "validated_by_annotation",
-  { data_type => "boolean", default_value => \"false", is_nullable => 0 },
+  { data_type => "text", is_nullable => 1 },
 );
 
 =head1 PRIMARY KEY
@@ -116,7 +115,7 @@ __PACKAGE__->set_primary_key("design_id");
 
 =head1 RELATIONS
 
-=head2 created_user
+=head2 created_by
 
 Type: belongs_to
 
@@ -125,9 +124,9 @@ Related object: L<LIMS2::Model::Schema::Result::User>
 =cut
 
 __PACKAGE__->belongs_to(
-  "created_user",
+  "created_by",
   "LIMS2::Model::Schema::Result::User",
-  { user_id => "created_user" },
+  { user_id => "created_by" },
   { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
@@ -192,10 +191,25 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-05 09:46:51
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:v9IBZ9gEgT/qEqkrWGHwCQ
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-09 16:33:44
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:UGSEOEgN/rW6Wpmb/MaRMQ
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
+
+sub as_hash {
+    my $self = shift;
+
+    return {
+        design_id          => $self->design_id,
+        design_name        => $self->design_name,
+        created_by         => $self->created_by->user_name,
+        created_at         => $self->created_at->iso6801,
+        comments           => [ map { $_->as_hash } $self->design_comments ],
+        oligos             => [ map { $_->as_hash } $self->design_oligos ],
+        genotyping_primers => [ map { $_->as_hash } $self->genotyping_primers ],
+    };    
+}
+
 __PACKAGE__->meta->make_immutable;
 1;

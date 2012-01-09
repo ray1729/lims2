@@ -3,19 +3,6 @@
 -- You should set role to htgt_dba before running this.
 --
 
-CREATE ROLE lims2_admin NOLOGIN NOINHERIT;
-CREATE ROLE lims2_rw  NOLOGIN NOINHERIT;
-CREATE ROLE lims2_ro NOLOGIN NOINHERIT;
-CREATE ROLE lims2_webapp WITH ENCRYPTED PASSWORD 'utohs9Aeyei3' LOGIN INHERIT IN ROLE lims2_ro;
-
-CREATE ROLE "rm7@sanger.ac.uk" NOLOGIN INHERIT IN ROLE lims2_rw;
-GRANT "rm7@sanger.ac.uk" TO lims2_webapp;
-
-GRANT lims2_admin  TO rm7;
-GRANT lims2_rw     TO rm7;
-GRANT lims2_ro     TO rm7;
-GRANT lims2_webapp TO rm7;
-
 DROP SCHEMA IF EXISTS public CASCADE;
 CREATE SCHEMA public AUTHORIZATION lims2_admin;
 REVOKE ALL ON SCHEMA public FROM PUBLIC;

@@ -38,9 +38,15 @@ __PACKAGE__->table("bac_clone_loci");
 
 =head1 ACCESSORS
 
-=head2 bac_clone_id
+=head2 bac_name
 
-  data_type: 'integer'
+  data_type: 'text'
+  is_foreign_key: 1
+  is_nullable: 0
+
+=head2 bac_library
+
+  data_type: 'text'
   is_foreign_key: 1
   is_nullable: 0
 
@@ -50,18 +56,18 @@ __PACKAGE__->table("bac_clone_loci");
   is_foreign_key: 1
   is_nullable: 0
 
-=head2 chromosome
+=head2 chr_name
 
   data_type: 'text'
   is_foreign_key: 1
   is_nullable: 0
 
-=head2 bac_start
+=head2 chr_start
 
   data_type: 'integer'
   is_nullable: 0
 
-=head2 bac_end
+=head2 chr_end
 
   data_type: 'integer'
   is_nullable: 0
@@ -69,15 +75,17 @@ __PACKAGE__->table("bac_clone_loci");
 =cut
 
 __PACKAGE__->add_columns(
-  "bac_clone_id",
-  { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
+  "bac_name",
+  { data_type => "text", is_foreign_key => 1, is_nullable => 0 },
+  "bac_library",
+  { data_type => "text", is_foreign_key => 1, is_nullable => 0 },
   "assembly",
   { data_type => "text", is_foreign_key => 1, is_nullable => 0 },
-  "chromosome",
+  "chr_name",
   { data_type => "text", is_foreign_key => 1, is_nullable => 0 },
-  "bac_start",
+  "chr_start",
   { data_type => "integer", is_nullable => 0 },
-  "bac_end",
+  "chr_end",
   { data_type => "integer", is_nullable => 0 },
 );
 
@@ -85,7 +93,9 @@ __PACKAGE__->add_columns(
 
 =over 4
 
-=item * L</bac_clone_id>
+=item * L</bac_name>
+
+=item * L</bac_library>
 
 =item * L</assembly>
 
@@ -93,7 +103,7 @@ __PACKAGE__->add_columns(
 
 =cut
 
-__PACKAGE__->set_primary_key("bac_clone_id", "assembly");
+__PACKAGE__->set_primary_key("bac_name", "bac_library", "assembly");
 
 =head1 RELATIONS
 
@@ -123,11 +133,11 @@ Related object: L<LIMS2::Model::Schema::Result::BacClone>
 __PACKAGE__->belongs_to(
   "bac_clone",
   "LIMS2::Model::Schema::Result::BacClone",
-  { bac_clone_id => "bac_clone_id" },
+  { bac_library => "bac_library", bac_name => "bac_name" },
   { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
-=head2 chromosome_rel
+=head2 chromosome
 
 Type: belongs_to
 
@@ -136,15 +146,15 @@ Related object: L<LIMS2::Model::Schema::Result::Chromosome>
 =cut
 
 __PACKAGE__->belongs_to(
-  "chromosome_rel",
+  "chromosome",
   "LIMS2::Model::Schema::Result::Chromosome",
-  { chromosome => "chromosome" },
+  { chromosome => "chr_name" },
   { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-05 09:46:51
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:gTHRL4zK4lZQsSn/ggFU3A
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-09 16:35:53
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:qVIfHtGDz0RslP7wyeLXvA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
@@ -154,9 +164,9 @@ sub as_hash {
 
     return {
         assembly   => $self->assembly,
-        chromosome => $self->chromosome,
-        bac_start  => $self->bac_start,
-        bac_end    => $self->bac_end
+        chr_name   => $self->chr_name,
+        chr_start  => $self->bac_start,
+        chr_end    => $self->bac_end
     };
 }
 

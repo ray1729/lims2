@@ -29,9 +29,14 @@ has cache => (
 
 {
     const my %CONSTRAINT_FOR => (
-        existing_assembly    => { result_set_name => 'Assembly',   column_name => 'assembly' },
-        existing_bac_library => { result_set_name => 'BacLibrary', column_name => 'bac_library' },
-        existing_chromosome  => { result_set_name => 'Chromosome', column_name => 'chromosome' },
+        existing_assembly                => { result_set_name => 'Assembly',              column_name => 'assembly' },
+        existing_bac_library             => { result_set_name => 'BacLibrary',            column_name => 'bac_library' },
+        existing_chromosome              => { result_set_name => 'Chromosome',            column_name => 'chromosome' },
+        existing_design_type             => { result_set_name => 'DesignType',            column_name => 'design_type' },
+        existing_design_comment_category => { result_set_name => 'DesignCommentCategory', column_name => 'design_comment_category' },
+        existing_design_oligo_type       => { result_set_name => 'DesignOligoType',       column_name => 'design_oligo_type' },
+        existing_genotyping_primer_type  => { result_set_name => 'GenotypingPrimerType',  column_name => 'genotyping_primer_type' },
+        existing_user                    => { result_set_name => 'User',                  column_name => 'user_name' },
     );
 
     sub constraint_for {

@@ -45,7 +45,7 @@ __PACKAGE__->table("design_comment_categories");
   is_nullable: 0
   sequence: 'design_comment_categories_design_comment_category_id_seq'
 
-=head2 design_comment_category_name
+=head2 desgin_comment_category_name
 
   data_type: 'text'
   is_nullable: 0
@@ -60,7 +60,7 @@ __PACKAGE__->add_columns(
     is_nullable       => 0,
     sequence          => "design_comment_categories_design_comment_category_id_seq",
   },
-  "design_comment_category_name",
+  "desgin_comment_category_name",
   { data_type => "text", is_nullable => 0 },
 );
 
@@ -78,19 +78,19 @@ __PACKAGE__->set_primary_key("design_comment_category_id");
 
 =head1 UNIQUE CONSTRAINTS
 
-=head2 C<design_comment_categories_design_comment_category_name_key>
+=head2 C<design_comment_categories_desgin_comment_category_name_key>
 
 =over 4
 
-=item * L</design_comment_category_name>
+=item * L</desgin_comment_category_name>
 
 =back
 
 =cut
 
 __PACKAGE__->add_unique_constraint(
-  "design_comment_categories_design_comment_category_name_key",
-  ["design_comment_category_name"],
+  "design_comment_categories_desgin_comment_category_name_key",
+  ["desgin_comment_category_name"],
 );
 
 =head1 RELATIONS
@@ -113,8 +113,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-05 09:46:51
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:n9AP/qHi2FfUIpQ5lmJn8A
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-09 16:33:44
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:AnG2q0ZmmNVRRrGzFaRLAg
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

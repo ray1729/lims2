@@ -23,9 +23,6 @@ GRANT SELECT ON roles TO lims2_ro;
 GRANT SELECT, INSERT, UPDATE, DELETE ON roles TO lims2_rw;
 GRANT USAGE ON SEQUENCE roles_role_id_seq TO lims2_rw;
 
-INSERT INTO roles (role_name)
-VALUES ('admin'), ('edit'),('read');
-
 CREATE TABLE user_role (
        user_id INTEGER NOT NULL REFERENCES users(user_id),
        role_id INTEGER NOT NULL REFERENCES roles(role_id),
@@ -136,19 +133,11 @@ CREATE TABLE assemblies (
 GRANT SELECT ON assemblies TO lims2_ro;
 GRANT SELECT, INSERT, UPDATE, DELETE ON assemblies TO lims2_rw;
 
-INSERT INTO assemblies(assembly)
-VALUES ('NCBIM34'), ('NCBIM36'), ('NCBIM37');
-
 CREATE TABLE chromosomes (
-       chromosome        TEXT PRIMARY KEY
+       chromosome  TEXT PRIMARY KEY
 );
 GRANT SELECT ON chromosomes TO lims2_ro;
 GRANT SELECT, INSERT, UPDATE, DELETE ON chromosomes TO lims2_rw;
-
-INSERT INTO chromosomes (chromosome)
-VALUES ('1'), ('2'), ('3'), ('4'), ('5'), ('6'), ('7'), ('8'), ('9'),
-       ('10'), ('11'), ('12'), ('13'), ('14'), ('15'), ('16'),
-       ('17'), ('18'), ('19'), ('X'), ('Y');
 
 CREATE TABLE bac_libraries (
        bac_library    TEXT PRIMARY KEY
@@ -156,25 +145,24 @@ CREATE TABLE bac_libraries (
 GRANT SELECT ON bac_libraries TO lims2_ro;
 GRANT SELECT, INSERT, UPDATE, DELETE ON bac_libraries TO lims2_rw;
 
-INSERT INTO bac_libraries (bac_library) VALUES ('129'), ('black6');
-
 CREATE TABLE bac_clones (
-       bac_clone_id     SERIAL PRIMARY KEY,
        bac_name         TEXT NOT NULL,
        bac_library      TEXT NOT NULL REFERENCES bac_libraries(bac_library),
-       UNIQUE ( bac_library, bac_name )
+       PRIMARY KEY (bac_name, bac_library)
 );
 GRANT SELECT ON bac_clones TO lims2_ro;
 GRANT SELECT, INSERT, UPDATE, DELETE ON bac_clones TO lims2_rw;
-GRANT USAGE ON SEQUENCE bac_clones_bac_clone_id_seq TO lims2_rw;
 
 CREATE TABLE bac_clone_loci (
-       bac_clone_id     INTEGER NOT NULL REFERENCES bac_clones(bac_clone_id),
+       bac_name         TEXT NOT NULL,
+       bac_library      TEXT NOT NULL,
        assembly         TEXT NOT NULL REFERENCES assemblies(assembly),
-       chromosome       TEXT NOT NULL REFERENCES chromosomes(chromosome),
-       bac_start        INTEGER NOT NULL,
-       bac_end          INTEGER NOT NULL,
-       PRIMARY KEY(bac_clone_id, assembly)
+       chr_name         TEXT NOT NULL REFERENCES chromosomes(chromosome),
+       chr_start        INTEGER NOT NULL,
+       chr_end          INTEGER NOT NULL,
+       PRIMARY KEY(bac_name, bac_library, assembly),
+       FOREIGN KEY(bac_name, bac_library) REFERENCES bac_clones(bac_name, bac_library),
+       CHECK (chr_end > chr_start )
 );
 GRANT SELECT ON bac_clone_loci TO lims2_ro;
 GRANT SELECT, INSERT, UPDATE, DELETE ON bac_clone_loci TO lims2_rw;
@@ -185,17 +173,14 @@ CREATE TABLE design_types (
 GRANT SELECT ON design_types TO lims2_ro;
 GRANT SELECT, INSERT, UPDATE, DELETE ON design_types TO lims2_rw;
 
-INSERT INTO design_types(design_type)
-VALUES ('conditional'), ('deletion'), ('artificial-intron'), ('cre-bac');
-
 CREATE TABLE designs (
        design_id                INTEGER PRIMARY KEY,
        design_name              TEXT,
-       created_user             INTEGER NOT NULL REFERENCES users(user_id),
+       created_by               INTEGER NOT NULL REFERENCES users(user_id),
        created_at               TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
        design_type              TEXT NOT NULL REFERENCES design_types(design_type),
        phase                    INTEGER NOT NULL,
-       validated_by_annotation  BOOLEAN NOT NULL DEFAULT FALSE
+       validated_by_annotation  TEXT CHECK (validated_by_annotation IS NULL OR validated_by_annotation IN ( 'yes', 'no', 'maybe' ))
 );
 GRANT SELECT ON designs TO lims2_ro;
 GRANT SELECT, INSERT, UPDATE, DELETE ON designs TO lims2_rw;
@@ -206,9 +191,6 @@ CREATE TABLE design_oligo_types (
 
 GRANT SELECT ON design_oligo_types TO lims2_ro;
 GRANT SELECT, INSERT, UPDATE, DELETE ON design_oligo_types TO lims2_rw;
-
-INSERT INTO design_oligo_types(design_oligo_type)
-VALUES ('G5'), ('U5'), ('U3'), ('D5'), ('D3'), ('G3');
 
 CREATE TABLE design_oligos (
        design_id         INTEGER NOT NULL REFERENCES designs(design_id),
@@ -224,7 +206,7 @@ CREATE TABLE design_oligo_loci (
        design_id         INTEGER NOT NULL,
        design_oligo_type TEXT NOT NULL,
        assembly          TEXT NOT NULL REFERENCES assemblies(assembly),
-       chr_name          TEXT NOT NULL,
+       chr_name          TEXT NOT NULL REFERENCES chromosomes(chromosome),
        chr_start         INTEGER NOT NULL,
        chr_end           INTEGER NOT NULL,
        chr_strand        INTEGER NOT NULL CHECK (chr_strand IN (1, -1)),
@@ -238,25 +220,11 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON design_oligo_loci TO lims2_rw;
 
 CREATE TABLE design_comment_categories (
        design_comment_category_id      SERIAL PRIMARY KEY,
-       design_comment_category_name    TEXT NOT NULL UNIQUE
+       desgin_comment_category_name    TEXT NOT NULL UNIQUE
 );
 GRANT SELECT ON design_comment_categories TO lims2_ro;
 GRANT SELECT, INSERT, UPDATE, DELETE ON design_comment_categories TO lims2_rw;
 GRANT USAGE ON SEQUENCE design_comment_categories_design_comment_category_id_seq TO lims2_rw;
-
-INSERT INTO design_comment_categories(design_comment_category_name)
- VALUES ('Alternative variant not targeted'),
-        ('NMD Rescue'),
-        ('Possible Reinitiation'),
-        ('Non protein coding locus'),
-        ('Conserved elements'),
-        ('Recovery design'),
-        ('No NMD'),
-        ('Other'),
-        ('No BACs available'),
-        ('Warning!'),
-        ('Upstream domain unaffected'),
-        ('Overlapping locus');      
 
 CREATE TABLE design_comments (
        design_comment_id          SERIAL PRIMARY KEY,
@@ -289,19 +257,11 @@ CREATE TABLE genotyping_primer_types (
 GRANT SELECT ON genotyping_primer_types TO lims2_ro;
 GRANT SELECT, INSERT, UPDATE, DELETE ON genotyping_primer_types TO lims2_rw;
 
-INSERT INTO genotyping_primer_types(genotyping_primer_type)
-VALUES ('GF1'), ('GF2'), ('GF3'), ('GF4'),
-       ('GR1'), ('GR2'), ('GR3'), ('GR4'),
-       ('LF1'), ('LF2'), ('LF3'),
-       ('LR1'), ('LR2'), ('LR3'),
-       ('PNFLR1'), ('PNFLR2'), ('PNFLR3'),
-       ('EX3'), ('EX32'), ('EX5'), ('EX52');
-
 CREATE TABLE genotyping_primers (
        genotyping_primer_id     SERIAL PRIMARY KEY,
        genotyping_primer_type   TEXT NOT NULL REFERENCES genotyping_primer_types(genotyping_primer_type),
        design_id                INTEGER NOT NULL REFERENCES designs(design_id),
-       seq                      TEXT NOT NULL
+       genotyping_primer_seq    TEXT NOT NULL
 );
 GRANT SELECT ON genotyping_primers TO lims2_ro;
 GRANT SELECT, INSERT, UPDATE, DELETE ON genotyping_primers TO lims2_rw;

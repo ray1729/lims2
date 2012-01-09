@@ -59,6 +59,7 @@ __PACKAGE__->table("design_oligo_loci");
 =head2 chr_name
 
   data_type: 'text'
+  is_foreign_key: 1
   is_nullable: 0
 
 =head2 chr_start
@@ -86,7 +87,7 @@ __PACKAGE__->add_columns(
   "assembly",
   { data_type => "text", is_foreign_key => 1, is_nullable => 0 },
   "chr_name",
-  { data_type => "text", is_nullable => 0 },
+  { data_type => "text", is_foreign_key => 1, is_nullable => 0 },
   "chr_start",
   { data_type => "integer", is_nullable => 0 },
   "chr_end",
@@ -128,6 +129,21 @@ __PACKAGE__->belongs_to(
   { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
+=head2 chromosome
+
+Type: belongs_to
+
+Related object: L<LIMS2::Model::Schema::Result::Chromosome>
+
+=cut
+
+__PACKAGE__->belongs_to(
+  "chromosome",
+  "LIMS2::Model::Schema::Result::Chromosome",
+  { chromosome => "chr_name" },
+  { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
+);
+
 =head2 design_oligo
 
 Type: belongs_to
@@ -144,10 +160,23 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-05 09:46:51
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:5SwA9N5jdRPGhBFr4YPkGA
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-09 16:35:53
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:j1gszcnK7ektewWqeq6b9w
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
+
+sub as_hash {
+    my $self = shift;
+
+    return {
+        assembly   => $self->assembly,
+        chr_name   => $self->chr_name,
+        chr_start  => $self->chr_start,
+        chr_end    => $self->chr_end,
+        chr_strand => $self->chr_strand
+    };
+}
+
 __PACKAGE__->meta->make_immutable;
 1;

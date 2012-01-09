@@ -118,7 +118,7 @@ Related object: L<LIMS2::Model::Schema::Result::Design>
 __PACKAGE__->has_many(
   "designs",
   "LIMS2::Model::Schema::Result::Design",
-  { "foreign.created_user" => "self.user_id" },
+  { "foreign.created_by" => "self.user_id" },
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
@@ -153,8 +153,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-05 09:46:51
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:9Of/E8jEVufhEBsBog6r2Q
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-09 16:33:45
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:OCLKlL5ZlrZrc1Txcf7x9A
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

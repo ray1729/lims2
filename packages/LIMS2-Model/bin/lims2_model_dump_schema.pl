@@ -29,8 +29,9 @@ my %REL_NAME_MAP = (
     # Clashes with column names
     assembly               => 'assembly_rel',
     design_type            => 'design_type_rel',
-    chromosome             => 'chromosome_rel',
+    chr_name               => 'chromosome',
     bac_library            => 'bac_library_rel',
+    design_oligo_type      => 'design_oligo_type_rel',
     genotyping_primer_type => 'genotyping_primer_type_rel',
 );
 
@@ -39,6 +40,7 @@ my $pg_port      = $ENV{PGPORT};
 my $pg_database  = $ENV{PGDATABASE};
 my $pg_schema    = 'public';
 my $pg_user      = $ENV{USER};
+my $pg_role      = undef;
 my $schema_class = 'LIMS2::Model::Schema';
 my $lib_dir      = dir( $FindBin::Bin )->parent->subdir( 'lib' );
 my @components   = qw( InflateColumn::DateTime );
@@ -48,6 +50,7 @@ GetOptions(
     'port=s'         => \$pg_port,
     'dbname=s'       => \$pg_database,
     'user=s'         => \$pg_user,
+    'role=s'         => \$pg_role,
     'schema=s'       => \$pg_schema,
     'schema-class=s' => \$schema_class,
     'lib-dir=s'      => \$lib_dir,
@@ -70,6 +73,13 @@ while ( not defined $pg_password ) {
     $pg_password = read_password( $pw_prompt );
 }
 
+my %opts;
+
+if ( $pg_role ) {
+    die "Invalid role: $pg_role" if $pg_role =~ m/\"/;
+    $opts{on_connect_do} = [ sprintf( 'SET ROLE "%s"', $pg_role ) ];
+}
+
 make_schema_at(
     $schema_class,
     {   debug          => 0,
@@ -80,6 +90,6 @@ make_schema_at(
         moniker_map    => \%MONIKER_MAP,
         rel_name_map   => \%REL_NAME_MAP
     },
-    [ $dsn, $pg_user, $pg_password, {} ]
+    [ $dsn, $pg_user, $pg_password, {}, \%opts ]
 );
 
