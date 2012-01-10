@@ -18,6 +18,8 @@ use YAML::Any qw( Load );
 use Iterator::Simple qw( iterator );
 use Const::Fast;
 
+use Smart::Comments;
+
 const my $COMMENT_RX   => qr/^#/;
 const my $DOC_START_RX => qr/^---/;
 
@@ -28,21 +30,16 @@ sub iyaml {
 
     my $line = $ifh->getline;
 
-    # Skip leading comments    
-    while ( defined $line and $line =~ $COMMENT_RX ) {
+    # Skip everything up to the first document start
+    while ( defined $line and $line !~ $DOC_START_RX ) {
         $line = $ifh->getline;
     }
 
     return iterator {
         my $document = $line;
-        while ( ! $ifh->eof ) {
-            $line = $ifh->getline;
-            if ( $line !~ $DOC_START_RX ) {
-                $document .= $line;
-            }
-            else {
-                last;
-            }            
+        while ( defined( $line = $ifh->getline ) ) {
+            last if $line =~ $DOC_START_RX;
+            $document .= $line;
         }
         if ( $document ) {
             return Load($document);
