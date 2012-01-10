@@ -24,6 +24,33 @@ sub list_bac_libraries {
     [ map { $_->bac_library } $self->schema->resultset( 'BacLibrary' )->all ];
 }
 
+sub delete_bac_library {
+    my ( $self, $params ) = @_;
+
+    my $validated_params = $self->check_params( 'delete_bac_library', $params );
+
+    my %search = slice( $validated_params, 'bac_library' );
+    my $bac_library = $self->schema->resultset( 'BacLibrary' )->find( \%search )
+        or $self->throw(
+            NotFound => {
+                entity_class  => 'BacLibrary',
+                search_params => \%search
+            }
+        );
+
+    if ( $validated_params->{cascade} ) {
+        my $bac_rs = $bac_library->search_related_rs( 'bac_clones' => {} );
+        while ( my $bac = $bac_rs->next ) {
+            $bac->loci_rs->delete;
+            $bac->delete;
+        }
+    }
+
+    $bac_library->delete;
+
+    return 1;
+}
+
 sub create_bac_clone {
     my ( $self, $params ) = @_;
 
@@ -60,7 +87,7 @@ sub delete_bac_clone {
 
     $bac_clone->delete;
 
-    return;
+    return 1;
 }
 
 1;
