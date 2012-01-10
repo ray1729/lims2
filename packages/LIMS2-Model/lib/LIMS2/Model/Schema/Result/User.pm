@@ -158,5 +158,25 @@ __PACKAGE__->has_many(
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
+
+=head2 roles
+
+Type: many_to_many
+
+Related object: L<LIMS2::Model::Schema::Result::Role>
+
+=cut
+
+__PACKAGE__->many_to_many( 'roles' => 'user_roles' => 'role' );
+
+sub as_hash {
+    my $self = shift;
+
+    return {
+        user_name => $self->user_name,
+        roles     => [ map { $_->role_name } $self->roles ]
+    };
+}
+    
 __PACKAGE__->meta->make_immutable;
 1;
