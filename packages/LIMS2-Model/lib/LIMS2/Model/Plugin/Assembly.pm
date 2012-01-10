@@ -9,20 +9,33 @@ use namespace::autoclean;
 
 requires qw( schema check_params throw );
 
+sub pspec_create_assembly {
+    return {
+        assembly => { validate => 'non_empty_string' }
+    };    
+}
+
 sub create_assembly {
     my ( $self, $params ) = @_;
 
-    my $validated_params = $self->check_params( 'create_assembly', $params );
+    my $validated_params = $self->check_params( $params, $self->pspec_create_assembly );
 
     my $assembly = $self->schema->resultset( 'Assembly' )->create( $validated_params );
 
     return $assembly->as_hash;
 }
 
+sub pspec_delete_assembly {
+    return {
+        assembly => { validate => 'existing_assembly' },
+        cascade  => { validate => 'boolean', optional => 1 }
+    };    
+}
+
 sub delete_assembly {
     my ( $self, $params ) = @_;
 
-    my $validated_params = $self->check_params( 'delete_assembly', $params );
+    my $validated_params = $self->check_params( $params, $self->pspec_delete_assembly);
 
     my %search = slice( $validated_params, 'assembly' );
     my $assembly = $self->schema->resultset( 'Assembly' )->find( \%search )

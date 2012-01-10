@@ -39,10 +39,17 @@ sub user_id_for {
     return $user->user_id;
 }
 
+sub pspec_create_user {
+    return {
+        user_name => { validate => 'user_name' },
+        roles     => { validate => 'existing_role', optional => 1 }
+    };
+}
+
 sub create_user {
     my ( $self, $params ) = @_;
 
-    my $validated_params = $self->check_params( 'create_user', $params );
+    my $validated_params = $self->check_params( $params, $self->pspec_create_user );
 
     my $user = $self->schema->resultset( 'User' )->create( { slice $validated_params, 'user_name' } );
 
@@ -59,10 +66,16 @@ sub create_user {
     return $user->as_hash;
 }
 
+sub pspec_delete_user {
+    return {
+        user_name => { validate => 'user_name' }
+    };
+}
+
 sub delete_user {
     my ( $self, $params ) = @_;
 
-    my $validated_params = $self->check_params( 'delete_user', $params );
+    my $validated_params = $self->check_params( $params, $self->pspec_delete_user );
 
     my $user = $self->schema->resultset( 'User' )->find( $validated_params )
         or $self->throw(

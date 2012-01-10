@@ -5,6 +5,7 @@ use warnings FATAL => 'all';
 
 use Test::Most;
 use Data::FormValidator;
+use LIMS2::Model;
 use LIMS2::Model::DBConnect;
 
 use_ok 'LIMS2::Model::FormValidator::ProfileFactory';
@@ -12,22 +13,23 @@ use_ok 'LIMS2::Model::FormValidator::ProfileFactory';
 ok my $schema = LIMS2::Model::DBConnect->connect( 'LIMS2_TEST' ),
     'connect to LIMS2_TEST';
 
-ok my $factory = LIMS2::Model::FormValidator::ProfileFactory->new( schema => $schema ),
-    'create ProfileFactory';
+ok my $model = LIMS2::Model->new( schema => $schema ),
+    'created model';
 
-isa_ok $factory, 'LIMS2::Model::FormValidator::ProfileFactory';
+can_ok $model, 'check_params';
 
-can_ok $factory, 'profile_for';
+ok my $pspec = $model->pspec_create_bac_clone,
+    'parameter specification for create_bac_clone';
 
-ok my $create_bac_clone_profile = $factory->profile_for( 'create_bac_clone' ),
-    'profile_for create_bac_clone';
+ok my $dfv_profile = $model->form_validator->dfv_profile( $pspec ),
+    'create Data::FormValidater profile from parameter spec';
 
-{
+{   
     my $res = Data::FormValidator->check(
         {
             bac_library => 'black6',
             bac_name    => 'foo'
-        }, $create_bac_clone_profile
+        }, $dfv_profile
     );    
 
     isa_ok $res, 'Data::FormValidator::Results';
@@ -39,7 +41,7 @@ ok my $create_bac_clone_profile = $factory->profile_for( 'create_bac_clone' ),
     my $res = Data::FormValidator->check(
         {
             bac_library => '128'
-        }, $create_bac_clone_profile
+        }, $dfv_profile
     );
 
     isa_ok $res, 'Data::FormValidator::Results';

@@ -4,14 +4,12 @@ use strict;
 use warnings FATAL => 'all';
 
 use Moose;
-use Data::FormValidator;
 require LIMS2::Model::DBConnect;
-require LIMS2::Model::FormValidator::ProfileFactory;
+require LIMS2::Model::FormValidator;
 require LIMS2::Model::Error::Validation;
 require LIMS2::Model::Error::NotFound;
-use DateTime::Format::ISO8601;
-use Module::Pluggable::Object;
-use Const::Fast;
+require DateTime::Format::ISO8601;
+require Module::Pluggable::Object;
 use namespace::autoclean;
 
 # XXX TODO: authorization checks?
@@ -51,17 +49,17 @@ sub _build_schema {
     return LIMS2::Model::DBConnect->connect( 'LIMS2_DB' );
 }
 
-has profile_factory => (
+has form_validator => (
     is         => 'ro',
-    isa        => 'LIMS2::Model::FormValidator::ProfileFactory',
+    isa        => 'LIMS2::Model::FormValidator',
     lazy_build => 1,
-    handles    => [ 'profile_for' ]
+    handles    => [ 'check_params' ]
 );
 
-sub _build_profile_factory {
+sub _build_form_validator {
     my $self = shift;
 
-    LIMS2::Model::FormValidator::ProfileFactory->new( schema => $self->schema );
+    return LIMS2::Model::FormValidator->new( model => $self );
 }
 
 sub throw {
@@ -74,46 +72,10 @@ sub throw {
     $error_class->throw( $args );
 }
 
-sub check_params {
-    my ( $self, $profile_name, $params ) = @_;
+sub parse_date_time {
+    my ( $self, $date_time ) = @_;
 
-    my $results = Data::FormValidator->check( $params, $self->profile_for( $profile_name ) );
-    
-    if ( ! $results->success ) {
-        $self->throw( Validation => { results => $results } );
-    }
-
-    my $validated_params = $results->valid;
-    
-    return $self->canonicalize_params( $validated_params );
-}
-
-sub canonicalize_params {
-    my ( $self, $params ) = @_;
-
-    my %INFLATE = (
-        created_at              => sub { DateTime::Format::ISO8601->parse_datetime( shift ) },
-        created_by              => sub { $self->user_id_for( shift ) },
-        desgin_comment_category => sub { $self->design_comment_category_id_for( shift ) },
-    );
-
-    my %RENAME = (
-        design_comment_category => 'design_comment_category_id'
-    );
-
-    my %canonicalized_params;
-
-    while ( my ( $k, $v ) = each %{ $params } ) {
-        if ( $INFLATE{$k} ) {
-            $v = $INFLATE{$k}->($v);
-        }
-        if ( $RENAME{$k} ) {
-            $k = $RENAME{$k};
-        }
-        $canonicalized_params{$k} = $v;
-    }
-
-    return \%canonicalized_params;    
+    DateTime::Format::ISO8601->parse_datetime( $date_time );
 }
 
 sub plugins {
