@@ -206,7 +206,7 @@ sub as_hash {
         design_type        => $self->design_type,
         phase              => $self->phase,
         created_by         => $self->created_by->user_name,
-        created_at         => $self->created_at->iso6801,
+        created_at         => $self->created_at->iso8601,
         comments           => [ map { $_->as_hash } $self->design_comments ],
         oligos             => [ map { $_->as_hash } $self->design_oligos ],
         genotyping_primers => [ map { $_->as_hash } $self->genotyping_primers ],
