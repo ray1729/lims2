@@ -5,7 +5,7 @@ use warnings FATAL => 'all';
 
 use Moose;
 use Log::Log4perl qw( :levels );
-use LIMS2::DBConnect;
+use LIMS2::Model::DBConnect;
 use namespace::autoclean;
 
 extends qw( MooseX::App::Cmd::Command );
@@ -54,7 +54,7 @@ has log_layout => (
 
 has schema => (
     is            => 'ro',
-    isa           => 'LIMS2::Schema',
+    isa           => 'LIMS2::Model::Schema',
     traits        => [ 'NoGetopt' ],
     lazy_build    => 1
 );
@@ -62,7 +62,7 @@ has schema => (
 sub _build_schema {
     my $self = shift;
 
-    LIMS2::DBConnect->connect( 'LIMS2_DB' );
+    LIMS2::Model::DBConnect->connect( 'LIMS2_DB' );
 }
 
 has edit_user => (
@@ -74,17 +74,17 @@ has edit_user => (
     default       => $ENV{USER}
 );
 
-has entity_manager => (
+has model => (
     is            => 'ro',
-    isa           => 'LIMS2::EntityManager',
+    isa           => 'LIMS2::Model',
     traits        => [ 'NoGetopt' ],
     lazy_build    => 1
 );
 
-sub _build_entity_manager {
+sub _build_model {
     my $self = shift;
-    require LIMS2::EntityManager;
-    LIMS2::EntityManager->new( user_name => $self->edit_user, schema => $self->schema );
+    require LIMS2::Model;
+    LIMS2::Model->new( audit_user => $self->edit_user, schema => $self->schema );
 }
 
 sub BUILD {
@@ -103,22 +103,15 @@ override command_names => sub {
     # from App::Cmd::Command
     my ( $name ) = (ref( $_[0] ) || $_[0]) =~ /([^:]+)$/;
 
-
     # split camel case into words
     my @parts = $name =~ m/[[:upper:]](?:[[:upper:]]+|[[:lower:]]*)(?=\Z|[[:upper:]])/g;
 
-
     if ( @parts ) {
-
         return join '-', map { lc }  @parts;
-
     }
-
     else {
         return lc $name;
-
     }
-
 };
 
 __PACKAGE__->meta->make_immutable;
