@@ -11,6 +11,7 @@ use LIMS2::Model::FormValidator::Constraints qw( FV_strand
                                                  FV_validated_by_annotation
                                                  FV_boolean
                                                  FV_dna_seq
+                                                 FV_user_name
                                            );
 require LIMS2::Model::FormValidator::ConstraintFactory;
 use namespace::autoclean;
@@ -53,6 +54,30 @@ sub profile_for {
     return $profile;
 }
 
+sub _profile_create_user {
+    my $self = shift;
+
+    return {
+        required => [ qw( user_name ) ],
+        optional => [ qw( roles ) ],
+        constraint_methods => {
+            user_name => FV_user_name,
+            roles     => $self->constraint_for( 'existing_role' )
+        }
+    };
+}
+
+sub _profile_delete_user {
+    my $self = shift;
+
+    return {
+        required => [ qw( user_name ) ],
+        constraint_methods => {
+            user_name => FV_user_name
+        }
+    }
+}
+
 sub _profile_create_assembly {
     my $self = shift;
 
@@ -62,6 +87,19 @@ sub _profile_create_assembly {
             assembly => qr/^\w+$/
         }
     };
+}
+
+sub _profile_delete_assembly {
+    my $self = shift;
+
+    return {
+        required => [ qw( assembly ) ],
+        optional => [ qw( cascade ) ],
+        constraint_methods => {
+            assembly => qr/^\w+$/,
+            cascade  => FV_boolean
+        }
+    };    
 }
 
 sub _profile_create_bac_library {
@@ -75,6 +113,19 @@ sub _profile_create_bac_library {
     };
 }
 
+sub _profile_delete_bac_library {
+    my $self = shift;
+
+    return {
+        required => [ qw( bac_library ) ],
+        optional => [ qw( cascade ) ],
+        constraint_methods => {
+            bac_library => $self->constraint_for( 'existing_bac_library' ),
+            cascade     => FV_boolean
+        }
+    };    
+}
+
 sub _profile_create_bac_clone {
     my $self = shift;
 
@@ -83,7 +134,7 @@ sub _profile_create_bac_clone {
         optional => [ qw( loci ) ],
         constraint_methods => {
             bac_library => $self->constraint_for( 'existing_bac_library' ),
-            bac_name    => qr/^[\w()-]+$/
+            bac_name    => qr/^[\w()-]+$/,
         }
     };
 }
@@ -98,12 +149,12 @@ sub _profile_create_bac_locus {
     my $self = shift;
 
     return {
-        required => [ qw( assembly chromosome bac_start bac_end ) ],
+        required => [ qw( assembly chr_name chr_start chr_end ) ],
         constraint_methods => {
-            assembly     => $self->constraint_for( 'existing_assembly' ),
-            chromosome   => $self->constraint_for( 'existing_chromosome' ),
-            bac_start    => FV_num_int,
-            bac_end      => FV_num_int
+            assembly   => $self->constraint_for( 'existing_assembly' ),
+            chr_name   => $self->constraint_for( 'existing_chromosome' ),
+            chr_start  => FV_num_int,
+            chr_end    => FV_num_int
         }
     };
 }
@@ -138,6 +189,19 @@ sub _profile_create_design {
     };    
 }
 
+sub _profile_delete_design {
+    my $self = shift;
+
+    return {
+        required => [ qw( design_id ) ],
+        optional => [ qw( cascade ) ],
+        constraint_methods => {
+            design_id => FV_num_int,
+            castaced  => FV_boolean
+        }
+    };
+}
+
 sub _profile_create_design_comment {
     my $self = shift;
 
@@ -167,7 +231,7 @@ sub _profile_create_design_oligo {
         optional => [ qw( loci ) ],
         constraint_methods => {
             design_oligo_type => $self->constraint_for( 'existing_design_oligo_type' ),
-            design_oligo_seq  => FV_dna_seq
+            design_oligo_seq  => FV_dna_seq,
         }
     }; 
 }
