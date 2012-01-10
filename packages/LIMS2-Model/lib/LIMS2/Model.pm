@@ -9,7 +9,9 @@ require LIMS2::Model::DBConnect;
 require LIMS2::Model::FormValidator::ProfileFactory;
 require LIMS2::Model::Error::Validation;
 require LIMS2::Model::Error::NotFound;
+use DateTime::Format::ISO8601;
 use Module::Pluggable::Object;
+use Const::Fast;
 use namespace::autoclean;
 
 # XXX TODO: authorization checks?
@@ -81,7 +83,37 @@ sub check_params {
         $self->throw( Validation => { results => $results } );
     }
 
-    return scalar $results->valid;
+    my $validated_params = $results->valid;
+    
+    return $self->canonicalize_params( $validated_params );
+}
+
+sub canonicalize_params {
+    my ( $self, $params ) = @_;
+
+    my %INFLATE = (
+        created_at              => sub { DateTime::Format::ISO8601->parse_datetime( shift ) },
+        created_by              => sub { $self->user_id_for( shift ) },
+        desgin_comment_category => sub { $self->design_comment_category_id_for( shift ) },
+    );
+
+    my %RENAME = (
+        design_comment_category => 'design_comment_category_id'
+    );
+
+    my %canonicalized_params;
+
+    while ( my ( $k, $v ) = each %{ $params } ) {
+        if ( $INFLATE{$k} ) {
+            $v = $INFLATE{$k}->($v);
+        }
+        if ( $RENAME{$k} ) {
+            $k = $RENAME{$k};
+        }
+        $canonicalized_params{$k} = $v;
+    }
+
+    return \%canonicalized_params;    
 }
 
 sub plugins {
