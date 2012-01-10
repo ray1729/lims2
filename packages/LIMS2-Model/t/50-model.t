@@ -19,7 +19,7 @@ ok my $model = LIMS2::Model->new( schema => $schema ), 'instantiate model';
     
     ok my $assemblies = $model->list_assemblies, 'list_assemblies succeeds';
 
-    cmp_deeply $assemblies, bag( qw( NCBIM34 NCBIM36 NCBIM37 ) ), 'list_assemblise returns expected data';
+    cmp_deeply $assemblies, bag( qw( NCBIM34 NCBIM36 NCBIM37 ) ), 'list_assemblies returns expected data';
 }
 
 {
@@ -30,10 +30,10 @@ ok my $model = LIMS2::Model->new( schema => $schema ), 'instantiate model';
         bac_name    => 'foo',
         loci        => [
             {
-                assembly   => 'NCBIM37',
-                chromosome => '12',
-                bac_start  => 123456,
-                bac_end    => 654321
+                assembly  => 'NCBIM37',
+                chr_name  => '12',
+                chr_start => 123456,
+                chr_end   => 654321
             }
         ]
     );
