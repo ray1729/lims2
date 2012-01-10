@@ -11,6 +11,7 @@ use Sub::Exporter -setup => {
                        FV_in_set
                        FV_phase
                        FV_strand
+                       FV_user_name
                        FV_validated_by_annotation
                ) ]
 };
@@ -24,7 +25,7 @@ sub FV_date_time {
         $dfv->name_this( 'date_time' );
         my $val = $dfv->get_current_constraint_value();
         try {
-            DateTime::Format::ISO8610->parse_datetime( $val );
+            DateTime::Format::ISO8601->parse_datetime( $val );
         };
     }
 }
@@ -42,7 +43,7 @@ sub FV_boolean {
 }
 
 sub FV_validated_by_annotation {
-    FV_in_set( 'yes', 'no', 'maybe' );
+    FV_in_set( 'validated_by_annotation', 'yes', 'no', 'maybe' );
 }
 
 sub FV_in_set {
@@ -65,6 +66,10 @@ sub FV_dna_seq {
         $dfv->name_this( 'dna_seq' );
         return $dfv->get_current_constraint_value() =~ qr/^[ATGC]+$/
     };
+}
+
+sub FV_user_name {
+    return qr/^\w+[\w\@\.\-\:]+$/;
 }
 
 1;
