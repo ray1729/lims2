@@ -15,19 +15,19 @@ sub execute {
     die "No input file given\n"
         unless @{$args};
 
-    my $em = $self->entity_manager;
+    my $model = $self->model;
 
-    $em->txn_do(
+    $model->txn_do(
         sub {
             for my $input_file ( @{$args} ) {
                 my $it = iyaml( $input_file );
                 while ( my $bac = $it->next ) {
-                    $em->create( BacClone => $bac );
+                    $model->create_bac_clone( $bac );
                 }
             }
             unless ( $self->commit ) {
                 warn "Rollback\n";
-                $self->txn_rollback;
+                $model->txn_rollback;
             }
         }
     );
