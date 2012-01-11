@@ -84,7 +84,7 @@ sub check_params {
 sub dfv_profile {
     my ( $self, $spec ) = @_;
 
-    my ( @filters, @required, @optional, %constraint_methods );
+    my ( @filters, @required, @optional, @defaults, %constraint_methods,  %field_filters, %defaults );
 
     # Add the 'trim' filter for every profile
     push @filters, 'trim';
@@ -99,15 +99,25 @@ sub dfv_profile {
         if ( $f_spec->{validate} ) {
             $constraint_methods{$field} = $self->constraint_method( $f_spec->{validate} );
         }
+        if ( $f_spec->{filter} ) {
+            $field_filters{$field} = $f_spec->{filter};
+        }
+        if ( $f_spec->{default} ) {
+            $defaults{$field} = $f_spec->{default};
+        }        
     }
 
     return {
-        filters  => \@filters,
-        required => \@required,
-        optional => \@optional,
+        filters            => \@filters,
+        required           => \@required,
+        optional           => \@optional,
+        defaults           => \%defaults,
+        field_filters      => \%field_filters,
         constraint_methods => \%constraint_methods
     };    
 }
+
+__PACKAGE__->meta->make_immutable;
 
 1;
 
