@@ -6,10 +6,10 @@ use warnings FATAL => 'all';
 use HTGT::DBFactory;
 use YAML::Any;
 use DateTime;
-use DateTime::Format::Oracle;
 use Log::Log4perl qw( :easy );
 use Try::Tiny;
 use Const::Fast;
+use LIMS2::HTGT::Migrate::Utils qw( trim parse_oracle_date );
 
 const my $ASSEMBLY => 'NCBIM37';
 
@@ -38,10 +38,11 @@ my $run_date = DateTime->now;
 my $designs_rs = $schema->resultset( 'Design' )->search(
     {
         'statuses.is_current'            => 1,
-        'design_status_dict.description' => \@WANTED_DESIGN_STATUS
+        'design_status_dict.description' => \@WANTED_DESIGN_STATUS,
+        'projects.project_id'            => { '!=', undef }
     },
     {
-        join => { 'statuses' => 'design_status_dict' }
+        join => [ 'projects', { 'statuses' => 'design_status_dict' } ],
     }
 );
 
@@ -49,17 +50,18 @@ while ( my $design = $designs_rs->next ) {
     Log::Log4perl::NDC->push( $design->design_id );
     try {
         my $type = type_for( $design );
+        my $created_date = parse_oracle_date( $design->created_date ) || $run_date;
         my %design = (
             design_id               => $design->design_id,
             design_name             => $design->find_or_create_name,
             design_type             => $type,
-            created_user            => $design->created_user || 'migrate_script',
-            created_at              => format_date( $design->created_date ),
+            created_by              => $design->created_user || 'migrate_script',
+            created_at              => $created_date->iso8601,
             phase                   => phase_for( $design, $type ),
             validated_by_annotation => $design->validated_by_annotation || '',
             oligos                  => oligos_for( $design ),
             genotyping_primers      => genotyping_primers_for( $design ),
-            comments                => comments_for( $design )        
+            comments                => comments_for( $design, $created_date ),
         );
         print YAML::Any::Dump( \%design );
     }
@@ -86,8 +88,8 @@ sub oligos_for {
             next;
         }
         push @oligos, {
-            type => $oligo_name,
-            seq  => $oligo_seq[0]->data_item,
+            design_oligo_type => $oligo_name,
+            design_oligo_seq  => $oligo_seq[0]->data_item,
             loci => [
                 {
                     assembly   => $ASSEMBLY,
@@ -125,8 +127,8 @@ sub genotyping_primers_for {
             next;
         }
         push @genotyping_primers, {
-            type => $feature->feature_type->description,
-            seq  => $primer_seq[0]->data_item
+            genotyping_primer_type => $feature->feature_type->description,
+            genotyping_primer_seq  => $primer_seq[0]->data_item
         }
     }
 
@@ -134,16 +136,17 @@ sub genotyping_primers_for {
 }
 
 sub comments_for {
-    my $design = shift;
+    my ( $design, $created_date ) = @_;
 
     my @comments;
     for my $comment ( $design->design_user_comments ) {
+        my $created_at = parse_oracle_date( $comment->edited_date ) || $created_date;
         push @comments, {
-            comment      => $comment->design_comment,
-            category     => $comment->category->category_name,
-            created_user => $comment->edited_user || 'migrate_script',
-            created_at   => format_date( $comment->edited_date ),
-            is_public    => $comment->visibility eq 'public'
+            design_comment          => $comment->design_comment,
+            design_comment_category => $comment->category->category_name,
+            created_by              => $comment->edited_user || 'migrate_script',
+            created_at              => $created_date->iso8601,
+            is_public               => $comment->visibility eq 'public'
         };
     }
 
@@ -188,29 +191,6 @@ sub phase_for {
     }
 
     die "Unable to determine phase for design " . $design->design_id . "\n";
-}
-
-sub format_date {
-    my $maybe_date = shift;
-
-    my $date;
-    
-    if ( ! defined $date ) {
-        $date = $run_date;
-    }
-    elsif ( blessed $maybe_date ) {
-        $date = $maybe_date;
-    }
-    else {
-        try {
-            $date = DateTime::Format::Oracle::parse_timestamp( $maybe_date );
-        }
-        catch {
-            $date = DateTime::Format::Oracle::parse_datetime( $maybe_date );
-        }
-    }
-
-    return $date->iso8601;
 }
 
 __END__
