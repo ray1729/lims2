@@ -80,7 +80,4 @@ is_deeply $config, \%DB_CONNECT_PARAMS, 'config has expected values';
     ok my $s = LIMS2::Model::DBConnect->connect( 'LIMS2_DB', 'web' ), "Connect to lims2_test_two/web";
 }
 
-
-    
-
 done_testing;
