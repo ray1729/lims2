@@ -76,18 +76,6 @@ const my @MGI_ENSEMBL_COLUMNS => qw (
     ensembl_protein_id
 );
 
-has ensembl_util => (
-    is         => 'ro',
-    isa        => 'LIMS2::Util::EnsEMBL',
-    traits     => [ 'NoGetopt' ],
-    lazy_build => 1,
-    handles    => [ qw( gene_adaptor ) ]
-);
-
-sub _build_ensembl_util {
-    LIMS2::Util::EnsEMBL->new;
-}
-
 has mgi_coordinate_url => (
     is       => 'ro',
     isa      => Uri,

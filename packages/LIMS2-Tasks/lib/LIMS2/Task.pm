@@ -62,17 +62,8 @@ has schema => (
 sub _build_schema {
     my $self = shift;
 
-    LIMS2::Model::DBConnect->connect( 'LIMS2_DB' );
+    LIMS2::Model::DBConnect->connect( 'LIMS2_DB', 'tasks' );
 }
-
-has edit_user => (
-    is            => 'ro',
-    isa           => 'Str',
-    traits        => [ 'Getopt' ],
-    cmd_flag      => 'edit-user',
-    required      => 1,
-    default       => $ENV{USER}
-);
 
 has model => (
     is            => 'ro',
@@ -84,7 +75,20 @@ has model => (
 sub _build_model {
     my $self = shift;
     require LIMS2::Model;
-    LIMS2::Model->new( audit_user => $self->edit_user, schema => $self->schema );
+    LIMS2::Model->new( schema => $self->schema );
+}
+
+has ensembl_util => (
+    is         => 'ro',
+    isa        => 'LIMS2::Util::EnsEMBL',
+    traits     => [ 'NoGetopt' ],
+    lazy_build => 1,
+    handles    => [ qw( gene_adaptor ) ]
+);
+
+sub _build_ensembl_util {
+    require LIMS2::Util::EnsEMBL;
+    return LIMS2::Util::EnsEMBL->new;
 }
 
 sub BUILD {
