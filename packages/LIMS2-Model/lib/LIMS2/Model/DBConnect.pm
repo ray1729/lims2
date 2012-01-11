@@ -41,39 +41,38 @@ sub read_config {
         data     => $config->{$filename}
     } );
 
-    return $config;
+    return $config->{$filename};
 }
 
 sub config {
-    my $class = shift;
-    
-    if ( ! $class->config_is_fresh ) {            
-        $class->read_config;
-    }
-    
-    return $class->CachedConfig->{data};
+    my ( $class, $dbname ) = @_;
+
+    my $config = $class->config_is_fresh ? $class->CachedConfig->{data} : $class->read_config;
+
+    return $config->{$dbname} || confess "Database '$dbname' not configured";    
 }
 
 sub params_for {
-    my ( $class, $dbname, $override_attrs ) = @_;
+    my ( $class, $dbname, $role, $override_attrs ) = @_;
 
     $dbname = $ENV{ $dbname } if defined $ENV{ $dbname };
 
-    my $params = $class->config->{ $dbname }
-        or confess "Database '$dbname' not configured";    
+    my %params = %{ $class->config($dbname) };
+    my $roles  = delete $params{roles};
 
-    if ( $override_attrs ) {
-        return +{ %{ $params }, %{ $override_attrs } };
-    }
-    else {
-        return $params;
-    }
+    my $role_params = $roles->{$role}
+        or confess "Role '$role' for database '$dbname' not configured";
+
+    return { %params, %{$role_params}, %{ $override_attrs || {} } };
 }
 
 sub connect {
-    my ( $class, $dbname, $override_attrs ) = @_;
+    my ( $class, $dbname, $role, $override_attrs ) = @_;
+
+    confess 'connect() requires dbname and role'
+        unless defined $dbname and defined $role;
     
-    my $params = $class->params_for( $dbname, $override_attrs );
+    my $params = $class->params_for( $dbname, $role, $override_attrs );
     my $schema_class  = $params->{schema_class}
         or confess "No schema_class defined for '$dbname'";
     

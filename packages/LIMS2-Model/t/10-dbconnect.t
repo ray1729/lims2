@@ -11,14 +11,17 @@ const my %DB_CONNECT_PARAMS => (
     lims2_test_one => {
         schema_class => 'LIMS2::Model::Schema',
         dsn          => 'dbi:SQLite:dbname=:memory:',
-        user         => 'test_one',
-        password     => 'eno_tset',
+        roles        => {
+            test => { user => 'test_one', password => 'eno_tset' }
+        }
     },    
     lims2_test_two => {
         schema_class => 'LIMS2::Model::Schema',
         dsn          => 'dbi:SQLite:dbname=:memory:',
-        user         => 'test_two',
-        password     => 'owt_tset',
+        roles        => {
+            test => { user => 'test_two', password => 'owt_tset' },
+            web  => { user => 'test_two_web', password => 'bew_owt_tset' }
+        }
     }
 );
 
@@ -30,16 +33,54 @@ $tmp->close;
 
 is LIMS2::Model::DBConnect->ConfigFile( $tmp->filename ), $tmp->filename, 'set config file path';
 
-ok my $config = LIMS2::Model::DBConnect->config, 'parse config file';
+ok my $config = LIMS2::Model::DBConnect->read_config, 'parse config file';
 
 is_deeply $config, \%DB_CONNECT_PARAMS, 'config has expected values';
 
-for my $dbname ( qw( lims2_test_one lims2_test_two ) ) {
-    is_deeply LIMS2::Model::DBConnect->params_for( $dbname ), $DB_CONNECT_PARAMS{$dbname}, "params_for $dbname";
-    is_deeply LIMS2::Model::DBConnect->params_for( $dbname, { AutoCommit => 1 } ), { %{ $DB_CONNECT_PARAMS{$dbname} }, AutoCommit => 1 }, "params_for $dbname with override";
-    local $ENV{LIMS2_DB} = $dbname;
-    is_deeply LIMS2::Model::DBConnect->params_for( 'LIMS2_DB' ), $DB_CONNECT_PARAMS{$dbname}, "params for $dbname via ENV";
-    ok my $s = LIMS2::Model::DBConnect->connect( 'LIMS2_DB' ), "Connect to $dbname schema";
+{
+    my %expected = (
+        schema_class => 'LIMS2::Model::Schema',
+        dsn          => 'dbi:SQLite:dbname=:memory:',
+        user         => 'test_one',
+        password     => 'eno_tset'
+    );
+    
+    is_deeply LIMS2::Model::DBConnect->params_for( 'lims2_test_one', 'test' ), \%expected,
+        'params for lims2_test_one/test';
+
+    local $ENV{LIMS2_DB} = 'lims2_test_one';
+
+    is_deeply LIMS2::Model::DBConnect->params_for( 'LIMS2_DB', 'test' ), \%expected,
+        'params for lims2_test_one/test via %ENV';
+    
+    $expected{AutoCommit} = 1;
+    
+    is_deeply LIMS2::Model::DBConnect->params_for( 'lims2_test_one', 'test', {AutoCommit => 1} ), \%expected, 
+        'params_for lims2_test_one/test with override';
+
+    ok my $s = LIMS2::Model::DBConnect->connect( 'LIMS2_DB', 'test' ), "Connect to lims2_test_one/test";
 }
+
+{
+    my %expected = (
+        schema_class => 'LIMS2::Model::Schema',
+        dsn          => 'dbi:SQLite:dbname=:memory:',
+        user         => 'test_two_web',
+        password     => 'bew_owt_tset'
+    );
+    
+    is_deeply LIMS2::Model::DBConnect->params_for( 'lims2_test_two', 'web' ), \%expected,
+        'params for lims2_test_two/web';
+
+    local $ENV{LIMS2_DB} = 'lims2_test_two';
+
+    is_deeply LIMS2::Model::DBConnect->params_for( 'LIMS2_DB', 'web' ), \%expected,
+        'params for lims2_test_two/web via %ENV';
+    
+    ok my $s = LIMS2::Model::DBConnect->connect( 'LIMS2_DB', 'web' ), "Connect to lims2_test_two/web";
+}
+
+
+    
 
 done_testing;
