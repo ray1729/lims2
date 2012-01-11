@@ -9,18 +9,10 @@ use Getopt::Long;
 use Const::Fast;
 use Term::ReadPassword;
 use Template;
+use Getopt::Long;
 
 const my $MAIN_SCHEMA  => 'public';
 const my $AUDIT_SCHEMA => 'audit';
-const my $RO_ROLE      => 'lims2_ro';
-const my $RW_ROLE      => 'lims2_rw';
-
-const my %VARS => (
-    main_schema  => $MAIN_SCHEMA,
-    audit_schema => $AUDIT_SCHEMA,
-    ro_role      => $RO_ROLE,
-    rw_role      => $RW_ROLE
-);
 
 const my $CREATE_AUDIT_TABLE_TT => <<'EOT';
 CREATE TABLE [% audit_schema %].[% table_name %] (
@@ -73,7 +65,7 @@ const my @INIT_AUDIT_COLS => qw( audit_op audit_user audit_stamp );
 my $pg_host   = $ENV{PGHOST};
 my $pg_port   = $ENV{PGPORT};
 my $pg_dbname = $ENV{PGDATABASE};
-my $pg_role   = 'lims2_ro';
+my $pg_role;
 
 GetOptions(
     'host=s'    => \$pg_host,
@@ -81,6 +73,8 @@ GetOptions(
     'dbname=s'  => \$pg_dbname,
     'role=s'    => \$pg_role
 ) or die "Usage: $0 [OPTIONS]\n";
+
+$pg_role ||= $pg_dbname . '_ro';
 
 my $pg_password;
 while( not defined $pg_password ) {
@@ -101,6 +95,13 @@ my $dbh = DBI->connect( $dsn, $ENV{USER}, $pg_password, { AutoCommit => 1, Raise
     or die "Failed to connect to $dsn: $DBI::errstr\n";
 
 $dbh->do( 'SET SESSION ROLE ' . $dbh->quote_identifier( $pg_role ) );
+
+const my %VARS => (
+    main_schema  => $MAIN_SCHEMA,
+    audit_schema => $AUDIT_SCHEMA,
+    ro_role      => $pg_dbname . '_ro',
+    rw_role      => $pg_dbname . '_rw'
+);
 
 my $tt = Template->new;
 
