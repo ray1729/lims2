@@ -75,7 +75,7 @@ __PACKAGE__->table("designs");
 =head2 validated_by_annotation
 
   data_type: 'text'
-  is_nullable: 1
+  is_nullable: 0
 
 =cut
 
@@ -98,7 +98,7 @@ __PACKAGE__->add_columns(
   "phase",
   { data_type => "integer", is_nullable => 0 },
   "validated_by_annotation",
-  { data_type => "text", is_nullable => 1 },
+  { data_type => "text", is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -175,6 +175,21 @@ __PACKAGE__->belongs_to(
   { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
+=head2 designs_well_design
+
+Type: has_many
+
+Related object: L<LIMS2::Model::Schema::Result::DesignWellDesign>
+
+=cut
+
+__PACKAGE__->has_many(
+  "designs_well_design",
+  "LIMS2::Model::Schema::Result::DesignWellDesign",
+  { "foreign.design_id" => "self.design_id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
 =head2 genotyping_primers
 
 Type: has_many
@@ -191,8 +206,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-09 16:33:44
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:UGSEOEgN/rW6Wpmb/MaRMQ
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-12 13:54:10
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:GBUHXs7pXg0YnmJpn5opEQ
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

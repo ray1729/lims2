@@ -78,7 +78,7 @@ __PACKAGE__->set_primary_key("design_comment_category_id");
 
 =head1 UNIQUE CONSTRAINTS
 
-=head2 C<design_comment_categories_design_comment_category_name_key>
+=head2 C<design_comment_categories_design_comment_category_key>
 
 =over 4
 
@@ -89,7 +89,7 @@ __PACKAGE__->set_primary_key("design_comment_category_id");
 =cut
 
 __PACKAGE__->add_unique_constraint(
-  "design_comment_categories_design_comment_category_name_key",
+  "design_comment_categories_design_comment_category_key",
   ["design_comment_category"],
 );
 
@@ -113,8 +113,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-12 11:28:28
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:JNKx7NzFd/InGVQXyUD+tA
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-12 13:54:10
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:kRCA8EKj2B62UCfPhTVfjw
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

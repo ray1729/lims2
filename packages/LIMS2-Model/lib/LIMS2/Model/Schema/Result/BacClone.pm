@@ -89,6 +89,24 @@ __PACKAGE__->belongs_to(
   { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
+=head2 design_well_bacs
+
+Type: has_many
+
+Related object: L<LIMS2::Model::Schema::Result::DesignWellBac>
+
+=cut
+
+__PACKAGE__->has_many(
+  "design_well_bacs",
+  "LIMS2::Model::Schema::Result::DesignWellBac",
+  {
+    "foreign.bac_library" => "self.bac_library",
+    "foreign.bac_name"    => "self.bac_name",
+  },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
 =head2 loci
 
 Type: has_many
@@ -108,8 +126,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-09 16:33:44
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:FY6h1IRZYANetKX4yX2WPA
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-12 13:54:10
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Y8CtScp2tAxDqXxWLYZC1w
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

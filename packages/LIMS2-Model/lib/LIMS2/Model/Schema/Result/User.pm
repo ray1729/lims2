@@ -107,6 +107,21 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
+=head2 design_well_recombineering_results
+
+Type: has_many
+
+Related object: L<LIMS2::Model::Schema::Result::DesignWellRecombineeringResult>
+
+=cut
+
+__PACKAGE__->has_many(
+  "design_well_recombineering_results",
+  "LIMS2::Model::Schema::Result::DesignWellRecombineeringResult",
+  { "foreign.created_by" => "self.user_id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
 =head2 designs
 
 Type: has_many
@@ -137,6 +152,36 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
+=head2 plate_comments
+
+Type: has_many
+
+Related object: L<LIMS2::Model::Schema::Result::PlateComment>
+
+=cut
+
+__PACKAGE__->has_many(
+  "plate_comments",
+  "LIMS2::Model::Schema::Result::PlateComment",
+  { "foreign.created_by" => "self.user_id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 plates
+
+Type: has_many
+
+Related object: L<LIMS2::Model::Schema::Result::Plate>
+
+=cut
+
+__PACKAGE__->has_many(
+  "plates",
+  "LIMS2::Model::Schema::Result::Plate",
+  { "foreign.created_by" => "self.user_id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
 =head2 user_roles
 
 Type: has_many
@@ -152,9 +197,24 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
+=head2 well_distribute_overrides
 
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-09 16:33:45
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:OCLKlL5ZlrZrc1Txcf7x9A
+Type: has_many
+
+Related object: L<LIMS2::Model::Schema::Result::WellDistributeOverride>
+
+=cut
+
+__PACKAGE__->has_many(
+  "well_distribute_overrides",
+  "LIMS2::Model::Schema::Result::WellDistributeOverride",
+  { "foreign.created_by" => "self.user_id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-12 13:54:10
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:3dOlhruMNY1CtuMIuhFrWw
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
