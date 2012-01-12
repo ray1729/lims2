@@ -39,10 +39,11 @@ my $designs_rs = $schema->resultset( 'Design' )->search(
     {
         'statuses.is_current'            => 1,
         'design_status_dict.description' => \@WANTED_DESIGN_STATUS,
-        'projects.project_id'            => { '!=', undef }
+        'projects.project_id'            => { '!=', undef },
     },
     {
         join => [ 'projects', { 'statuses' => 'design_status_dict' } ],
+        distinct => 1
     }
 );
 
