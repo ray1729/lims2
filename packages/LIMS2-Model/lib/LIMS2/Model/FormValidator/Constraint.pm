@@ -59,7 +59,7 @@ sub boolean {
 }
 
 sub validated_by_annotation {
-    in_set( 'yes', 'no', 'maybe' );
+    in_set( 'yes', 'no', 'maybe', 'not done' );
 }
 
 sub dna_seq {

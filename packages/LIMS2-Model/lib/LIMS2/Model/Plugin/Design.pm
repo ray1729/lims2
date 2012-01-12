@@ -34,7 +34,7 @@ sub pspec_create_design {
         created_at              => { validate => 'date_time', post_filter => 'parse_date_time' },
         created_by              => { validate => 'existing_user', post_filter => 'user_id_for' },
         phase                   => { validate => 'phase' },
-        validated_by_annotation => { validate => 'validated_by_annotation' },
+        validated_by_annotation => { validate => 'validated_by_annotation', default => 'not done' },
         design_name             => { validate => 'alphanumeric_string' },
         oligos                  => { optional => 1 },
         comments                => { optional => 1 },

@@ -180,7 +180,7 @@ CREATE TABLE designs (
        created_at               TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
        design_type              TEXT NOT NULL REFERENCES design_types(design_type),
        phase                    INTEGER NOT NULL,
-       validated_by_annotation  TEXT CHECK (validated_by_annotation IS NULL OR validated_by_annotation IN ( 'yes', 'no', 'maybe' ))
+       validated_by_annotation  TEXT NOT NULL CHECK (validated_by_annotation IN ( 'yes', 'no', 'maybe', 'not done' ))
 );
 GRANT SELECT ON designs TO "[% ro_role %]";
 GRANT SELECT, INSERT, UPDATE, DELETE ON designs TO "[% rw_role %]";
