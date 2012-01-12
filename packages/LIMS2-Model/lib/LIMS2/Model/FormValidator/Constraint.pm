@@ -51,7 +51,7 @@ sub strand {
 }
 
 sub phase {
-    in_set( 0, 1, 2 );
+    in_set( 0, 1, 2, -1 );
 }
 
 sub boolean {
