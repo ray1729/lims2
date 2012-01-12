@@ -102,7 +102,7 @@ sub dfv_profile {
         if ( $f_spec->{filter} ) {
             $field_filters{$field} = $f_spec->{filter};
         }
-        if ( $f_spec->{default} ) {
+        if ( defined $f_spec->{default} ) {
             $defaults{$field} = $f_spec->{default};
         }        
     }
