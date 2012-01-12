@@ -19,8 +19,8 @@ VALUES ('G5'), ('U5'), ('U3'), ('D5'), ('D3'), ('G3');
 
 INSERT INTO design_comment_categories(design_comment_category)
  VALUES ('Alternative variant not targeted'),
-        ('NMD Rescue'),
-        ('Possible Reinitiation'),
+        ('NMD rescue'),
+        ('Possible reinitiation'),
         ('Non protein coding locus'),
         ('Conserved elements'),
         ('Recovery design'),
