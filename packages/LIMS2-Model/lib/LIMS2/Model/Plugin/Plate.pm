@@ -29,6 +29,19 @@ sub pspec_create_plate_comment {
     }
 }
 
+sub pspec_create_well {
+    return {
+        plate_name          => { validate => 'existing_plate_name' },
+        well_name           => { validate => 'well_name' },
+        created_by          => { validate => 'existing_user', post_filter => 'user_id_for' },
+        created_at          => { validate => 'date_time' },
+        assay_started       => { validate => 'date_time', optional => 1 },
+        assay_complete      => { validate => 'date_time', optional => 1 },
+        distribute          => { validate => 'boolean',   optional => 1 },
+        distribute_override => { optional => 1 }
+    }
+}
+
 sub create_plate {
     my ( $self, $params ) = @_;
 
@@ -47,7 +60,7 @@ sub create_plate {
 
     while ( my ( $well_name, $well_params ) = each %{ $validated_params->{wells} || {} } ) {
         $well_params->{plate_name} = $validated_params->{plate_name};
-        $well_params->{well_name}  = $well_name;        
+        $well_params->{well_name}  = $well_name;
         $self->$create_well( $well_params );
     }
 
