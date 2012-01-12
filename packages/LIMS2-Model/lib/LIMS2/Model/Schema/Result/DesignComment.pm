@@ -181,7 +181,7 @@ sub as_hash {
     my $self = shift;
 
     return {
-        design_comment_category => $self->design_comment_category->design_comment_category_name,
+        design_comment_category => $self->design_comment_category->design_comment_category,
         design_comment          => $self->design_comment,
         is_public               => $self->is_public,
         created_by              => $self->created_by->user_name,
