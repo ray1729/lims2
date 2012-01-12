@@ -15,6 +15,11 @@ sub create {
     confess "create() method must be overridden in a subclass";
 }
 
+sub wanted {
+    my ( $self, $datum ) = @_;
+    return 1;
+}
+
 sub execute {
     my ( $self, $opts, $args ) = @_;
 
@@ -32,6 +37,10 @@ sub execute {
                 my $file_count = 0;
                 my $it = iyaml( $input_file );
                 while ( my $datum = $it->next ) {
+                    if ( ! $self->wanted( $datum ) ) {
+                        $self->log->warn( "Skipping record:\n" . YAML::Any::Dump( $datum ) );
+                        next;                        
+                    }                    
                     $self->create( $datum );
                     $file_count++;
                     if ( $file_count % 100 == 0 ) {

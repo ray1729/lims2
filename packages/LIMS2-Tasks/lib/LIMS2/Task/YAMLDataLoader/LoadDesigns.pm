@@ -19,6 +19,12 @@ override create => sub {
     $self->model->create_design( $datum );
 };
 
+override wanted => sub {
+    my ( $self, $datum ) = @_;
+
+    defined $datum->{phase};
+};
+
 __PACKAGE__->meta->make_immutable;
 
 1;
