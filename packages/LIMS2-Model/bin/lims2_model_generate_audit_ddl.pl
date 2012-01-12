@@ -60,7 +60,7 @@ const my $DROP_AUDIT_TABLE_TT => <<'EOT';
 DROP TABLE [% audit_schema %].[% table_name %];
 EOT
 
-const my @INIT_AUDIT_COLS => qw( audit_op audit_user audit_stamp );
+const my %IS_AUDIT_COL => map { $_ => 1 } qw( audit_op audit_user audit_stamp audit_txid );
 
 my $pg_host   = $ENV{PGHOST};
 my $pg_port   = $ENV{PGPORT};
@@ -146,7 +146,7 @@ sub diff_tables {
     }
 
     for my $audit_column_name ( keys %audit_cols ) {
-        unless ( $cols{$audit_column_name} ) {
+        unless ( $cols{$audit_column_name} or $IS_AUDIT_COL{$audit_column_name} ) {
             $tt->process( \$DROP_AUDIT_TABLE_COLUMN_TT, { %vars, column_name => $audit_column_name } );
         }
     }
