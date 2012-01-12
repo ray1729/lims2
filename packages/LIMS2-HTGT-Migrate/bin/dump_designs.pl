@@ -167,7 +167,7 @@ sub type_for {
     }
 
     if ( $dt =~ /^Ins/ ) {
-        return 'inserttion';
+        return 'insertion';
     }
 
     if ( $dt =~ /^Del/ ) {
