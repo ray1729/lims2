@@ -90,6 +90,10 @@ sub bac_name {
     regexp_matches( qr/^[\w()-]+$/ );
 }
 
+sub plate_name {
+    regexp_matches( qr/^[A-Z0-9_]+$/ );
+}
+
 sub existing_assembly {
     my ( $class, $model ) = @_;    
     in_resultset( $model, 'Assembly', 'assembly' );
@@ -118,6 +122,16 @@ sub existing_design_comment_category {
 sub existing_design_oligo_type {
     my ( $class, $model ) = @_;    
     in_resultset( $model, 'DesignOligoType', 'design_oligo_type' );
+}
+
+sub existing_plate_type {
+    my ( $class, $model ) = @_;
+    in_resultset( $model, 'PlateType', 'plate_type' );
+}
+
+sub existing_design_well_recombineering_assay {
+    my ( $class, $model ) = @_;
+    in_resultset( $model, 'DesignWellRecombineeringAssay', 'assay' );
 }
 
 sub existing_genotyping_primer_type {
