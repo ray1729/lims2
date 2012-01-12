@@ -92,22 +92,22 @@ sub create_design {
         }
     );
 
-    for my $c ( @{ $design->{comments} || [] } ) {
+    for my $c ( @{ $validated_params->{comments} || [] } ) {
         my $validated = $self->check_params( $c, $self->pspec_create_design_comment );
-        $design->create_related( design_comments => $validated );  
+        $design->create_related( design_comments => $validated );
     }
 
-    for my $o ( @{ $design->{oligos} || [] } ) {
+    for my $o ( @{ $validated_params->{oligos} || [] } ) {
         my $validated = $self->check_params( $o, $self->pspec_create_design_oligo );
         my $loci = delete $validated->{loci};
-        my $oligo = $design->create_related( design_oligos => $validated );
+        my $oligo = $design->create_related( design_oligos => $validated );        
         for my $l ( @{ $loci || [] } ) {
             my $validated = $self->check_params( $l, $self->pspec_create_design_oligo_locus );
             $oligo->create_related( loci => $validated );
         }
     }
 
-    for my $p ( @{ $design->{genotyping_primers} || [] } ) {
+    for my $p ( @{ $validated_params->{genotyping_primers} || [] } ) {
         my $validated = $self->check_params( $p, $self->pspec_create_genotyping_primer );
         $design->create_related( genotyping_primers => $validated );
     }
