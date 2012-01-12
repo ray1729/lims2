@@ -17,7 +17,7 @@ VALUES ('conditional'), ('deletion'), ('insertion'), ('artificial-intron'), ('cr
 INSERT INTO design_oligo_types(design_oligo_type)
 VALUES ('G5'), ('U5'), ('U3'), ('D5'), ('D3'), ('G3');
 
-INSERT INTO design_comment_categories(design_comment_category_name)
+INSERT INTO design_comment_categories(design_comment_category)
  VALUES ('Alternative variant not targeted'),
         ('NMD Rescue'),
         ('Possible Reinitiation'),

@@ -220,7 +220,7 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON design_oligo_loci TO "[% rw_role %]";
 
 CREATE TABLE design_comment_categories (
        design_comment_category_id      SERIAL PRIMARY KEY,
-       design_comment_category_name    TEXT NOT NULL UNIQUE
+       design_comment_category         TEXT NOT NULL UNIQUE
 );
 GRANT SELECT ON design_comment_categories TO "[% ro_role %]";
 GRANT SELECT, INSERT, UPDATE, DELETE ON design_comment_categories TO "[% rw_role %]";
