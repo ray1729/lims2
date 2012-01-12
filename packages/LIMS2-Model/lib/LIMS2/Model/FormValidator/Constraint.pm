@@ -122,7 +122,7 @@ sub existing_design_oligo_type {
 
 sub existing_genotyping_primer_type {
     my ( $class, $model ) = @_;    
-    in_resultset( $model, 'GenotpyingPrimerType', 'genotyping_primer_type' );
+    in_resultset( $model, 'GenotypingPrimerType', 'genotyping_primer_type' );
 }
 
 sub existing_user {
