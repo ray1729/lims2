@@ -1,4 +1,4 @@
-package LIMS2::Task::LoadMgiGeneData;
+package LIMS2::Task::General::LoadMgiGeneData;
 
 use strict;
 use warnings FATAL => 'all';
@@ -108,7 +108,7 @@ has _errors => (
 );
 
 override abstract => sub {
-    "Download MGI gene data and load into LIMS2 schema"
+    "Download MGI gene data, flush database, and load"
 };
 
 sub execute {
