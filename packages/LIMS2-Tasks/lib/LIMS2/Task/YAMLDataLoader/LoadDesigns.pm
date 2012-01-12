@@ -5,6 +5,7 @@ use warnings FATAL => 'all';
 
 use Moose;
 use LIMS2::Util::YAMLIterator;
+use List::MoreUtils qw( all );
 use namespace::autoclean;
 
 extends 'LIMS2::Task::YAMLDataLoader';
@@ -22,7 +23,9 @@ override create => sub {
 override wanted => sub {
     my ( $self, $datum ) = @_;
 
-    defined $datum->{phase};
+    all { defined } $datum->{phase},
+        map( { $_->{genotyping_primer_seq} } @{ $datum->{genotyping_primers} || [] } );
+
 };
 
 __PACKAGE__->meta->make_immutable;
