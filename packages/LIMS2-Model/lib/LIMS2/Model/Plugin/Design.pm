@@ -14,14 +14,14 @@ has _design_comment_category_ids => (
     traits      => [ 'Hash' ],
     lazy_build  => 1,
     handles     => {
-        desgin_comment_category_id_for => 'get'
+        design_comment_category_id_for => 'get'
     }
 );
 
 sub _build__design_comment_category_ids {
     my $self = shift;
 
-    my %category_id_for = map { $_->design_comment_category_name => $_->design_comment_category_id }
+    my %category_id_for = map { $_->design_comment_category => $_->design_comment_category_id }
         $self->schema->resultset( 'DesignCommentCategory' )->all;
 
     return \%category_id_for;
@@ -50,7 +50,7 @@ sub pspec_create_design_comment {
         design_comment          => { optional => 1 },
         created_at              => { validate => 'date_time', post_filter => 'parse_date_time' },
         created_by              => { validate => 'existing_user', post_filter => 'user_id_for' },
-        is_public               => { validate => 'boolean' }
+        is_public               => { validate => 'boolean', default => 0 }
     }
 }
 
