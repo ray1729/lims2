@@ -6,8 +6,6 @@ use warnings FATAL => 'all';
 use Moose;
 require LIMS2::Model::DBConnect;
 require LIMS2::Model::FormValidator;
-require LIMS2::Model::Error::Validation;
-require LIMS2::Model::Error::NotFound;
 require DateTime::Format::ISO8601;
 require Module::Pluggable::Object;
 use namespace::autoclean;
@@ -69,6 +67,9 @@ sub throw {
         $error_class = 'LIMS2::Model::Error::' . $error_class;
     }
 
+    eval "require $error_class"
+        or confess "Load $error_class: $!";
+    
     $error_class->throw( $args );
 }
 
