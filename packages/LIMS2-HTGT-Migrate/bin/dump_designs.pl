@@ -141,10 +141,12 @@ sub comments_for {
 
     my @comments;
     for my $comment ( $design->design_user_comments ) {
+        my $category = $comment->category->category_name;
+        next if $category eq 'Artificial intron design';
         my $created_at = parse_oracle_date( $comment->edited_date ) || $created_date;
         push @comments, {
             design_comment          => $comment->design_comment,
-            design_comment_category => $comment->category->category_name,
+            design_comment_category => $category,
             created_by              => $comment->edited_user || 'migrate_script',
             created_at              => $created_date->iso8601,
             is_public               => $comment->visibility eq 'public'
