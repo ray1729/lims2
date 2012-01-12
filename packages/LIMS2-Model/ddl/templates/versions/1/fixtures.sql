@@ -12,7 +12,7 @@ VALUES ('1'), ('2'), ('3'), ('4'), ('5'), ('6'), ('7'), ('8'), ('9'),
 INSERT INTO bac_libraries (bac_library) VALUES ('129'), ('black6');
 
 INSERT INTO design_types(design_type)
-VALUES ('conditional'), ('deletion'), ('artificial-intron'), ('cre-bac');
+VALUES ('conditional'), ('deletion'), ('insertion'), ('artificial-intron'), ('cre-bac');
 
 INSERT INTO design_oligo_types(design_oligo_type)
 VALUES ('G5'), ('U5'), ('U3'), ('D5'), ('D3'), ('G3');
