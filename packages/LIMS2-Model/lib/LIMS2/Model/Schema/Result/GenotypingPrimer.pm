@@ -130,5 +130,15 @@ __PACKAGE__->belongs_to(
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
+
+sub as_hash {
+    my $self = shift;
+
+    return {
+        genotyping_primer_type => $self->genotyping_primer_type,
+        genotyping_primer_seq  => $self->genotyping_primer_seq
+    };
+}
+
 __PACKAGE__->meta->make_immutable;
 1;
