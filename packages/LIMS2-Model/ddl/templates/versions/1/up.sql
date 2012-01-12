@@ -1,3 +1,11 @@
+--
+-- Initial schema version. Contains tables to store users, roles, gene
+-- data, BACS, and designs.
+--
+
+--
+-- Schema metadata
+--
 CREATE TABLE schema_versions (
        version      INTEGER NOT NULL,
        deployed_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -5,6 +13,9 @@ CREATE TABLE schema_versions (
 );
 GRANT SELECT ON schema_versions TO "[% ro_role %]", "[% rw_role %]";
 
+--
+-- Users and roles
+--
 CREATE TABLE users (
        user_id   SERIAL PRIMARY KEY,
        user_name TEXT NOT NULL UNIQUE CHECK (user_name <> '')
@@ -31,6 +42,10 @@ CREATE TABLE user_role (
 
 GRANT SELECT ON user_role TO "[% ro_role %]";
 GRANT SELECT, INSERT, UPDATE, DELETE ON user_role TO "[% rw_role %]";
+
+--
+-- Gene data
+--
 
 CREATE TABLE mgi_gene_data (
        mgi_accession_id    TEXT PRIMARY KEY,
@@ -127,6 +142,21 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON mgi_gene_map TO "[% rw_role %]";
 CREATE INDEX ON mgi_gene_map(gene_id);
 CREATE INDEX ON mgi_gene_map(mgi_accession_id);
 
+CREATE TABLE gene_comments (
+       gene_comment_id     SERIAL PRIMARY KEY,
+       gene_id             INTEGER NOT NULL REFERENCES genes(gene_id),
+       gene_comment        TEXT NOT NULL,
+       is_public           BOOLEAN NOT NULL DEFAULT FALSE,
+       created_by          INTEGER NOT NULL REFERENCES users(user_id),
+       created_at          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+GRANT SELECT ON gene_comments TO "[% ro_role %]";
+GRANT SELECT, INSERT, UPDATE, DELETE ON gene_comments TO "[% rw_role %]";
+GRANT USAGE ON SEQUENCE gene_comments_gene_comment_id_seq TO "[% rw_role %]";
+
+--
+-- Constrained vocabulary for assemblies and chromosomes
+--
 CREATE TABLE assemblies (
        assembly         TEXT PRIMARY KEY
 );
@@ -138,6 +168,10 @@ CREATE TABLE chromosomes (
 );
 GRANT SELECT ON chromosomes TO "[% ro_role %]";
 GRANT SELECT, INSERT, UPDATE, DELETE ON chromosomes TO "[% rw_role %]";
+
+--
+-- BAC data
+--
 
 CREATE TABLE bac_libraries (
        bac_library    TEXT PRIMARY KEY
@@ -166,6 +200,10 @@ CREATE TABLE bac_clone_loci (
 );
 GRANT SELECT ON bac_clone_loci TO "[% ro_role %]";
 GRANT SELECT, INSERT, UPDATE, DELETE ON bac_clone_loci TO "[% rw_role %]";
+
+--
+-- Design data
+--
 
 CREATE TABLE design_types (
        design_type        TEXT PRIMARY KEY
@@ -238,18 +276,6 @@ CREATE TABLE design_comments (
 GRANT SELECT ON design_comments TO "[% ro_role %]";
 GRANT SELECT, INSERT, UPDATE, DELETE ON design_comments TO "[% rw_role %]";
 GRANT USAGE ON SEQUENCE design_comments_design_comment_id_seq TO "[% rw_role %]";
-
-CREATE TABLE gene_comments (
-       gene_comment_id     SERIAL PRIMARY KEY,
-       gene_id             INTEGER NOT NULL REFERENCES genes(gene_id),
-       gene_comment        TEXT NOT NULL,
-       is_public           BOOLEAN NOT NULL DEFAULT FALSE,
-       created_by          INTEGER NOT NULL REFERENCES users(user_id),
-       created_at          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-GRANT SELECT ON gene_comments TO "[% ro_role %]";
-GRANT SELECT, INSERT, UPDATE, DELETE ON gene_comments TO "[% rw_role %]";
-GRANT USAGE ON SEQUENCE gene_comments_gene_comment_id_seq TO "[% rw_role %]";
 
 CREATE TABLE genotyping_primer_types (
        genotyping_primer_type TEXT PRIMARY KEY
