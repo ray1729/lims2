@@ -158,7 +158,7 @@ sub type_for {
     my $design = shift;
 
     if ( $design->is_artificial_intron ) {
-        return 'artifical-intron';
+        return 'artificial-intron';
     }
 
     my $dt = $design->design_type;    
