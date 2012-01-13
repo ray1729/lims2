@@ -151,7 +151,7 @@ sub as_hash {
     return {
         plate_comment => $self->plate_comment,
         created_at    => $self->created_at->iso8601,
-        created_by    => $self->created_user->user_name
+        created_by    => $self->created_by->user_name
     };
 }
 
