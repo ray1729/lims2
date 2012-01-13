@@ -8,7 +8,7 @@ use Data::FormValidator;
 use LIMS2::Model;
 use LIMS2::Model::DBConnect;
 
-ok my $schema = LIMS2::Model::DBConnect->connect( 'LIMS2_TEST' ),
+ok my $schema = LIMS2::Model::DBConnect->connect( 'LIMS2_TEST', 'tests' ),
     'connect to LIMS2_TEST';
 
 ok my $model = LIMS2::Model->new( schema => $schema ),

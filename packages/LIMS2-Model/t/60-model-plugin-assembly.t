@@ -11,7 +11,7 @@ const my @ASSEMBLIES => qw( NCBIM34 NCBIM36 NCBIM37 );
 
 use_ok 'LIMS2::Model';
 
-ok my $schema = LIMS2::Model::DBConnect->connect( 'LIMS2_TEST' ),
+ok my $schema = LIMS2::Model::DBConnect->connect( 'LIMS2_TEST', 'tests' ),
     'connect to LIMS2_TEST';
 
 ok my $model = LIMS2::Model->new( schema => $schema ), 'instantiate model';
