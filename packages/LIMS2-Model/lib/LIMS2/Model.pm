@@ -84,7 +84,16 @@ sub plugins {
 
     Module::Pluggable::Object->new( search_path => [ $class . '::Plugin' ] )->plugins;
 }
-    
+
+sub retrieve {
+    my ( $self, $entity_class, $search_params ) = @_;
+
+    my $obj = $self->schema->resultset( $entity_class )->find( $search_params )
+        or $self->throw( NotFound => { entity_class => $entity_class, search_params => $search_params } );
+
+    return $obj;
+}
+
 with ( __PACKAGE__->plugins );
 
 1;
