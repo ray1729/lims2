@@ -62,6 +62,10 @@ sub validated_by_annotation {
     in_set( 'yes', 'no', 'maybe', 'not done' );
 }
 
+sub assay_result {
+    in_set( 'pass', 'fail', 'maybe' );
+}
+
 sub dna_seq {
     regexp_matches( qr/^[ATGC]+$/ );
 }
@@ -92,6 +96,10 @@ sub bac_name {
 
 sub plate_name {
     regexp_matches( qr/^[A-Z0-9_]+$/ );
+}
+
+sub bac_plate {
+    regexp_matches( qr/^[abcd]$/ );
 }
 
 sub existing_assembly {
@@ -137,6 +145,11 @@ sub existing_design_well_recombineering_assay {
 sub existing_genotyping_primer_type {
     my ( $class, $model ) = @_;    
     in_resultset( $model, 'GenotypingPrimerType', 'genotyping_primer_type' );
+}
+
+sub existing_design_well_recombineering_assay {
+    my ( $class, $model ) = @_;
+    in_resultset( $model, 'DesignWellRecombineeringAssay', 'assay' );
 }
 
 sub existing_user {
