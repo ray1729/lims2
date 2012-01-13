@@ -62,6 +62,8 @@ EOT
 
 const my %IS_AUDIT_COL => map { $_ => 1 } qw( audit_op audit_user audit_stamp audit_txid );
 
+const my %NEEDS_SIZE => map { $_ => 1 } qw( char character varchar );
+
 my $pg_host   = $ENV{PGHOST};
 my $pg_port   = $ENV{PGPORT};
 my $pg_dbname = $ENV{PGDATABASE};
@@ -146,7 +148,7 @@ sub diff_tables {
     }
 
     for my $audit_column_name ( keys %audit_cols ) {
-        unless ( $cols{$audit_column_name} or $IS_AUDIT_COL{$audit_column_name} ) {
+        unless ( $cols{$audit_column_name} or exists $IS_AUDIT_COL{$audit_column_name} ) {
             $tt->process( \$DROP_AUDIT_TABLE_COLUMN_TT, { %vars, column_name => $audit_column_name } );
         }
     }
@@ -187,7 +189,11 @@ sub get_column_info {
     
     my $sth = $dbh->column_info( undef, $schema_name, $table_name, undef );
     while ( my $r = $sth->fetchrow_hashref ) {
-        push @column_info, [ $r->{COLUMN_NAME}, $r->{TYPE_NAME} ];        
+        my $type = $r->{TYPE_NAME};
+        if ( exists $NEEDS_SIZE{$type} ) {
+            $type = $type . '(' . $r->{COLUMN_SIZE} . ')';
+        }        
+        push @column_info, [ $r->{COLUMN_NAME}, $type ];        
     }
 
     return \@column_info;
