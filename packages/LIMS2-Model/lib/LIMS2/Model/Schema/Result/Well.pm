@@ -64,12 +64,12 @@ __PACKAGE__->table("wells");
   is_nullable: 0
   original: {default_value => \"now()"}
 
-=head2 assay_started
+=head2 assay_pending
 
   data_type: 'timestamp'
   is_nullable: 1
 
-=head2 asssay_complete
+=head2 assay_complete
 
   data_type: 'timestamp'
   is_nullable: 1
@@ -101,9 +101,9 @@ __PACKAGE__->add_columns(
     is_nullable   => 0,
     original      => { default_value => \"now()" },
   },
-  "assay_started",
+  "assay_pending",
   { data_type => "timestamp", is_nullable => 1 },
-  "asssay_complete",
+  "assay_complete",
   { data_type => "timestamp", is_nullable => 1 },
   "distribute",
   { data_type => "boolean", default_value => \"false", is_nullable => 0 },
@@ -245,8 +245,8 @@ __PACKAGE__->might_have(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-12 13:54:10
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:iIhEFbS63i38TQrpma2PXA
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-13 15:18:06
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Iwd8tDQ22zN8GLY3Z8M/5A
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
