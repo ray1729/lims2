@@ -34,7 +34,7 @@ sub pspec_create_design_well_recombineering_result {
         assay      => { validate => 'existing_design_well_recombineering_assay' },
         result     => { validate => 'assay_result' },
         created_by => { validate => 'existing_user', post_filter => 'user_id_for' },
-        created_at => { validate => 'date_time' }
+        created_at => { validate => 'date_time', post_filter => 'parse_date_time' }
     };    
 }        
 
