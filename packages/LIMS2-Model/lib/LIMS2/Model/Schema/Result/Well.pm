@@ -273,5 +273,30 @@ __PACKAGE__->might_have(
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
+
+sub is_distributable {
+    my $self = shift;
+
+    if ( my $o = $self->well_distribute_override ) {
+        return $o->distribute_override;
+    }
+
+    return $self->distribute;
+}
+
+sub as_hash {
+    my $self = shift;
+
+    return {
+        plate_name     => $self->plate->plate_name,
+        well_name      => $self->well_name,
+        created_by     => $self->created_by->user_name,
+        created_at     => $self->created_at->iso8601,
+        assay_pending  => $self->assay_pending ? $self->assay_pending->iso8601 : '',
+        assay_complete => $self->assay_complete ? $self->assay_complete->iso8601 : '',
+        distribute     => $self->is_distributable
+    };
+}
+
 __PACKAGE__->meta->make_immutable;
 1;
