@@ -98,6 +98,10 @@ sub plate_name {
     regexp_matches( qr/^[A-Z0-9_]+$/ );
 }
 
+sub well_name {
+    regexp_matches( qr/^[A-O](0[1-9]|1[0-9]|2[0-4])$/ );
+}
+
 sub bac_plate {
     regexp_matches( qr/^[abcd]$/ );
 }
@@ -157,6 +161,15 @@ sub existing_role {
     in_resultset( $model, 'Role', 'role_name' );
 }
 
+sub existing_plate_name {
+    my ( $class, $model ) = @_;
+    
+    return sub {
+        my $plate_name = shift;
+        $model->schema->resultset( 'Plate' )->search_rs( { plate_name => $plate_name } )->count;
+    }
+}
+        
 1;
 
 __END__
