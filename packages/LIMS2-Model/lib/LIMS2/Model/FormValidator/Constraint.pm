@@ -147,11 +147,6 @@ sub existing_genotyping_primer_type {
     in_resultset( $model, 'GenotypingPrimerType', 'genotyping_primer_type' );
 }
 
-sub existing_design_well_recombineering_assay {
-    my ( $class, $model ) = @_;
-    in_resultset( $model, 'DesignWellRecombineeringAssay', 'assay' );
-}
-
 sub existing_user {
     my ( $class, $model ) = @_;    
     in_resultset( $model, 'User', 'user_name' );
