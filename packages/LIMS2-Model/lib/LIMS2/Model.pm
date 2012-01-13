@@ -94,6 +94,6 @@ sub retrieve {
     return $obj;
 }
 
-with ( __PACKAGE__->plugins );
+with ( qw( MooseX::Log::Log4perl ), __PACKAGE__->plugins );
 
 1;
