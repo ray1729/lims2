@@ -36,7 +36,7 @@ sub _create_well {
 
     $plate ||= $self->retrieve( Plate => { plate_name => $validated_params->{plate_name} } );
     
-    my $well $plate->create_related(
+    my $well = $plate->create_related(
         well => {
             slice_def( $validated_params, qw( well_name created_by created_at assay_started assay_complete distribute ) )
         }
