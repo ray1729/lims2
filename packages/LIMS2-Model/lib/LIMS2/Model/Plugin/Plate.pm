@@ -15,7 +15,7 @@ sub pspec_create_plate {
         plate_type => { validate => 'existing_plate_type' },
         plate_desc => { validate => 'non_empty_string', optional => 1 },
         created_by => { validate => 'existing_user', post_filter => 'user_id_for' },
-        created_at => { validate => 'date_time' },
+        created_at => { validate => 'date_time', optional => 1 },
         comments   => { optional => 1 },
         wells      => { optional => 1 }
     }
@@ -25,20 +25,7 @@ sub pspec_create_plate_comment {
     return {
         plate_comment => { validate => 'non_empty_string' },
         created_by    => { validate => 'existing_user', post_filter => 'user_id_for' },
-        created_at    => { validate => 'date_time' }
-    }
-}
-
-sub pspec_create_well {
-    return {
-        plate_name          => { validate => 'existing_plate_name' },
-        well_name           => { validate => 'well_name' },
-        created_by          => { validate => 'existing_user', post_filter => 'user_id_for' },
-        created_at          => { validate => 'date_time' },
-        assay_started       => { validate => 'date_time', optional => 1 },
-        assay_complete      => { validate => 'date_time', optional => 1 },
-        distribute          => { validate => 'boolean',   optional => 1 },
-        distribute_override => { optional => 1 }
+        created_at    => { validate => 'date_time', optional => 1 }
     }
 }
 
@@ -46,7 +33,7 @@ sub create_plate {
     my ( $self, $params ) = @_;
 
     my $validated_params = $self->check_params( $params, $self->pspec_create_plate );
-
+    
     my $plate = $self->schema->resultset( 'Plate' )->create(
         { slice_def( $validated_params, qw( plate_name plate_type plate_desc created_by created_at ) ) }
     );
@@ -61,7 +48,7 @@ sub create_plate {
     while ( my ( $well_name, $well_params ) = each %{ $validated_params->{wells} || {} } ) {
         $well_params->{plate_name} = $validated_params->{plate_name};
         $well_params->{well_name}  = $well_name;
-        $self->$create_well( $well_params );
+        $self->$create_well( $well_params, $plate );
     }
 
     # XXX Should this return profile-specific data?
