@@ -46,6 +46,7 @@ CREATE TABLE wells (
        well_id          SERIAL PRIMARY KEY,
        plate_id         INTEGER NOT NULL REFERENCES plates(plate_id),
        well_name        CHARACTER(3) NOT NULL CHECK (well_name ~ '^[A-O](0[1-9]|1[0-9]|2[0-4])$'),
+       created_by       INTEGER NOT NULL REFERENCES users(user_id),
        created_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
        assay_pending    TIMESTAMP,
        assay_complete   TIMESTAMP,

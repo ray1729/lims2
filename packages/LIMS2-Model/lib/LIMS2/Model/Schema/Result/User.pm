@@ -212,9 +212,24 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
+=head2 wells
 
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-12 13:54:10
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:3dOlhruMNY1CtuMIuhFrWw
+Type: has_many
+
+Related object: L<LIMS2::Model::Schema::Result::Well>
+
+=cut
+
+__PACKAGE__->has_many(
+  "wells",
+  "LIMS2::Model::Schema::Result::Well",
+  { "foreign.created_by" => "self.user_id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-13 15:49:07
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:NM6bpBTFqM+rMHqDD/qzVw
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
