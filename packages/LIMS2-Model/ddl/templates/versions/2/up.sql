@@ -47,8 +47,8 @@ CREATE TABLE wells (
        plate_id         INTEGER NOT NULL REFERENCES plates(plate_id),
        well_name        CHARACTER(3) NOT NULL CHECK (well_name ~ '^[A-O](0[1-9]|1[0-9]|2[0-4])$'),
        created_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-       assay_started    TIMESTAMP,
-       asssay_complete  TIMESTAMP,
+       assay_pending    TIMESTAMP,
+       assay_complete   TIMESTAMP,
        distribute       BOOLEAN NOT NULL DEFAULT FALSE,
        UNIQUE (plate_id, well_name)
 );
