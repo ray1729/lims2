@@ -46,19 +46,30 @@ sub _instantiate_well {
 sub _create_tree_paths {
     my ( $self, $well, @ancestors ) = @_;
 
-    my $query = sprintf( <<'EOT', join q{, }, ('?')x@ancestors );
+    my ( $insert_tree_paths, @bind_params );
+    
+    if ( @ancestors ) {
+        $insert_tree_paths = sprintf( <<'EOT', join q{, }, ('?')x@ancestors );
 insert into tree_paths( ancestor, descendant, path_length )
   select t.ancestor, cast( ? as integer ), t.path_length + 1
   from tree_paths t
   where t.descendant in ( %s )
 union all
-  select cast( ? as integer), cast( ? as integer ), 0
+  select cast( ? as integer ), cast( ? as integer ), 0
 EOT
+        @bind_params = ( $well->well_id, map( $_->well_id, @ancestors ), $well->well_id, $well->well_id ); 
+    }    
+    else {
+        $insert_tree_paths = <<'EOT';
+insert into tree_paths( ancestor, descendant, path_length ) values( ?, ?, 0 )
+EOT
+        @bind_params = ( $well->well_id, $well->well_id );
+    }
     
     $self->schema->storage->dbh_do(
         sub {
-            my $sth = $_[1]->prepare( $query );            
-            $sth->execute( $well_id, map( $_->well_id, @ancestors ), $well_id, $well_id );
+            my $sth = $_[1]->prepare_cached( $insert_tree_paths );
+            $sth->execute( @bind_params );
         }
     );
 }
@@ -79,7 +90,7 @@ sub _create_well {
 
     $self->log->debug( 'created well with id: ' . $well->well_id );
 
-    $self->_create_tree_paths( $well, map { $self->_instantiate_well( $_ ) } @{ $self->{parent_wells} || [] } );
+    $self->_create_tree_paths( $well, map { $self->_instantiate_well( $_ ) } @{ $self->{parent_wells} } );
     
     if ( $validated_params->{assay_complete} ) {
         $self->set_well_assay_complete( { assay_complete => $validated_params->{assay_complete} }, $well );
@@ -95,7 +106,7 @@ sub _create_well {
 
 sub pspec_set_well_assay_complete {
     return {
-        plate_name     => { validate => 'existing_plate', optional => 1 },
+        plate_name     => { validate => 'existing_plate_name', optional => 1 },
         well_name      => { validate => 'well_name', optional => 1 },
         assay_complete => { validate => 'date_time', optional => 1, default => sub { DateTime->now }, post_filter => 'parse_date_time' },
     };
