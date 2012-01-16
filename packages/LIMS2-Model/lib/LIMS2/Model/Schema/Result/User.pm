@@ -197,17 +197,17 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
-=head2 well_distribute_overrides
+=head2 well_accepted_overrides
 
 Type: has_many
 
-Related object: L<LIMS2::Model::Schema::Result::WellDistributeOverride>
+Related object: L<LIMS2::Model::Schema::Result::WellAcceptedOverride>
 
 =cut
 
 __PACKAGE__->has_many(
-  "well_distribute_overrides",
-  "LIMS2::Model::Schema::Result::WellDistributeOverride",
+  "well_accepted_overrides",
+  "LIMS2::Model::Schema::Result::WellAcceptedOverride",
   { "foreign.created_by" => "self.user_id" },
   { cascade_copy => 0, cascade_delete => 0 },
 );
@@ -228,8 +228,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-13 15:49:07
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:NM6bpBTFqM+rMHqDD/qzVw
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-16 11:36:14
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:k/sWIrIXo+35KsTs9WU6Bg
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

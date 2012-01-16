@@ -1,12 +1,12 @@
 use utf8;
-package LIMS2::Model::Schema::Result::WellDistributeOverride;
+package LIMS2::Model::Schema::Result::WellAcceptedOverride;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 =head1 NAME
 
-LIMS2::Model::Schema::Result::WellDistributeOverride
+LIMS2::Model::Schema::Result::WellAcceptedOverride
 
 =cut
 
@@ -30,11 +30,11 @@ extends 'DBIx::Class::Core';
 
 __PACKAGE__->load_components("InflateColumn::DateTime");
 
-=head1 TABLE: C<well_distribute_override>
+=head1 TABLE: C<well_accepted_override>
 
 =cut
 
-__PACKAGE__->table("well_distribute_override");
+__PACKAGE__->table("well_accepted_override");
 
 =head1 ACCESSORS
 
@@ -44,7 +44,7 @@ __PACKAGE__->table("well_distribute_override");
   is_foreign_key: 1
   is_nullable: 0
 
-=head2 distribute_override
+=head2 accepted
 
   data_type: 'boolean'
   is_nullable: 0
@@ -67,7 +67,7 @@ __PACKAGE__->table("well_distribute_override");
 __PACKAGE__->add_columns(
   "well_id",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
-  "distribute_override",
+  "accepted",
   { data_type => "boolean", is_nullable => 0 },
   "created_by",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
@@ -125,8 +125,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-12 13:54:10
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Ov1E0Hn2E44JGku+lBtAgQ
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-16 11:36:14
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:S3QvYDxana8RlwiIimTC5w
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

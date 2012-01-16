@@ -74,7 +74,7 @@ __PACKAGE__->table("wells");
   data_type: 'timestamp'
   is_nullable: 1
 
-=head2 distribute
+=head2 accepted
 
   data_type: 'boolean'
   default_value: false
@@ -111,7 +111,7 @@ __PACKAGE__->add_columns(
   { data_type => "timestamp", is_nullable => 1 },
   "assay_complete",
   { data_type => "timestamp", is_nullable => 1 },
-  "distribute",
+  "accepted",
   { data_type => "boolean", default_value => \"false", is_nullable => 0 },
   "created_by",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
@@ -252,36 +252,36 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
-=head2 well_distribute_override
+=head2 well_accepted_override
 
 Type: might_have
 
-Related object: L<LIMS2::Model::Schema::Result::WellDistributeOverride>
+Related object: L<LIMS2::Model::Schema::Result::WellAcceptedOverride>
 
 =cut
 
 __PACKAGE__->might_have(
-  "well_distribute_override",
-  "LIMS2::Model::Schema::Result::WellDistributeOverride",
+  "well_accepted_override",
+  "LIMS2::Model::Schema::Result::WellAcceptedOverride",
   { "foreign.well_id" => "self.well_id" },
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-13 15:49:07
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Q1X++FiH8n7syJqJMMfUog
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-16 11:36:14
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:CkjGmjSVhltxeZ7+CRRlvw
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 
-sub is_distributable {
+sub is_accepted {
     my $self = shift;
 
-    if ( my $o = $self->well_distribute_override ) {
-        return $o->distribute_override;
+    if ( my $o = $self->well_accepted_override ) {
+        return $o->accepted;
     }
 
-    return $self->distribute;
+    return $self->accepted;
 }
 
 sub as_hash {
@@ -294,7 +294,7 @@ sub as_hash {
         created_at     => $self->created_at->iso8601,
         assay_pending  => $self->assay_pending ? $self->assay_pending->iso8601 : '',
         assay_complete => $self->assay_complete ? $self->assay_complete->iso8601 : '',
-        distribute     => $self->is_distributable
+        accepted       => $self->is_accepted
     };
 }
 
