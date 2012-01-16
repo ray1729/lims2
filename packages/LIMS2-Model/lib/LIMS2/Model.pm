@@ -8,6 +8,7 @@ require LIMS2::Model::DBConnect;
 require LIMS2::Model::FormValidator;
 require DateTime::Format::ISO8601;
 require Module::Pluggable::Object;
+use Scalar::Util qw( blessed );
 use namespace::autoclean;
 
 # XXX TODO: authorization checks?
@@ -34,6 +35,11 @@ sub _audit_user_set {
     );           
 }
 
+has user => (
+    is  => 'ro',
+    isa => 'Str',
+);
+
 has schema => (
     is         => 'ro',
     isa        => 'LIMS2::Model::Schema',
@@ -44,7 +50,10 @@ has schema => (
 sub _build_schema {
     my $self = shift;
 
-    return LIMS2::Model::DBConnect->connect( 'LIMS2_DB' );
+    my $user = $self->user
+        or confess "user must be specified for database login";
+    
+    return LIMS2::Model::DBConnect->connect( 'LIMS2_DB', $user );
 }
 
 has form_validator => (
@@ -76,7 +85,16 @@ sub throw {
 sub parse_date_time {
     my ( $self, $date_time ) = @_;
 
-    DateTime::Format::ISO8601->parse_datetime( $date_time );
+    if ( not defined $date_time ) {
+        return;
+    }
+    elsif ( blessed( $date_time ) and $date_time->isa( 'DateTime' ) ) {
+        return $date_time;
+    }
+    else {    
+        DateTime::Format::ISO8601->parse_datetime( $date_time );
+    }
+    
 }
 
 sub plugins {
@@ -86,12 +104,21 @@ sub plugins {
 }
 
 sub retrieve {
-    my ( $self, $entity_class, $search_params ) = @_;
+    my ( $self, $entity_class, $search_params, $search_opts ) = @_;
 
-    my $obj = $self->schema->resultset( $entity_class )->find( $search_params )
-        or $self->throw( NotFound => { entity_class => $entity_class, search_params => $search_params } );
+    $search_opts ||= {};
+    
+    my @objects = $self->schema->resultset( $entity_class )->search( $search_params, $search_opts );
 
-    return $obj;
+    if ( @objects == 1 ) {
+        return $objects[0];
+    }
+    elsif ( @objects == 0 ) {
+        $self->throw( NotFound => { entity_class => $entity_class, search_params => $search_params } );
+    }
+    else {
+        $self->throw( Implementation => "Retrieval of $entity_class returned " . @objects . " objects" );        
+    }
 }
 
 with ( qw( MooseX::Log::Log4perl ), __PACKAGE__->plugins );
