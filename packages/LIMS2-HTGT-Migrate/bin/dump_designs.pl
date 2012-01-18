@@ -35,17 +35,24 @@ my $schema = HTGT::DBFactory->connect( 'eucomm_vector' );
 
 my $run_date = DateTime->now;
 
-my $designs_rs = $schema->resultset( 'Design' )->search(
-    {
-        'statuses.is_current'            => 1,
-        'design_status_dict.description' => \@WANTED_DESIGN_STATUS,
-        'projects.project_id'            => { '!=', undef },
-    },
-    {
-        join => [ 'projects', { 'statuses' => 'design_status_dict' } ],
-        distinct => 1
-    }
-);
+my $designs_rs;
+
+if ( @ARGV ) {
+    $designs_rs = $schema->resultset( 'Design' )->search( { design_id => \@ARGV } );
+}
+else {
+    $designs_rs = $schema->resultset( 'Design' )->search(
+        {
+            'statuses.is_current'            => 1,
+            'design_status_dict.description' => \@WANTED_DESIGN_STATUS,
+            'projects.project_id'            => { '!=', undef },
+        },
+        {
+            join => [ 'projects', { 'statuses' => 'design_status_dict' } ],
+            distinct => 1
+        }
+    );
+}
 
 while ( my $design = $designs_rs->next ) {
     Log::Log4perl::NDC->push( $design->design_id );
