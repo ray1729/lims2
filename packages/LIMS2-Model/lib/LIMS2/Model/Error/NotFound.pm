@@ -8,6 +8,10 @@ use namespace::autoclean;
 
 extends qw( LIMS2::Model::Error );
 
+has '+message' => (
+    default => 'Entity not found'
+);
+
 has entity_class => (
     is       => 'ro',
     isa      => 'Str',
