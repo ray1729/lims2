@@ -57,6 +57,12 @@ __PACKAGE__->table("wells");
   is_nullable: 0
   size: 3
 
+=head2 created_by
+
+  data_type: 'integer'
+  is_foreign_key: 1
+  is_nullable: 0
+
 =head2 created_at
 
   data_type: 'timestamp'
@@ -80,12 +86,6 @@ __PACKAGE__->table("wells");
   default_value: false
   is_nullable: 0
 
-=head2 created_by
-
-  data_type: 'integer'
-  is_foreign_key: 1
-  is_nullable: 0
-
 =cut
 
 __PACKAGE__->add_columns(
@@ -100,6 +100,8 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
   "well_name",
   { data_type => "char", is_nullable => 0, size => 3 },
+  "created_by",
+  { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
   "created_at",
   {
     data_type     => "timestamp",
@@ -113,8 +115,6 @@ __PACKAGE__->add_columns(
   { data_type => "timestamp", is_nullable => 1 },
   "accepted",
   { data_type => "boolean", default_value => \"false", is_nullable => 0 },
-  "created_by",
-  { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -192,21 +192,6 @@ __PACKAGE__->might_have(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
-=head2 design_well_recombineering_results
-
-Type: has_many
-
-Related object: L<LIMS2::Model::Schema::Result::DesignWellRecombineeringResult>
-
-=cut
-
-__PACKAGE__->has_many(
-  "design_well_recombineering_results",
-  "LIMS2::Model::Schema::Result::DesignWellRecombineeringResult",
-  { "foreign.well_id" => "self.well_id" },
-  { cascade_copy => 0, cascade_delete => 0 },
-);
-
 =head2 plate
 
 Type: belongs_to
@@ -267,9 +252,24 @@ __PACKAGE__->might_have(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
+=head2 well_assay_results
 
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-16 11:36:14
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:CkjGmjSVhltxeZ7+CRRlvw
+Type: has_many
+
+Related object: L<LIMS2::Model::Schema::Result::WellAssayResult>
+
+=cut
+
+__PACKAGE__->has_many(
+  "well_assay_results",
+  "LIMS2::Model::Schema::Result::WellAssayResult",
+  { "foreign.well_id" => "self.well_id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-18 11:04:35
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:chlW8Tnp2iX9Gm74bb+DLA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

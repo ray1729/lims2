@@ -107,21 +107,6 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
-=head2 design_well_recombineering_results
-
-Type: has_many
-
-Related object: L<LIMS2::Model::Schema::Result::DesignWellRecombineeringResult>
-
-=cut
-
-__PACKAGE__->has_many(
-  "design_well_recombineering_results",
-  "LIMS2::Model::Schema::Result::DesignWellRecombineeringResult",
-  { "foreign.created_by" => "self.user_id" },
-  { cascade_copy => 0, cascade_delete => 0 },
-);
-
 =head2 designs
 
 Type: has_many
@@ -212,6 +197,21 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
+=head2 well_assay_results
+
+Type: has_many
+
+Related object: L<LIMS2::Model::Schema::Result::WellAssayResult>
+
+=cut
+
+__PACKAGE__->has_many(
+  "well_assay_results",
+  "LIMS2::Model::Schema::Result::WellAssayResult",
+  { "foreign.created_by" => "self.user_id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
 =head2 wells
 
 Type: has_many
@@ -228,8 +228,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-16 11:36:14
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:k/sWIrIXo+35KsTs9WU6Bg
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-18 11:04:35
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:lm23HrcmnZjkSU8wrUoi0g
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

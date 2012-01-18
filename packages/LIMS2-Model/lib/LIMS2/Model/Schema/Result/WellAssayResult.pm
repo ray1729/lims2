@@ -1,12 +1,12 @@
 use utf8;
-package LIMS2::Model::Schema::Result::DesignWellRecombineeringResult;
+package LIMS2::Model::Schema::Result::WellAssayResult;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 =head1 NAME
 
-LIMS2::Model::Schema::Result::DesignWellRecombineeringResult
+LIMS2::Model::Schema::Result::WellAssayResult
 
 =cut
 
@@ -30,11 +30,11 @@ extends 'DBIx::Class::Core';
 
 __PACKAGE__->load_components("InflateColumn::DateTime");
 
-=head1 TABLE: C<design_well_recombineering_results>
+=head1 TABLE: C<well_assay_results>
 
 =cut
 
-__PACKAGE__->table("design_well_recombineering_results");
+__PACKAGE__->table("well_assay_results");
 
 =head1 ACCESSORS
 
@@ -53,11 +53,6 @@ __PACKAGE__->table("design_well_recombineering_results");
 =head2 result
 
   data_type: 'text'
-  is_nullable: 0
-
-=head2 created_by
-
-  data_type: 'integer'
   is_foreign_key: 1
   is_nullable: 0
 
@@ -68,6 +63,12 @@ __PACKAGE__->table("design_well_recombineering_results");
   is_nullable: 0
   original: {default_value => \"now()"}
 
+=head2 created_by
+
+  data_type: 'integer'
+  is_foreign_key: 1
+  is_nullable: 0
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -76,9 +77,7 @@ __PACKAGE__->add_columns(
   "assay",
   { data_type => "text", is_foreign_key => 1, is_nullable => 0 },
   "result",
-  { data_type => "text", is_nullable => 0 },
-  "created_by",
-  { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
+  { data_type => "text", is_foreign_key => 1, is_nullable => 0 },
   "created_at",
   {
     data_type     => "timestamp",
@@ -86,11 +85,11 @@ __PACKAGE__->add_columns(
     is_nullable   => 0,
     original      => { default_value => \"now()" },
   },
+  "created_by",
+  { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
 );
 
-=head1 UNIQUE CONSTRAINTS
-
-=head2 C<design_well_recombineering_results_well_id_assay_key>
+=head1 PRIMARY KEY
 
 =over 4
 
@@ -102,25 +101,22 @@ __PACKAGE__->add_columns(
 
 =cut
 
-__PACKAGE__->add_unique_constraint(
-  "design_well_recombineering_results_well_id_assay_key",
-  ["well_id", "assay"],
-);
+__PACKAGE__->set_primary_key("well_id", "assay");
 
 =head1 RELATIONS
 
-=head2 assay
+=head2 assay_result
 
 Type: belongs_to
 
-Related object: L<LIMS2::Model::Schema::Result::DesignWellRecombineeringAssay>
+Related object: L<LIMS2::Model::Schema::Result::AssayResult>
 
 =cut
 
 __PACKAGE__->belongs_to(
-  "assay",
-  "LIMS2::Model::Schema::Result::DesignWellRecombineeringAssay",
-  { assay => "assay" },
+  "assay_result",
+  "LIMS2::Model::Schema::Result::AssayResult",
+  { assay => "assay", result => "result" },
   { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
@@ -155,8 +151,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-12 13:54:10
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:/YS3d0HJDXCDXKyfkGTPfw
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-18 11:04:35
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:GcQnBVPlHkJf6dflxfvgog
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
