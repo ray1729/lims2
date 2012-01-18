@@ -156,5 +156,19 @@ __PACKAGE__->belongs_to(
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
+
+sub as_hash {
+    my $self = shift;
+
+    return {
+        plate_name => $self->well->plate->plate_name,
+        well_name  => $self->well->well_name,
+        assay      => $self->assay,
+        result     => $self->result,
+        created_at => $self->created_at->iso8601,
+        created_by => $self->created_by->user_name
+    };
+}
+
 __PACKAGE__->meta->make_immutable;
 1;
