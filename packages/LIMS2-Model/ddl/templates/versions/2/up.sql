@@ -1,6 +1,6 @@
 --
 -- Define tables for storing general plate and well data, tree paths
--- (well relationships), and design and pcs well data.
+-- (well relationships), and design well data.
 --
 
 --

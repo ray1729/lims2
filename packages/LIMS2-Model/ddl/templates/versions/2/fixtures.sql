@@ -1,4 +1,4 @@
-INSERT INTO plate_types (plate_type) VALUES ('DESIGN');
+INSERT INTO plate_types (plate_type) VALUES ('design');
 
 [% FOR assay IN [ 'rec_u', 'rec_d', 'rec_g', 'rec_ns', 'pcr_u', 'pcr_d', 'pcr_g', 'postcre' ] %]
 INSERT INTO assay_result(assay,result)
