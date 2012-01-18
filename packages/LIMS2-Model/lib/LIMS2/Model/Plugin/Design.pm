@@ -149,6 +149,22 @@ sub delete_design {
     return 1;
 }
 
+sub pspec_retrieve_design {
+    return {
+        design_id => { validate => 'integer' }
+    }
+}
+
+sub retrieve_design {
+    my ( $self, $params ) = @_;
+
+    my $validated_params = $self->check_params( $params, $self->pspec_retrieve_design );
+    
+    my $design = $self->retrieve( Design => $validated_params );
+
+    return $design->as_hash;
+}
+
 1;
 
 __END__
