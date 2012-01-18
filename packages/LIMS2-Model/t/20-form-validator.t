@@ -55,7 +55,14 @@ ok my $dfv_profile = $model->form_validator->dfv_profile( $pspec ),
     is_deeply [ $res->missing ], [ 'bac_name' ], 'bac_name is missing';
 }
 
-    
+{
+    lives_ok {
+        $model->check_params(
+            { cassette => 'pR6K_R1R2_ZP' },
+            { cassette => { validate => 'existing_intermediate_cassette' } }
+        )
+    } 'check existing_intermediate_cassette';
+}
 
 
 done_testing;

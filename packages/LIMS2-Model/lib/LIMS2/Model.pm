@@ -69,6 +69,19 @@ sub _build_form_validator {
     return LIMS2::Model::FormValidator->new( model => $self );
 }
 
+has eng_seq_builder => (
+    is         => 'ro',
+    isa        => 'EngSeqBuilder',
+    lazy_build => 1
+);
+
+sub _build_eng_seq_builder {
+    my $self = shift;
+
+    require EngSeqBuilder;
+    return EngSeqBuilder->new( configfile => $ENV{ENG_SEQ_BUILDER_CONFIG} );
+}
+
 sub throw {
     my ( $self, $error_class, $args ) = @_;
 

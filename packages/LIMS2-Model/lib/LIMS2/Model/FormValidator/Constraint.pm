@@ -30,6 +30,12 @@ sub in_resultset {
     in_set( [ map { $_->$column_name } $model->schema->resultset( $resultset_name )->all ] );
 }
 
+sub eng_seq_of_type {
+    my ( $model, $type ) = @_;
+    my $eng_seqs = $model->eng_seq_builder->list_seqs( type => $type );
+    in_set( [ map { $_->{name} } @{ $eng_seqs } ] );
+}
+
 sub regexp_matches {
     my $match = shift;
     return sub {
@@ -178,6 +184,26 @@ sub existing_assay {
 sub existing_assay_result {
     my ( $class, $model ) = @_;
     in_resultset( $model, 'AssayResult', 'result' );
+}
+
+sub existing_intermediate_cassette {
+    my ( $class, $model ) = @_;
+    eng_seq_of_type( $model, 'intermediate-cassette' );
+}
+
+sub existing_intermediate_backbone {
+    my ( $class, $model ) = @_;
+    eng_seq_of_type( $model, 'intermediate-backbone' );
+}
+
+sub existing_final_cassette {
+    my ( $class, $model ) = @_;
+    eng_seq_of_type( $model, 'final-cassette' ); 
+}
+
+sub existing_final_backbone {
+    my ( $class, $model ) = @_;
+    eng_seq_of_type( $model, 'final-backbone' );
 }
         
 1;
