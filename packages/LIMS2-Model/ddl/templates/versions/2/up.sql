@@ -91,6 +91,8 @@ CREATE TABLE design_well_design (
 GRANT SELECT ON design_well_design TO "[% ro_role %]";
 GRANT SELECT, INSERT, UPDATE, DELETE ON design_well_design TO "[% rw_role %]";
 
+CREATE INDEX ON desgin_well_design(design_id);
+
 CREATE TABLE design_well_bac (
        well_id             INTEGER NOT NULL REFERENCES wells(well_id),
        bac_plate           TEXT NOT NULL,
