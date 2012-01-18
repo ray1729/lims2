@@ -19,7 +19,8 @@ sub pspec_create_well {
         assay_pending  => { validate => 'date_time', optional => 1, post_filter => 'parse_date_time' },
         assay_complete => { validate => 'date_time', optional => 1, post_filter => 'parse_date_time' },
         accepted       => { optional => 1 },
-        parent_wells   => { optional => 1, default => [] }
+        parent_wells   => { optional => 1, default => [] },
+        assay_results  => { optional => 1, default => [] }
     }
 }
 
@@ -91,6 +92,10 @@ sub _create_well {
     $self->log->debug( 'created well with id: ' . $well->well_id );
 
     $self->_create_tree_paths( $well, map { $self->_instantiate_well( $_ ) } @{ $self->{parent_wells} } );
+
+    for my $assay_result ( @{ $validated_params->{assay_results} } ) {
+        $self->add_well_assay_result( $assay_result, $well );
+    }    
     
     if ( $validated_params->{assay_complete} ) {
         $self->set_well_assay_complete( { assay_complete => $validated_params->{assay_complete} }, $well );
@@ -116,21 +121,51 @@ sub set_well_assay_complete {
     my ( $self, $params, $well ) = @_;
 
     my $validated_params = $self->check_params( $params, $self->pspec_set_well_assay_complete );
-        
-    unless ( $well ) {
-        $well = $self->retrieve(
-            Well => {
-                well_name  => $params->{well_name},
-                plate_name => $params->{plate_name}
-            },
-            { join => 'Plate' }
-        );
-    }
+
+    $well ||= $self->_instantiate_well( $validated_params );
 
     # XXX fire trigger to set 'accepted' flag
     
     $well->update( { assay_complete => $validated_params->{assay_complete} } );
 }
+
+# XXX These validations do not check that assay/result is a valid combination, only the
+# two fields independently
+sub pspec_add_well_assay_result {
+    return {
+        plate_name => { validate => 'existing_plate_name', optional => 1 },
+        well_name  => { validate => 'well_name', optional => 1 },
+        assay      => { validate => 'existing_assay' },
+        result     => { validate => 'existing_assay_result' },
+        created_by => { validate => 'existing_user', post_filter => 'user_id_for' },
+        created_at => { validate => 'date_time', post_filter => 'parse_date_time' }
+    };    
+}
+
+sub add_well_assay_result {
+    my ( $self, $params, $well ) = @_;
+
+    my $validated_params = $self->check_params( $params, $self->pspec_add_well_assay_result );
+
+    $well ||= $self->_instantiate_well( $validated_params );
+
+    if ( $well->assay_complete ) {
+        $self->throw( InvalidState => 'Assay results cannot be added to a well in state assay_complete' );
+    }    
+    
+    my $assay_result = $well->create_related(
+        well_assay_results => {
+            slice_def( $validated_params, qw( assay result created_at created_by ) )
+        }
+    );
+
+    unless ( $well->assay_pending and $well->assay_pending <= $assay_result->created_at ) {
+        $well->update( { assay_pending => $assay_result->{created_at} } );
+    }
+
+    return $assay_result->as_hash;
+}
+
 
 1;
 

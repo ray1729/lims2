@@ -29,15 +29,6 @@ sub pspec_create_design_well_bac {
     };    
 }
 
-sub pspec_create_design_well_recombineering_result {
-    return {
-        assay      => { validate => 'existing_design_well_recombineering_assay' },
-        result     => { validate => 'assay_result' },
-        created_by => { validate => 'existing_user', post_filter => 'user_id_for' },
-        created_at => { validate => 'date_time', post_filter => 'parse_date_time' }
-    };    
-}        
-
 sub create_design_well {
     my ( $self, $params, $plate ) = @_;
 
@@ -50,11 +41,6 @@ sub create_design_well {
     for my $b ( @{ $validated_params->{bac_clones} || [] } ) {
         my $validated_b = $self->check_params( $b, $self->pspec_create_design_well_bac );
         $well->create_related( design_well_bacs => $validated_b );
-    }
-
-    for my $r ( @{ $validated_params->{recombineering_results} || [] } ) {
-        my $validated_r = $self->check_params( $r, $self->pspec_create_design_well_recombineering_result );
-        $well->create_related( design_well_recombineering_results => $validated_r );
     }
 
     return $well->as_hash;
