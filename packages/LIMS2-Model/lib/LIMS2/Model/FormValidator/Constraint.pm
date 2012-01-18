@@ -169,6 +169,16 @@ sub existing_plate_name {
         $model->schema->resultset( 'Plate' )->search_rs( { plate_name => $plate_name } )->count;
     }
 }
+
+sub existing_assay {
+    my ( $class, $model ) = @_;
+    in_resultset( $model, 'AssayResult', 'assay' );
+}
+
+sub existing_assay_result {
+    my ( $class, $model ) = @_;
+    in_resultset( $model, 'AssayResult', 'result' );
+}
         
 1;
 
