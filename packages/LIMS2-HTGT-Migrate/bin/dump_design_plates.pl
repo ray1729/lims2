@@ -25,7 +25,6 @@ my $run_date = DateTime->now;
 my $design_plate_rs = $htgt->resultset( 'Plate' )->search(
     {
         'me.type' => 'DESIGN',
-        'rownum'  => { '<=', 5 }
     },
 );
 
@@ -51,7 +50,7 @@ sub design_plate_data {
     my %data = (
         plate_name  => $plate->name,
         plate_type  => 'design',
-        description => $plate->description || '',
+        plate_desc  => $plate->description || '',
         created_by  => $plate->created_user || 'migrate_script',
         created_at  => $created_date->iso8601,
         comments    => comments_for( $plate, $created_date ),
@@ -106,10 +105,10 @@ sub well_data_for {
 
     my %data = (
         design_id              => $di->design_id,
-        design_bacs            => bacs_for( $di ),
+        bac_clones             => bacs_for( $di ),
         created_at             => $created_date->iso8601,
-        assay_pending          => $assay_pending->iso8601,
-        assay_complete         => $assay_complete->iso8601,
+        assay_pending          => $assay_pending ? $assay_pending->iso8601 : undef,
+        assay_complete         => $assay_complete ? $assay_complete->iso8601 : undef,
         recombineering_results => $rec_results,
     );
 
@@ -125,9 +124,10 @@ sub bacs_for {
     my @bacs;
 
     for my $di_bac ( $di->design_instance_bacs ) {
+        next unless defined $di_bac->bac_plate;        
         my $bac = $di_bac->bac;
         push @bacs, {
-            bac_plate   => $di_bac->bac_plate,
+            bac_plate   => substr( $di_bac->bac_plate, -1 ),
             bac_name    => trim( $bac->remote_clone_id ),
             bac_library => format_bac_library( $bac->clone_lib->library )
         }
