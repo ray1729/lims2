@@ -14,7 +14,6 @@ use Sub::Exporter -setup => {
              ]
 };
 
-use HTGT::DBFactory;
 use DateTime::Format::Oracle;
 use Scalar::Util qw( blessed );
 use Try::Tiny;
@@ -77,49 +76,24 @@ sub trim {
     return $str;
 }
 
-{
-    my $qc_schema;
+
+sub valid_primers_for_well {
+    my ( $well, $qctest_result ) = @_;
+
+    my %valid_primers;
     
-    sub valid_primers_for_well {
-        my ( $well, $qctest_result_id ) = @_;
-
-        $qctest_result_id ||= $well->well_data_value( 'qctest_result_id' );
-        unless ( defined $qctest_result_id ) {
-            DEBUG( "no QC test result id for $well" );
-            return {};
-        }
-
-        $qc_schema ||= HTGT::DBFactory->connect( 'vector_qc' );
-                
-        my $qctest_result = $qc_schema->resultset( 'QctestResult' )->find(
-            {
-                qctest_result_id => $qctest_result_id
-            }
-        );
-
-        unless ( $qctest_result ) {
-            DEBUG( "QC test result $qctest_result_id not found" );
-            return {};        
-        }
-
-        my %valid_primers;
-    
-        foreach my $primer ( $qctest_result->qctestPrimers ) {
-            my $seq_align_feature = $primer->seqAlignFeature
-                or next;
-            my $loc_status = $seq_align_feature->loc_status
-                or next;
-            $valid_primers{ uc( $primer->primer_name ) } = 1
-                if $loc_status eq 'ok';
-        }
-
-        DEBUG( "valid primers for $well: " . join( q{, }, keys %valid_primers ) );
-        
-        return join( q{,}, sort keys %valid_primers );
+    foreach my $primer ( $qctest_result->qctestPrimers ) {
+        my $seq_align_feature = $primer->seqAlignFeature
+            or next;
+        my $loc_status = $seq_align_feature->loc_status
+            or next;
+        $valid_primers{ uc( $primer->primer_name ) } = 1
+            if $loc_status eq 'ok';
     }
+
+    DEBUG( "valid primers for $well: " . join( q{, }, keys %valid_primers ) );
+        
+    return join( q{,}, sort keys %valid_primers );
 }
-
-
-
 
 1;

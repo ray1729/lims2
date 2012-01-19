@@ -16,6 +16,29 @@ use LIMS2::HTGT::Migrate::Utils qw( trim parse_oracle_date format_bac_library fo
 const my $DEFAULT_BACKBONE => 'R3R4_pBR_DTA+_Bsd_amp';
 const my $DEFAULT_CASSETTE => 'pR6K_R1R2_ZP';
 
+const my %IS_SEQUENCING_QC_PASS => map { $_ => 1 } qw(                                                         
+        pass
+        pass1
+        pass2
+        pass2.1
+        pass2.2
+        pass2.3
+        pass3
+        pass4
+        pass4.1
+        pass4.3
+        passa
+        pass1a
+        pass2a
+        pass2.1a
+        pass2.2a
+        pass2.3a
+        pass3a
+        pass4a
+        pass4.1a
+        pass4.3a                                                         
+);
+
 Log::Log4perl->easy_init(
     {
         level  => $WARN,
@@ -24,6 +47,8 @@ Log::Log4perl->easy_init(
 );
 
 my $htgt = HTGT::DBFactory->connect( 'eucomm_vector' );
+
+my $vector_qc = HTGT::DBFactory->connect( 'vector_qc' );
 
 my $run_date = DateTime->now;
 
@@ -52,13 +77,7 @@ sub pcs_plate_data {
 
     my $created_date = $plate->created_date || $run_date;   
 
-    my %plate_data = map { trim($_->data_type) => trim($_->data_value) } $plate->plate_data;
-
-    # Replace qc_done=yes with the date that plate_data was entered
-    if ( $plate_data{qc_done} and $plate_data{qc_done} eq 'yes' ) {
-        my $qc_done = $plate->search_related( plate_data => { data_type => 'qc_done' } )->first;
-        $plate_data{qc_done} = parse_oracle_date( $qc_done->edit_date );
-    }
+    my %plate_data = map { trim($_->data_type) => $_ } $plate->plate_data;
 
 =pod
 
@@ -90,11 +109,11 @@ sponsor           7
     );
     
     # Add 384-well plates to a plate group
-    if ( $plate_data{is_384} and $plate_data{is_384} eq 'yes' ) {
+    if ( $plate_data{is_384} and $plate_data{is_384}->data_value eq 'yes' ) {
         ( my $plate_group = $plate->name ) =~ s/_\d+$//
             or die "Failed to determine plate group for " . $plate->name;
         $data{plate_group} = $plate_group;
-    }
+    }    
     
     # XXX What about plate_blobs?
     
@@ -170,45 +189,112 @@ sub well_data_for {
 
 =cut
 
-
-    my %well_data  = map { trim($_->data_type) => trim($_->data_value) } $well->well_data;
+    my %well_data  = map { trim($_->data_type) => $_ } $well->well_data;
 
     my %data = (
-        parent_well              => {
-            plate_name => $parent_well->plate->name,
-            well_name  => $parent_well->well_name
-        },
-        cassette                 => $well_data{cassette} || $DEFAULT_CASSETTE,
-        backbone                 => $well_data{backbone} || $DEFAULT_BACKBONE,
-        clone_name               => $well_data{clone_name},
-        accepted                 => $well_data{distribute} && $well_data{distribute} eq 'yes' ? 1 : 0
+        parent_wells => [
+            {
+                plate_name => $parent_well->plate->name,
+                well_name  => $parent_well->well_name
+            },
+        ],
+        cassette     => $well_data{cassette} ? $well_data{cassette}->data_value : $DEFAULT_CASSETTE,
+        backbone     => $well_data{backbone} ? $well_data{backbone}->data_value : $DEFAULT_BACKBONE,
     );
 
+    if ( $well_data{clone_name} ) {
+        $data{clone_name} = $well_data{clone_name}->data_value;
+    }    
+
+    if ( my $dist = $well_data{distribute} ) {
+        $data{accepted} = {
+            accepted   => $dist->data_value eq 'yes' ? 1 : 0,
+            created_at => parse_oracle_date( $dist->edit_date )->iso8601,
+            created_by => $dist->edit_user || 'migrate_script'
+        };        
+    }    
+
     if ( $plate_data->{first_qc_date} ) {
-        $data{assay_pending} = parse_oracle_date( $plate_data->{first_qc_date} )->iso8601;        
+        $data{assay_pending} = parse_oracle_date( $plate_data->{first_qc_date}->data_value )->iso8601;        
     }
 
     if ( $plate_data->{qc_done} ) {
-        $data{assay_complete} = $plate_data->{qc_done}->iso8601;
+        $data{assay_complete} = parse_oracle_date( $plate_data->{qc_done}->edit_date )->iso8601;
     }
+
+    my $legacy_qc_data = get_legacy_qc_data( $well, \%well_data );
     
-    if ( $well_data{qctest_result_id} ) {
-        $data{legacy_qc_test_result} = {
-            qc_test_result_id => $well_data{qctest_result_id},
-            pass_level        => $well_data{pass_level},
-            valid_primers     => valid_primers_for_well( $well, $well_data{qctest_result_id} )
+    if ( $legacy_qc_data ) {
+        $data{legacy_qc_test_result} = $legacy_qc_data->{legacy_qc_test_result};
+        $data{assay_results}         = $legacy_qc_data->{assay_results};
+        unless ( $data{assay_pending} and $data{assay_pending} le $legacy_qc_data->{assay_pending} ) {
+            $data{assay_pending} = $legacy_qc_data->{assay_pending};
         }
+        unless ( $data{assay_complete} and $data{assay_complete} ge $legacy_qc_data->{assay_complete} ) {
+            $data{assay_complete} = $legacy_qc_data->{assay_complete};
+        }        
     }
 
     if ( $well_data{new_qc_test_result_id} ) {
+        my $qc_date = parse_oracle_date( $well_data{new_qc_test_result_id}->edit_date )->iso8601;
         $data{qc_test_result} = {
-            qc_test_result_id => $well_data{new_qc_test_result_id},
-            valid_primers     => $well_data{valid_primers},
-            pass              => $well_data{pass_level} && $well_data{pass_level} eq 'pass' ? 1 : 0,
-            mixed_reads       => $well_data{mixed_reads} && $well_data{mixed_reads} eq 'yes' ? 1 : 0
+            qc_test_result_id => $well_data{new_qc_test_result_id}->data_value,
+            valid_primers     => $well_data{valid_primers} ? $well_data{valid_primers}->data_value : '',
+            pass              => $well_data{pass_level} && $well_data{pass_level}->data_value eq 'pass' ? 1 : 0,
+            mixed_reads       => $well_data{mixed_reads} && $well_data{mixed_reads}->data_value eq 'yes' ? 1 : 0
         };
-    }
+        $data{assay_results} = [
+            {
+                assay      => 'sequencing_qc',
+                result     => $well_data{pass_level}->data_value,
+                created_at => $qc_date,
+                created_by => $well_data{new_qc_test_result_id}->edit_user || 'migrate_script'
+            }
+        ];
+        unless ( $data{asasy_pending} and $data{asasy_pending} le $qc_date ) {
+            $data{assay_pending} = $qc_date;
+        }
+        unless ( $data{assay_complete} and $data{assay_complete} ge $qc_date ) {
+            $data{assay_complete} = $qc_date;
+        }
+    }    
+
+    return \%data;
+}
+
+sub get_legacy_qc_data {
+    my ( $well, $well_data ) = @_;    
+
+    return unless $well_data->{qctest_result_id};
     
+    my $qctest_result = $vector_qc->resultset( 'QctestResult' )->find(
+        {
+            qctest_result_id => $well_data->{qctest_result_id}->data_value
+        }
+    ) or return;
+    
+    my $run_date = parse_oracle_date( $qctest_result->qctestRun->run_date )->iso8601;
+
+    my %data;
+    
+    $data{legacy_qc_test_result} = {
+        qc_test_result_id => $well_data->{qctest_result_id}->data_value,
+        pass_level        => $well_data->{pass_level} ? $well_data->{pass_level}->data_value : 'fail',
+        valid_primers     => valid_primers_for_well( $well, $qctest_result )
+    };
+
+    $data{assay_pending} = $run_date;
+
+    $data{assay_results} = [
+        {
+            assay      => 'sequencing_qc',
+            result     => exists $IS_SEQUENCING_QC_PASS{ $data{legacy_qc_test_result}{pass_level} } ? 'pass' : 'fail',
+            created_at => $run_date,
+            created_by => $well_data->{qctest_result_id}->edit_user || 'migrate_script'
+        }
+    ];
+
+    $data{assay_complete} = parse_oracle_date( $well_data->{qctest_result_id}->edit_date )->iso8601;
 
     return \%data;
 }
