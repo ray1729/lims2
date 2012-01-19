@@ -160,7 +160,7 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
-=head2 plate_type
+=head2 plate_type_rel
 
 Type: belongs_to
 
@@ -169,7 +169,7 @@ Related object: L<LIMS2::Model::Schema::Result::PlateType>
 =cut
 
 __PACKAGE__->belongs_to(
-  "plate_type",
+  "plate_type_rel",
   "LIMS2::Model::Schema::Result::PlateType",
   { plate_type => "plate_type" },
   { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
@@ -191,8 +191,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-12 13:54:10
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:eidk6cGm0JDl5jkK0JOqpQ
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-19 15:28:59
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ChQoXrEhHs5JJly9GbFMXQ
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
