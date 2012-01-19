@@ -49,7 +49,7 @@ sub _instantiate_well {
         { plate_name => {}, well_name  => {} }
     );
     
-    $self->retrieve( Well => $validated_params, { join => 'Plate', prefetch => 'Plate' } );
+    $self->retrieve( Well => $validated_params, { join => 'plate', prefetch => 'plate' } );
 }
 
 # Internal function, creates entries in the tree_paths table
@@ -133,7 +133,7 @@ sub set_well_assay_complete {
 
     $well ||= $self->_instantiate_well( $params );    
     
-    my $validated_params = $self->check_params( { slide_def( $params, 'assay_complete' ) },
+    my $validated_params = $self->check_params( { slice_def( $params, 'assay_complete' ) },
                                                 $self->pspec_set_well_assay_complete );
 
     # XXX fire trigger to set 'accepted' flag
@@ -156,14 +156,14 @@ sub set_well_accepted_override {
 
     my $validated_params = $self->check_params(
         { slice_def( $params, qw( accepted created_by created_at ) ) },
-        $self->pspec_set_well_accepeted_override
+        $self->pspec_set_well_accepted_override
     );
 
     unless ( $well->assay_complete ) {
         $self->throw( InvalidState => 'Cannot override accepted unless assay_complete' );
     }    
     
-    $well->well_accepted_override_rs->delete;
+    $well->search_related_rs( 'well_accepted_override' )->delete;
 
     my $accepted_override = $well->create_related( well_accepted_override => $validated_params );
 
@@ -207,7 +207,7 @@ sub add_well_assay_result {
 sub pspec_add_well_qc_result {
     return {
         qc_test_result_id => { validate => 'non_empty_string' },
-        valid_primers     => { validate => 'comma_separated_list', default => '' },
+        valid_primers     => { validate => 'comma_separated_list', optional => 1, default => '' },
         pass              => { validate => 'boolean' },
         mixed_reads       => { validate => 'boolean', default => 0 }
     };    
