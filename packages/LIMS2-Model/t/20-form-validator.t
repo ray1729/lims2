@@ -64,6 +64,17 @@ ok my $dfv_profile = $model->form_validator->dfv_profile( $pspec ),
     } 'check existing_intermediate_cassette';
 }
 
+{
+    my %pspec = ( foo => { validate => 'comma_separated_list' } );    
+    
+    lives_ok {
+        $model->check_params( { foo => 'abc' }, \%pspec )
+    } 'comma_separated_list validates single-element list';
+
+    lives_ok {
+        $model->check_params( { foo => 'abc,2,def,34' } )
+    } 'comma_separeted_list validates multi-element list';
+}
 
 done_testing;
 

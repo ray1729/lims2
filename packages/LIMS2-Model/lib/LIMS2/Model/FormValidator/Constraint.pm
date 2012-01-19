@@ -234,6 +234,10 @@ sub fp_parent_plate_type {
     in_set( qw( design pcs pgs ep epd fp ) );
 }
 
+sub comma_separated_list {
+    regexp_matches( qr/^[^,]+(?:,[^,+])*$/ );
+}
+
 1;
 
 __END__
