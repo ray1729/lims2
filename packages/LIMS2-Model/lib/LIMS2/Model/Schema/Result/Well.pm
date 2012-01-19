@@ -267,9 +267,84 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
+=head2 well_backbone
 
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-18 11:04:35
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:chlW8Tnp2iX9Gm74bb+DLA
+Type: might_have
+
+Related object: L<LIMS2::Model::Schema::Result::WellBackbone>
+
+=cut
+
+__PACKAGE__->might_have(
+  "well_backbone",
+  "LIMS2::Model::Schema::Result::WellBackbone",
+  { "foreign.well_id" => "self.well_id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 well_cassette
+
+Type: might_have
+
+Related object: L<LIMS2::Model::Schema::Result::WellCassette>
+
+=cut
+
+__PACKAGE__->might_have(
+  "well_cassette",
+  "LIMS2::Model::Schema::Result::WellCassette",
+  { "foreign.well_id" => "self.well_id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 well_clone_name
+
+Type: might_have
+
+Related object: L<LIMS2::Model::Schema::Result::WellCloneName>
+
+=cut
+
+__PACKAGE__->might_have(
+  "well_clone_name",
+  "LIMS2::Model::Schema::Result::WellCloneName",
+  { "foreign.well_id" => "self.well_id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 well_legacy_qc_test_result
+
+Type: might_have
+
+Related object: L<LIMS2::Model::Schema::Result::WellLegacyQcTestResult>
+
+=cut
+
+__PACKAGE__->might_have(
+  "well_legacy_qc_test_result",
+  "LIMS2::Model::Schema::Result::WellLegacyQcTestResult",
+  { "foreign.well_id" => "self.well_id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 well_qc_test_result
+
+Type: might_have
+
+Related object: L<LIMS2::Model::Schema::Result::WellQcTestResult>
+
+=cut
+
+__PACKAGE__->might_have(
+  "well_qc_test_result",
+  "LIMS2::Model::Schema::Result::WellQcTestResult",
+  { "foreign.well_id" => "self.well_id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-19 15:28:59
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:cd+NE3CYnzI5T+wP1Giphw
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
