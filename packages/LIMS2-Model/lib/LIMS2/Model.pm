@@ -91,8 +91,12 @@ sub throw {
 
     eval "require $error_class"
         or confess "Load $error_class: $!";
-    
-    $error_class->throw( $args );
+
+    my $err = $error_class->new( $args );
+
+    $self->log->error( $err->as_string );
+
+    $err->throw;
 }
 
 sub parse_date_time {
