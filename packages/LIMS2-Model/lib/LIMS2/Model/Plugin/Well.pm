@@ -4,15 +4,26 @@ use strict;
 use warnings FATAL => 'all';
 
 use Moose::Role;
-use Hash::MoreUtils qw( slice_def );
+use Hash::MoreUtils qw( slice slice_def );
 use Scalar::Util qw( blessed );
+use List::MoreUtils qw( before_incl );
 use namespace::autoclean;
 
 requires qw( schema check_params throw );
 
+sub check_parent_plate_type {
+    my ( $self, $well, $parent_wells ) = @_;
+
+    my $constraint = $well->plate->plate_type . '_parent_plate_type';
+
+    for my $pw ( @{ $parent_wells } ) {
+        $self->check_params( { plate_type => $pw->plate->plate_type },
+                             { plate_type => { validate => $constraint } } );
+    }    
+}
+
 sub pspec_create_well {
     return {
-        plate_name     => { validate => 'existing_plate_name' },
         well_name      => { validate => 'well_name' },
         created_by     => { validate => 'existing_user', post_filter => 'user_id_for' },
         created_at     => { validate => 'date_time', optional => 1, post_filter => 'parse_date_time' },
@@ -24,14 +35,6 @@ sub pspec_create_well {
     }
 }
 
-sub pspec_create_accepted_override {
-    return {
-        accepted   => { validate => 'boolean' },
-        created_at => { validate => 'date_time', optional => 1, post_filter => 'parse_date_time' },
-        created_by => { validate => 'existing_user', post_filter => 'user_id_for' }
-    }
-};
-
 # Internal function, returns a LIMS2::Model::Schema::Result::Well object
 sub _instantiate_well {
     my ( $self, $params ) = @_;
@@ -40,7 +43,12 @@ sub _instantiate_well {
         return $params;
     }
 
-    $self->retrieve( Well => { slice_def( $params, qw( plate_name well_name ) ) }, { join => 'Plate' } );
+    my $validated_params = $self->check_params(
+        { slice( $params, qw( plate_name well_name ) ) },
+        { plate_name => {}, well_name  => {} }
+    );
+    
+    $self->retrieve( Well => $validated_params, { join => 'Plate', prefetch => 'Plate' } );
 }
 
 # Internal function, creates entries in the tree_paths table
@@ -50,6 +58,7 @@ sub _create_tree_paths {
     my ( $insert_tree_paths, @bind_params );
     
     if ( @ancestors ) {
+        $self->check_parent_plate_type( $well, \@ancestors );    
         $insert_tree_paths = sprintf( <<'EOT', join q{, }, ('?')x@ancestors );
 insert into tree_paths( ancestor, descendant, path_length )
   select t.ancestor, cast( ? as integer ), t.path_length + 1
@@ -77,9 +86,9 @@ EOT
 
 # Internal function, returns LIMS2::Model::Schema::Result::Well object
 sub _create_well {
-    my ( $self, $plate, $validated_params ) = @_;
+    my ( $self, $validated_params, $plate ) = @_;
 
-    $plate ||= $self->retrieve( Plate => { plate_name => $validated_params->{plate_name} } );
+    $plate ||= $self->_instantiate_plate( $validated_params );
 
     $self->log->debug( '_create_well: ' . $plate->plate_name . '_' . $validated_params->{well_name} );
     
@@ -91,7 +100,7 @@ sub _create_well {
 
     $self->log->debug( 'created well with id: ' . $well->well_id );
 
-    $self->_create_tree_paths( $well, map { $self->_instantiate_well( $_ ) } @{ $self->{parent_wells} } );
+    $self->_create_tree_paths( $well, map { $self->_instantiate_well( $_ ) } @{ $validated_params->{parent_wells} } );
 
     for my $assay_result ( @{ $validated_params->{assay_results} } ) {
         $self->add_well_assay_result( $assay_result, $well );
@@ -102,8 +111,7 @@ sub _create_well {
     }
 
     if ( $validated_params->{accepted} ) {
-        my $override = $self->check_params( $validated_params->{accepted}, $self->pspec_create_accepted_override );
-        $well->create_related( well_accepted_override => $override );
+        $self->set_well_accepted_override( $override, $well );
     }
     
     return $well;
@@ -111,30 +119,60 @@ sub _create_well {
 
 sub pspec_set_well_assay_complete {
     return {
-        plate_name     => { validate => 'existing_plate_name', optional => 1 },
-        well_name      => { validate => 'well_name', optional => 1 },
-        assay_complete => { validate => 'date_time', optional => 1, default => sub { DateTime->now }, post_filter => 'parse_date_time' },
+        assay_complete => { validate    => 'date_time',
+                            optional    => 1,
+                            default     => sub { DateTime->now },
+                            post_filter => 'parse_date_time'
+                        }
     };
 }
 
 sub set_well_assay_complete {
     my ( $self, $params, $well ) = @_;
 
-    my $validated_params = $self->check_params( $params, $self->pspec_set_well_assay_complete );
-
-    $well ||= $self->_instantiate_well( $validated_params );
+    $well ||= $self->_instantiate_well( $params );    
+    
+    my $validated_params = $self->check_params( { slide_def( $params, 'assay_complete' ) },
+                                                $self->pspec_set_well_assay_complete );
 
     # XXX fire trigger to set 'accepted' flag
     
     $well->update( { assay_complete => $validated_params->{assay_complete} } );
 }
 
+sub pspec_set_well_accepted_override {
+    return {
+        accepted   => { validate => 'boolean' },
+        created_by => { validate => 'existing_user', post_filter => 'user_id_for' },
+        created_at => { validate => 'date_time', post_filter => 'parse_date_time' }
+    };    
+}
+
+sub set_well_accepted_override {
+    my ( $self, $params, $well ) = @_;
+
+    $well ||= $self->_instantiate_well( $params );    
+
+    my $validated_params = $self->check_params(
+        { slice_def( $params, qw( accepted created_by created_at ) ) },
+        $self->pspec_set_well_accepeted_override
+    );
+
+    unless ( $well->assay_complete ) {
+        $self->throw( InvalidState => 'Cannot override accepted unless assay_complete' );
+    }    
+    
+    $well->well_accepted_override_rs->delete;
+
+    my $accepted_override = $well->create_related( well_accepted_override => $validated_params );
+
+    return $accepted_override->as_hash;
+}
+
 # XXX These validations do not check that assay/result is a valid combination, only the
 # two fields independently
 sub pspec_add_well_assay_result {
     return {
-        plate_name => { validate => 'existing_plate_name', optional => 1 },
-        well_name  => { validate => 'well_name', optional => 1 },
         assay      => { validate => 'existing_assay' },
         result     => { validate => 'existing_assay_result' },
         created_by => { validate => 'existing_user', post_filter => 'user_id_for' },
@@ -145,22 +183,21 @@ sub pspec_add_well_assay_result {
 sub add_well_assay_result {
     my ( $self, $params, $well ) = @_;
 
-    my $validated_params = $self->check_params( $params, $self->pspec_add_well_assay_result );
-
-    $well ||= $self->_instantiate_well( $validated_params );
+    $well ||= $self->_instantiate_well( $params );
+    
+    my $validated_params = $self->check_params(
+        { slice_def( $params, qw( assay result created_by created_at ) ) },
+        $self->pspec_add_well_assay_result
+    );
 
     if ( $well->assay_complete ) {
         $self->throw( InvalidState => 'Assay results cannot be added to a well in state assay_complete' );
     }    
     
-    my $assay_result = $well->create_related(
-        well_assay_results => {
-            slice_def( $validated_params, qw( assay result created_at created_by ) )
-        }
-    );
+    my $assay_result = $well->create_related( well_assay_results => $validated_params );
 
     unless ( $well->assay_pending and $well->assay_pending <= $assay_result->created_at ) {
-        $well->update( { assay_pending => $assay_result->{created_at} } );
+        $well->update( { assay_pending => $assay_result->created_at } );
     }
 
     return $assay_result->as_hash;
