@@ -4,10 +4,24 @@ use strict;
 use warnings FATAL => 'all';
 
 use Moose::Role;
-use Hash::MoreUtils qw( slice_def );
+use Hash::MoreUtils qw( slice slice_def );
+use Scalar::Util qw( blessed );
 use namespace::autoclean;
 
 requires qw( schema check_params throw );
+
+# Internal function, returns a LIMS2::Model::Schema::Result::Plate object
+sub _instantiate_plate {
+    my ( $self, $params ) = @_;
+
+    if ( blessed( $params ) and $params->isa( 'LIMS2::Model::Schema::Result::Plate' ) ) {
+        return $params;
+    }
+    
+    my $validated_params = $self->check_params( { slice( $params, qw( plate_name ) ) }, { plate_name => {} } );
+    
+    $self->retrieve( Plate => $validated_params );
+}
 
 sub pspec_create_plate {
     return {
