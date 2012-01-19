@@ -63,6 +63,7 @@ sub create_plate {
         next unless defined $well_params and keys %{$well_params};
         $well_params->{well_name}    = $well_name;
         $well_params->{created_by} ||= $params->{created_by};
+        $well_params->{created_at} ||= $params->{created_at};
         $self->$create_well( $well_params, $plate );
     }
 
