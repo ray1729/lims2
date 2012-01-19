@@ -205,7 +205,35 @@ sub existing_final_backbone {
     my ( $class, $model ) = @_;
     eng_seq_of_type( $model, 'final-backbone' );
 }
-        
+
+sub design_parent_plate_type {
+    in_set( 'design' );
+}
+
+sub pcs_parent_plate_type {
+    in_set( qw( design pcs ) );
+}
+
+sub pgs_parent_plate_type {
+    in_set( qw( design pcs pgs ) );
+}
+
+sub dna_parent_plate_type {
+    in_set( qw( design pcs pgs dna ) );
+}
+
+sub ep_parent_plate_type {
+    in_set( qw( design pcs pgs dna ep ) );
+}
+
+sub epd_parent_plate_type {
+    in_set( qw( design pcs pgs ep epd ) );
+}
+
+sub fp_parent_plate_type {
+    in_set( qw( design pcs pgs ep epd fp ) );
+}
+
 1;
 
 __END__
