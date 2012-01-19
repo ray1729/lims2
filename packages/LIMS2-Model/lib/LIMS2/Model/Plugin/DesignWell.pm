@@ -34,7 +34,7 @@ sub create_design_well {
 
     my $validated_params = $self->check_params( $params, $self->pspec_create_design_well );   
 
-    my $well = $self->_create_well( $plate, $validated_params );
+    my $well = $self->_create_well( $validated_params, $plate );
 
     $well->create_related( design_well_design => { design_id => $validated_params->{design_id} } );
 
