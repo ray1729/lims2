@@ -32,6 +32,8 @@ sub pspec_create_design_well_bac {
 sub create_design_well {
     my ( $self, $params, $plate ) = @_;
 
+    $plate ||= $self->_instantiate_plate( $params );
+    
     my $validated_params = $self->check_params( $params, $self->pspec_create_design_well );   
 
     my $well = $self->_create_well( $validated_params, $plate );
