@@ -24,6 +24,7 @@ sub check_parent_plate_type {
 
 sub pspec_create_well {
     return {
+        plate_name     => { optional => 1 },
         well_name      => { validate => 'well_name' },
         created_by     => { validate => 'existing_user', post_filter => 'user_id_for' },
         created_at     => { validate => 'date_time', optional => 1, post_filter => 'parse_date_time' },
@@ -111,7 +112,7 @@ sub _create_well {
     }
 
     if ( $validated_params->{accepted} ) {
-        $self->set_well_accepted_override( $override, $well );
+        $self->set_well_accepted_override( $validated_params->{accepted}, $well );
     }
     
     return $well;
@@ -203,6 +204,26 @@ sub add_well_assay_result {
     return $assay_result->as_hash;
 }
 
+sub pspec_add_well_qc_result {
+    return {
+        qc_test_result_id => { validate => 'non_empty_string' },
+        valid_primers     => { validate => 'comma_separated_list', default => '' },
+        pass              => { validate => 'boolean' },
+        mixed_reads       => { validate => 'boolean', default => 0 }
+    };    
+}
+
+sub add_well_qc_result {
+    my ( $self, $params, $well ) = @_;
+
+    $well ||= $self->_instantiate_well( $params );
+
+    my $validated_params = $self->check_params( $params, $self->pspec_add_well_qc_result );
+
+    my $qc_result = $well->create_related( well_qc_test_result => $validated_params );
+
+    return $qc_result->as_hash;
+}
 
 1;
 
