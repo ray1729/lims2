@@ -56,6 +56,9 @@ my $pcs_plate_rs = $htgt->resultset( 'Plate' )->search(
     {
         'me.type' => [ 'PC', 'PCS' ],
     },
+    {
+        order_by => { -asc => 'created_date' }
+    }
 );
 
 while ( my $plate = $pcs_plate_rs->next ) {
