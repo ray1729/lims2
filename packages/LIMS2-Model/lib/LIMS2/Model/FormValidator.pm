@@ -63,7 +63,7 @@ sub check_params {
     my $results = Data::FormValidator->check( $params, $self->dfv_profile( $spec ) );
     
     if ( ! $results->success ) {
-        $self->throw( Validation => { results => $results } );
+        $self->throw( Validation => { params => $params, results => $results } );
     }
 
     my $validated_params = $results->valid;

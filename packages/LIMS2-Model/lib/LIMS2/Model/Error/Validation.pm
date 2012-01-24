@@ -4,6 +4,7 @@ use strict;
 use warnings FATAL => 'all';
 
 use Moose;
+use Data::Dump qw( pp );
 use namespace::autoclean;
 
 extends qw( LIMS2::Model::Error );
@@ -15,6 +16,12 @@ has '+message' => (
 has results => (
     is       => 'ro',
     isa      => 'Data::FormValidator::Results',
+    required => 1
+);
+
+has params => (
+    is       => 'ro',
+    isa      => 'HashRef',
     required => 1
 );
 
@@ -43,6 +50,8 @@ override as_string => sub {
     }
 
     my $str = join "\n\t", $self->message, @errors;
+
+    $str .= "\n\n" . pp( $self->params );    
 
     if ( $self->show_stack_trace ) {
         $str .= "\n\n" . $self->stack_trace->as_string;
