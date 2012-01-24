@@ -9,6 +9,7 @@ use IO::Handle;
 use Path::Class;
 use File::Temp;
 use Getopt::Long;
+use Data::Dump 'pp';
 
 GetOptions(
     'i:s' => \my $inplace
@@ -32,8 +33,9 @@ my $it = iyaml( $file->openr );
 
 while ( my $plate = $it->next ) {
     for my $well ( values %{ $plate->{wells} } ) {
-        my $parent_well = delete $well->{parent_well};
-        $well->{parent_wells} = [ $parent_well ];
+        if ( $well->{accepted} and not $well->{assay_complete} ) {
+            $well->{assay_complete} = $well->{accepted}{created_at};            
+        }        
     }
     $ofh->print( Dump( $plate ) );
 }
