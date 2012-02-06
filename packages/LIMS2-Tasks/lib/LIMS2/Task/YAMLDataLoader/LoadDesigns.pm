@@ -23,9 +23,19 @@ override create => sub {
 override wanted => sub {
     my ( $self, $datum ) = @_;
 
-    all { defined } $datum->{phase},
-        map( { $_->{genotyping_primer_seq} } @{ $datum->{genotyping_primers} || [] } );
+    unless ( defined $datum->{phase} ) {
+        $self->log->warn( "Skipping design $datum->{design_id} - no phase" );
+        return 0;
+    }
 
+    for my $primer ( @{ $datum->{genotyping_primers} || [] } ) {
+        unless ( defined $primer->{genotyping_primer_seq} ) {
+            $self->log->warn( "Skipping design $datum->{design_id} - no seq for primer $primer->{genotyping_primer_type}" );
+            return 0;
+        }
+    }
+
+    return 1;
 };
 
 __PACKAGE__->meta->make_immutable;

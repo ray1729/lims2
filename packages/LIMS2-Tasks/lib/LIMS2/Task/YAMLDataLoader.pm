@@ -50,7 +50,6 @@ sub load_data_from_file {
     while ( my $datum = $it->next ) {
         $file_seen++;
         if ( ! $self->wanted( $datum ) ) {
-            $self->log->warn( "Skipping record:\n" . YAML::Any::Dump( $datum ) );
             $file_skipped++;
             next;                        
         }
@@ -65,7 +64,7 @@ sub load_data_from_file {
             );
         }
         catch {
-            $self->log->error( "Failed to process record:\n" . YAML::Any::Dump( $datum ) );
+            $self->log->error( "Failed to process record: $_:\n" . YAML::Any::Dump( $datum ) );
             $file_err++;
         };
         if ( $file_seen % 100 == 0 ) {

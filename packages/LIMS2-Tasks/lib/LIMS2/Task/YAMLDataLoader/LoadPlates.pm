@@ -19,6 +19,18 @@ override create => sub {
     $self->model->create_plate( $datum );
 };
 
+override wanted => sub {
+    my ( $self, $datum ) = @_;
+
+    my $plate = $self->schema->resultset( 'Plate' )->find( { plate_name => $datum->{plate_name} } );    
+    if ( $plate ) {
+        $self->log->warn( "Skipping existing plate $datum->{plate_name}" );
+        return 0;
+    }
+
+    return 1;
+};
+
 __PACKAGE__->meta->make_immutable;
 
 1;
