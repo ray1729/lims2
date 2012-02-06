@@ -68,7 +68,9 @@ override well_data => sub {
 };
 
 sub sequencing_qc_pass_fail {
-    my ( $self, $pass_level ) = @_;
+    my ( $self, $well ) = @_;
+
+    my $pass_level = $self->get_htgt_well_data_value( 'pass_level' ) || 'fail';    
 
     if ( defined $pass_level and exists $IS_SEQUENCING_QC_PASS{ $pass_level } ) {
         return 'pass';
