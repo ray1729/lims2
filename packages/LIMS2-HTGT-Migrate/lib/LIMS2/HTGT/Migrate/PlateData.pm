@@ -323,7 +323,7 @@ sub get_legacy_qc_data {
         assay_results         => [
             {
                 assay      => 'sequencing_qc',
-                result     => $self->sequencing_qc_pass_fail( $pass_level ),
+                result     => $self->sequencing_qc_pass_fail( $well ),
                 created_at => $run_date,
                 created_by => $qctest_well_data->edit_user || $self->migrate_user
             }
