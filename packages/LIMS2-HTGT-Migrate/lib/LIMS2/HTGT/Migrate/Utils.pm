@@ -82,25 +82,4 @@ sub is_consistent_design_instance {
                     and $well->design_instance_id == $parent_well->design_instance_id;
 }
 
-### XXX ABOVE HERE GOOD
-
-sub valid_primers_for_well {
-    my ( $well, $qctest_result ) = @_;
-
-    my %valid_primers;
-    
-    foreach my $primer ( $qctest_result->qctestPrimers ) {
-        my $seq_align_feature = $primer->seqAlignFeature
-            or next;
-        my $loc_status = $seq_align_feature->loc_status
-            or next;
-        $valid_primers{ uc( $primer->primer_name ) } = 1
-            if $loc_status eq 'ok';
-    }
-
-    DEBUG( "valid primers for $well: " . join( q{, }, keys %valid_primers ) );
-        
-    return join( q{,}, sort keys %valid_primers );
-}
-
 1;
