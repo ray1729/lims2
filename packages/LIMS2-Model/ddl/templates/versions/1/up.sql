@@ -219,7 +219,7 @@ CREATE TABLE designs (
        design_type              TEXT NOT NULL REFERENCES design_types(design_type),
        phase                    INTEGER NOT NULL,
        validated_by_annotation  TEXT NOT NULL CHECK (validated_by_annotation IN ( 'yes', 'no', 'maybe', 'not done' )),
-       targeted_transcript      TEXT NOT NULL
+       target_transcript        TEXT
 );
 GRANT SELECT ON designs TO "[% ro_role %]";
 GRANT SELECT, INSERT, UPDATE, DELETE ON designs TO "[% rw_role %]";
