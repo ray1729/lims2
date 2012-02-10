@@ -32,10 +32,10 @@ my %seen;
 my $it = iyaml( $file->openr );
 
 while ( my $plate = $it->next ) {
-    for my $well ( values %{ $plate->{wells} } ) {
-        if ( $well->{accepted} and not $well->{assay_complete} ) {
-            $well->{assay_complete} = $well->{accepted}{created_at};            
-        }        
+    while ( my ( $well_name, $well ) = each %{ $plate->{wells} } ) {
+        if ( $well->{parent_wells} and @{ $well->{parent_wells} }  and $well->{parent_wells}[0]{plate_name} eq 'PCS00157_A' ) {
+            delete $plate->{wells}{$well_name};            
+        }    
     }
     $ofh->print( Dump( $plate ) );
 }
