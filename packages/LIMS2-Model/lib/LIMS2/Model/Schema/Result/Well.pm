@@ -51,6 +51,12 @@ __PACKAGE__->table("wells");
   is_foreign_key: 1
   is_nullable: 0
 
+=head2 process_id
+
+  data_type: 'integer'
+  is_foreign_key: 1
+  is_nullable: 0
+
 =head2 well_name
 
   data_type: 'char'
@@ -97,6 +103,8 @@ __PACKAGE__->add_columns(
     sequence          => "wells_well_id_seq",
   },
   "plate_id",
+  { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
+  "process_id",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
   "well_name",
   { data_type => "char", is_nullable => 0, size => 3 },
@@ -162,36 +170,6 @@ __PACKAGE__->belongs_to(
   { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
-=head2 design_well_bacs
-
-Type: has_many
-
-Related object: L<LIMS2::Model::Schema::Result::DesignWellBac>
-
-=cut
-
-__PACKAGE__->has_many(
-  "design_well_bacs",
-  "LIMS2::Model::Schema::Result::DesignWellBac",
-  { "foreign.well_id" => "self.well_id" },
-  { cascade_copy => 0, cascade_delete => 0 },
-);
-
-=head2 design_well_design
-
-Type: might_have
-
-Related object: L<LIMS2::Model::Schema::Result::DesignWellDesign>
-
-=cut
-
-__PACKAGE__->might_have(
-  "design_well_design",
-  "LIMS2::Model::Schema::Result::DesignWellDesign",
-  { "foreign.well_id" => "self.well_id" },
-  { cascade_copy => 0, cascade_delete => 0 },
-);
-
 =head2 plate
 
 Type: belongs_to
@@ -205,6 +183,81 @@ __PACKAGE__->belongs_to(
   "LIMS2::Model::Schema::Result::Plate",
   { plate_id => "plate_id" },
   { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
+);
+
+=head2 process
+
+Type: belongs_to
+
+Related object: L<LIMS2::Model::Schema::Result::Process>
+
+=cut
+
+__PACKAGE__->belongs_to(
+  "process",
+  "LIMS2::Model::Schema::Result::Process",
+  { process_id => "process_id" },
+  { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
+);
+
+=head2 process_2w_gateways
+
+Type: has_many
+
+Related object: L<LIMS2::Model::Schema::Result::Process2wGateway>
+
+=cut
+
+__PACKAGE__->has_many(
+  "process_2w_gateways",
+  "LIMS2::Model::Schema::Result::Process2wGateway",
+  { "foreign.well_id" => "self.well_id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 process_3w_gateways
+
+Type: has_many
+
+Related object: L<LIMS2::Model::Schema::Result::Process3wGateway>
+
+=cut
+
+__PACKAGE__->has_many(
+  "process_3w_gateways",
+  "LIMS2::Model::Schema::Result::Process3wGateway",
+  { "foreign.well_id" => "self.well_id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 process_int_recoms
+
+Type: has_many
+
+Related object: L<LIMS2::Model::Schema::Result::ProcessIntRecom>
+
+=cut
+
+__PACKAGE__->has_many(
+  "process_int_recoms",
+  "LIMS2::Model::Schema::Result::ProcessIntRecom",
+  { "foreign.design_well_id" => "self.well_id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 process_rearray_source_wells
+
+Type: has_many
+
+Related object: L<LIMS2::Model::Schema::Result::ProcessRearraySourceWell>
+
+=cut
+
+__PACKAGE__->has_many(
+  "process_rearray_source_wells",
+  "LIMS2::Model::Schema::Result::ProcessRearraySourceWell",
+  { "foreign.source_well_id" => "self.well_id" },
+  { cascade_copy => 0, cascade_delete => 0 },
 );
 
 =head2 tree_paths_ancestors
@@ -267,51 +320,6 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
-=head2 well_backbone
-
-Type: might_have
-
-Related object: L<LIMS2::Model::Schema::Result::WellBackbone>
-
-=cut
-
-__PACKAGE__->might_have(
-  "well_backbone",
-  "LIMS2::Model::Schema::Result::WellBackbone",
-  { "foreign.well_id" => "self.well_id" },
-  { cascade_copy => 0, cascade_delete => 0 },
-);
-
-=head2 well_cassette
-
-Type: might_have
-
-Related object: L<LIMS2::Model::Schema::Result::WellCassette>
-
-=cut
-
-__PACKAGE__->might_have(
-  "well_cassette",
-  "LIMS2::Model::Schema::Result::WellCassette",
-  { "foreign.well_id" => "self.well_id" },
-  { cascade_copy => 0, cascade_delete => 0 },
-);
-
-=head2 well_clone_name
-
-Type: might_have
-
-Related object: L<LIMS2::Model::Schema::Result::WellCloneName>
-
-=cut
-
-__PACKAGE__->might_have(
-  "well_clone_name",
-  "LIMS2::Model::Schema::Result::WellCloneName",
-  { "foreign.well_id" => "self.well_id" },
-  { cascade_copy => 0, cascade_delete => 0 },
-);
-
 =head2 well_legacy_qc_test_result
 
 Type: might_have
@@ -327,24 +335,9 @@ __PACKAGE__->might_have(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
-=head2 well_qc_test_result
 
-Type: might_have
-
-Related object: L<LIMS2::Model::Schema::Result::WellQcTestResult>
-
-=cut
-
-__PACKAGE__->might_have(
-  "well_qc_test_result",
-  "LIMS2::Model::Schema::Result::WellQcTestResult",
-  { "foreign.well_id" => "self.well_id" },
-  { cascade_copy => 0, cascade_delete => 0 },
-);
-
-
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-19 15:28:59
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:cd+NE3CYnzI5T+wP1Giphw
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-02-10 15:16:54
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:OOCis/JnFk58WYFmR8KQjw
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

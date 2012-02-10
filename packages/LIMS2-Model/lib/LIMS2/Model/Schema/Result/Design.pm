@@ -77,6 +77,11 @@ __PACKAGE__->table("designs");
   data_type: 'text'
   is_nullable: 0
 
+=head2 targeted_transcript
+
+  data_type: 'text'
+  is_nullable: 0
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -98,6 +103,8 @@ __PACKAGE__->add_columns(
   "phase",
   { data_type => "integer", is_nullable => 0 },
   "validated_by_annotation",
+  { data_type => "text", is_nullable => 0 },
+  "targeted_transcript",
   { data_type => "text", is_nullable => 0 },
 );
 
@@ -175,21 +182,6 @@ __PACKAGE__->belongs_to(
   { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
-=head2 designs_well_design
-
-Type: has_many
-
-Related object: L<LIMS2::Model::Schema::Result::DesignWellDesign>
-
-=cut
-
-__PACKAGE__->has_many(
-  "designs_well_design",
-  "LIMS2::Model::Schema::Result::DesignWellDesign",
-  { "foreign.design_id" => "self.design_id" },
-  { cascade_copy => 0, cascade_delete => 0 },
-);
-
 =head2 genotyping_primers
 
 Type: has_many
@@ -205,9 +197,39 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
+=head2 process_cre_bac_recoms
 
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-13 15:23:03
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Sk8sVRAEoUAQOD+ITOKO9A
+Type: has_many
+
+Related object: L<LIMS2::Model::Schema::Result::ProcessCreBacRecom>
+
+=cut
+
+__PACKAGE__->has_many(
+  "process_cre_bac_recoms",
+  "LIMS2::Model::Schema::Result::ProcessCreBacRecom",
+  { "foreign.design_id" => "self.design_id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 process_create_dis
+
+Type: has_many
+
+Related object: L<LIMS2::Model::Schema::Result::ProcessCreateDi>
+
+=cut
+
+__PACKAGE__->has_many(
+  "process_create_dis",
+  "LIMS2::Model::Schema::Result::ProcessCreateDi",
+  { "foreign.design_id" => "self.design_id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-02-10 15:16:54
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:lkKboPrBaYGlsinuoA0nfQ
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
