@@ -13,6 +13,7 @@ my %MONIKER_MAP = (
     # Singular problems            
     bac_clone_loci    => 'BacCloneLocus',
     design_oligo_loci => 'DesignOligoLocus',
+    qc_seq_reads      => 'QcSeqRead',
 );
 
 my %REL_NAME_MAP = (
