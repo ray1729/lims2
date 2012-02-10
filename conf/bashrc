@@ -14,26 +14,7 @@ export PGHOST="pgsrv5"
 export PGPORT=5437
 export PGDATABASE=lims2_devel
 
-export MODULEBUILDRC=
-export PERL_MM_OPT=
-
-PERL5LIB=
-
-#
-# Add EnsEMBL Perl modules to PERL5LIB
-#
-for m in ${EPREFIX}/usr/local/ensembl/current/*/modules; do
-        if test -d "$m"; then
-                    if test -z "${PERL5LIB}"; then
-            PERL5LIB="$m"
-        else
-            PERL5LIB="${PERL5LIB}:$m"
-        fi
-    fi
-done
-export PERL5LIB
-
-for LIBDIR in $(pwd)/packages/*/lib; do
+for LIBDIR in $(pwd)/packages/*/lib $(pwd)/../Eng-Seq-Builder/lib; do
     if test -d "${LIBDIR}"; then
         if test -z "$PERL5LIB"; then
             PERL5LIB="${LIBDIR}"
@@ -59,3 +40,4 @@ export PATH
 
 export LIMS2_DBCONNECT_CONFIG="$(pwd)/conf/dbconnect.yaml"
 export LIMS2_DB="LIMS2_DEVEL"
+export ENG_SEQ_BUILDER_CONFIG="$(pwd)/../htgt-conf/eng-seq-builder.yaml"
