@@ -70,6 +70,7 @@ while ( my $design = $designs_rs->next ) {
             oligos                  => oligos_for( $design ),
             genotyping_primers      => genotyping_primers_for( $design ),
             comments                => comments_for( $design, $created_date ),
+            target_transcript       => target_transcript_for( $design )
         );
         print YAML::Any::Dump( \%design );
     }
@@ -201,6 +202,25 @@ sub phase_for {
     }
 
     die "Unable to determine phase for design " . $design->design_id . "\n";
+}
+
+sub target_transcript_for {
+    my ( $design ) = @_;    
+    
+    if ( $design->start_exon_id ) {
+        my $transcript = $design->start_exon->transcript->primary_name;
+        if ( $transcript and $transcript =~ m/^ENSMUST\d+$/ ) {
+            return $transcript;
+        }
+    }
+
+    try {
+        my $transcript = $design->info->target_transcript;
+        $transcript->stable_id;
+    } catch {
+        ERROR $_;
+        undef;
+    };
 }
 
 __END__
