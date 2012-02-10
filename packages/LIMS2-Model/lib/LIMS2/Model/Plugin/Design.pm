@@ -36,6 +36,7 @@ sub pspec_create_design {
         phase                   => { validate => 'phase' },
         validated_by_annotation => { validate => 'validated_by_annotation', default => 'not done' },
         design_name             => { validate => 'alphanumeric_string' },
+        target_transcript       => { optional => 1, validate => 'ensembl_transcript_id' },
         oligos                  => { optional => 1 },
         comments                => { optional => 1 },
         genotyping_primers      => { optional => 1 },
@@ -88,7 +89,7 @@ sub create_design {
         {
             slice_def( $validated_params,
                        qw( design_id design_name created_by created_at design_type
-                           phase validated_by_annotation ) )
+                           phase validated_by_annotation target_transcript ) )
         }
     );
 
@@ -136,8 +137,15 @@ sub delete_design {
             }
         );
 
-    # XXX Check that design is not allocated to a project and, if it is, refuse to delete    
+    # Check that design is not allocated to a process and, if it is, refuse to delete
+    # XXX When we introduce project/design request to model, also need to check that design
+    # is not attached to a project/design request.
 
+    if ( $design->process_cre_bac_recoms_rs->count > 0
+             or $design->process_create_dis_rs->count > 0 ) {
+        $self->throw( InvalidState => 'Design ' . $design->design_id . ' is used in one or more processes' );
+    }
+    
     if ( $validated_params->{cascade} ) {
         $design->design_comments_rs->delete;
         $design->design_oligos_rs->delete;
