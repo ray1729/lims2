@@ -238,6 +238,10 @@ sub comma_separated_list {
     regexp_matches( qr/^[^,]+(?:,[^,+])*$/ );
 }
 
+sub ensembl_transcript_id {
+    regexp_matches( qr/^ENSMUST\d+$/ );
+}
+
 1;
 
 __END__
