@@ -399,37 +399,12 @@ sub merge_well_data {
 sub parse_oracle_date {
     my ( $self, $maybe_date ) = @_;
 
-    if ( ! defined $maybe_date ) {
-        return;
-    }    
-    elsif ( ref $maybe_date ) {
-        return $maybe_date;
-    }
-
-    my $date = try {
-        DateTime::Format::Oracle->parse_timestamp( $maybe_date );
-    };
-
-    return $date if defined $date;
-
-    $date = try {
-        DateTime::Format::Oracle->parse_datetime( $maybe_date );
-    };        
-
-    return $date;
+    LIMS2::HTGT::Migrate::Utils::parse_oracle_date( $maybe_date );
 }
 
 sub trim {
-    my ( $self, $str ) = @_;
-
-    $str = '' unless defined $str;
-    
-    for ( $str ) {
-        s/^\s+//;
-        s/\s+$//;
-    }
-    
-    return $str;
+    my ( $self, $str ) = @_;    
+    LIMS2::HTGT::Migrate::Utils::trim( $str );
 }
 
 __PACKAGE__->meta->make_immutable;
