@@ -16,7 +16,7 @@ override abstract => sub {
 override create => sub {
     my ( $self, $datum ) = @_;
 
-    $self->model->create_bac( $datum );
+    $self->model->create_bac_clone( $datum );
 };
 
 __PACKAGE__->meta->make_immutable;
