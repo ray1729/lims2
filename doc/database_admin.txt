@@ -1,0 +1,77 @@
+# Connecting to the database
+
+psql --host pgsrv5 --port 5437 --dbname DBNAME
+
+DBNAME - name of the database to connect to, or 'template1' if you are
+connecting with the intent of creating a new database.
+
+The password is your password for the HTGT PostgreSQL cluster on
+pgsrv5.
+
+# Creating a database
+
+template1=> set role htgt_dba;
+template1=# create database lims2_process_test;
+
+## Generate the schema DDL
+
+cd lims2/packages/LIMS2-Model/ddl
+./generate-schema.sh lims2_process_test
+
+Note: you need to run generate-schema.sh every time a template changes.
+
+## Create the roles for your new database
+
+template1=# begin;
+template1=# \i packages/LIMS2-Model/ddl/lims2_process_test/roles.sql
+template1=# commit;
+
+Note: this only has to be done once, there is no need to recreate
+roles when the database is dropped.
+
+## Create the database schema
+
+template1=# \c lims2_process_test
+lims2_process_test=> set role htgt_dba;
+lims2_process_test=# begin;
+lims2_process_test=# \i packages/LIMS2-Model/ddl/lims2_process_test/schema.sql
+lims2_process_test=# commit;
+
+At this point, you have a database with a schema owned by the
+database-specific admin user, so you can drop superuser privileges:
+
+lims2_process_test=# set role lims2_process_test_admin;
+
+## Load the DDL into the schema
+
+lims2_process_test=> set role lims2_process_test_admin;
+lims2_process_test=> begin;
+lims2_process_test=> \i packages/LIMS2-Model/ddl/lims2_process_test/versions/1/up.sql
+lims2_process_test=> commit;
+
+## Generate DDL for the audit schema
+
+./generate-audit-ddl.pl --dbname lims2_process_test > lims2_process_test/versions/1/audit-up.sql
+
+## Load the audit DDL
+
+lims2_process_test=> begin;
+lims2_process_test=> \i packages/LIMS2-Model/ddl/lims2_process_test/versions/1/audit-up.sql
+lims2_process_test=> commit;
+
+## Load fixtures
+
+lims2_process_test=> begin;
+lims2_process_test=> \i packages/LIMS2-Model/ddl/lims2_process_test/versions/1/fixtures.sql
+lims2_process_test=> commit;
+
+## Drop a schema
+
+WARNING: NOT FOR A PRODUCTION INSTANCE
+
+lims2_process_test=> set role lims2_process_test_admin;
+lims2_process_test=> drop schema public cascade;
+lims2_process_test=> drop schema audit cascade;
+
+You can now start afresh with 'Create the database schema'
+

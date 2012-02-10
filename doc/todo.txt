@@ -1,0 +1,36 @@
+
+* Finalize schema v1 and load into lims2_process_test database [0.25 days]
+
+* Load BAC data [0.25 hours + load time]
+
+* Export designs with targeted_transcript [0.5 hours + export time]
+
+* Load designs [0.25 hours + load time]
+
+* Amend HTGT plate export to include sponsor [0.5 hours]
+
+* Dump Design plate data (with sponsors) [0.25 hours + dump time]
+
+* Implement import_design_plate() [1 days]
+
+Stamp pipeline link at this point
+
+* Dump PCS plate data (with sponsors) [0.25 hours + dump time]
+
+* Implement import_pcs_plate() [0.5 days]
+
+* Implement LIMS2::WebApp::Model::LIMS2 [1 day]
+  - Make sure Catalyst::Model::Factory::PerRequest plays nicely with
+  LIMS2::Model wrt setting audit user on connect
+
+* Implement REST call to load Cre-BAC recombineering plate [2 days]
+ - Generic functionality to catch LIMS2::Model::Error and return
+ appropriate HTTP response
+ - REST controller will be light wrapper around LIMS2::Model->create_cre_bac_plate()
+
+* Implement create_cre_bac_recom_plate() [1 day]
+ 
+* Munge Ross's data into suitable format for upload via
+  create_cre_bac_plate() [2 hours]
+
+
