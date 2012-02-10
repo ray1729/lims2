@@ -218,11 +218,14 @@ CREATE TABLE designs (
        created_at               TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
        design_type              TEXT NOT NULL REFERENCES design_types(design_type),
        phase                    INTEGER NOT NULL,
-       validated_by_annotation  TEXT NOT NULL CHECK (validated_by_annotation IN ( 'yes', 'no', 'maybe', 'not done' ))
+       validated_by_annotation  TEXT NOT NULL CHECK (validated_by_annotation IN ( 'yes', 'no', 'maybe', 'not done' )),
+       targeted_transcript      TEXT NOT NULL
 );
 GRANT SELECT ON designs TO "[% ro_role %]";
 GRANT SELECT, INSERT, UPDATE, DELETE ON designs TO "[% rw_role %]";
-       
+
+CREATE INDEX ON designs(targeted_transcript);
+
 CREATE TABLE design_oligo_types (
        design_oligo_type TEXT PRIMARY KEY
 );
@@ -293,3 +296,339 @@ GRANT SELECT ON genotyping_primers TO "[% ro_role %]";
 GRANT SELECT, INSERT, UPDATE, DELETE ON genotyping_primers TO "[% rw_role %]";
 GRANT USAGE ON SEQUENCE genotyping_primers_genotyping_primer_id_seq TO "[% rw_role %]";
 
+--
+-- Pipelines and projects
+--
+CREATE TABLE pipelines (
+       pipeline_id      SERIAL PRIMARY KEY,
+       pipeline_name    TEXT UNIQUE,
+       pipeline_desc    TEXT NOT NULL DEFAULT ''
+);
+GRANT SELECT ON pipelines TO "[% ro_role %]";
+GRANT SELECT, INSERT, UPDATE, DELETE ON pipelines TO "[% rw_role %]";
+GRANT USAGE ON SEQUENCE pipelines_pipeline_id_seq TO "[% rw_role %]";
+
+--
+-- Data applicable to all plates
+--
+CREATE TABLE plate_types (
+       plate_type      TEXT PRIMARY KEY CHECK (plate_type <> ''),
+       plate_type_desc TEXT NOT NULL DEFAULT ''
+);
+
+GRANT SELECT ON plate_types TO "[% ro_role %]";
+GRANT SELECT, INSERT, UPDATE, DELETE ON plate_types TO "[% rw_role %]";
+
+CREATE TABLE plates (
+       plate_id       SERIAL PRIMARY KEY,
+       plate_name     TEXT NOT NULL UNIQUE CHECK ( plate_name <> '' ),
+       plate_type     TEXT NOT NULL REFERENCES plate_types(plate_type),
+       plate_desc     TEXT NOT NULL DEFAULT '',
+       created_by     INTEGER NOT NULL REFERENCES users(user_id),
+       created_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+GRANT SELECT ON plates TO "[% ro_role %]";
+GRANT SELECT, INSERT, UPDATE, DELETE ON plates TO "[% rw_role %]";
+GRANT USAGE ON SEQUENCE plates_plate_id_seq TO "[% rw_role %]";
+
+CREATE TABLE plate_comments (
+       plate_comment_id     SERIAL PRIMARY KEY,
+       plate_id             INTEGER NOT NULL REFERENCES plates(plate_id),
+       plate_comment        TEXT NOT NULL CHECK (plate_comment <> ''),
+       created_by           INTEGER NOT NULL REFERENCES users(user_id),
+       created_at           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+GRANT SELECT ON plate_comments TO "[% ro_role %]";
+GRANT SELECT, INSERT, UPDATE, DELETE ON plate_comments TO "[% rw_role %]";
+GRANT USAGE ON SEQUENCE plate_comments_plate_comment_id_seq TO "[% rw_role %]";
+
+--
+-- Processes (define before wells so well can have FK to process)
+--
+CREATE TABLE process_types (
+       process_type            TEXT NOT NULL PRIMARY KEY,
+       process_description     TEXT NOT NULL DEFAULT ''
+);
+GRANT SELECT ON process_types TO "[% ro_role %]";
+GRANT SELECT, INSERT, UPDATE, DELETE ON process_types TO "[% rw_role %]";
+
+CREATE TABLE processes (
+       process_id           SERIAL PRIMARY KEY,
+       process_type         TEXT NOT NULL REFERENCES process_types(process_type)
+);  
+GRANT SELECT ON processes TO "[% ro_role %]";
+GRANT SELECT, INSERT, UPDATE, DELETE ON processes TO "[% rw_role %]";
+GRANT USAGE ON SEQUENCE processes_process_id_seq TO "[% rw_role %]";
+
+CREATE TABLE process_pipeline (
+       process_id           INTEGER PRIMARY KEY REFERENCES processes(process_id),
+       pipeline_id          INTEGER NOT NULL REFERENCES pipelines(pipeline_id)
+);
+GRANT SELECT ON process_pipeline TO "[% ro_role %]";
+GRANT SELECT, INSERT, UPDATE, DELETE ON process_pipeline TO "[% rw_role %]";
+
+--
+-- Data applicable to all wells
+--
+CREATE TABLE wells (
+       well_id          SERIAL PRIMARY KEY,
+       plate_id         INTEGER NOT NULL REFERENCES plates(plate_id),
+       process_id       INTEGER NOT NULL REFERENCES processes(process_id),
+       well_name        CHARACTER(3) NOT NULL CHECK (well_name ~ '^[A-O](0[1-9]|1[0-9]|2[0-4])$'),
+       created_by       INTEGER NOT NULL REFERENCES users(user_id),
+       created_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+       assay_pending    TIMESTAMP,
+       assay_complete   TIMESTAMP,
+       accepted         BOOLEAN NOT NULL DEFAULT FALSE,
+       UNIQUE (plate_id, well_name)
+);
+
+GRANT SELECT ON wells TO "[% ro_role %]";
+GRANT SELECT, INSERT, UPDATE, DELETE ON wells TO "[% rw_role %]";
+GRANT USAGE ON SEQUENCE wells_well_id_seq TO "[% rw_role %]";
+
+CREATE INDEX ON wells(process_id);
+CREATE INDEX ON wells(plate_id);
+
+CREATE TABLE well_accepted_override (
+       well_id             INTEGER PRIMARY KEY REFERENCES wells(well_id),
+       accepted            BOOLEAN NOT NULL,
+       created_by          INTEGER NOT NULL REFERENCES users(user_id),
+       created_at          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+GRANT SELECT ON well_accepted_override TO "[% ro_role %]";
+GRANT SELECT, INSERT, UPDATE, DELETE ON well_accepted_override TO "[% rw_role %]";
+
+CREATE TABLE assay_result (
+       assay  TEXT NOT NULL,
+       result TEXT NOT NULL,
+       PRIMARY KEY (assay, result)
+);
+GRANT SELECT ON assay_result TO "[% ro_role %]";
+GRANT SELECT, INSERT, UPDATE, DELETE ON assay_result TO "[% rw_role %]";
+
+CREATE TABLE well_assay_results (
+       well_id     INTEGER NOT NULL REFERENCES wells(well_id),
+       assay       TEXT NOT NULL,
+       result      TEXT NOT NULL,
+       created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+       created_by  INTEGER NOT NULL REFERENCES users(user_id),
+       PRIMARY KEY (well_id, assay ),
+       FOREIGN KEY (assay, result) REFERENCES assay_result(assay, result)
+);
+GRANT SELECT ON well_assay_results TO "[% ro_role %]";
+GRANT SELECT, INSERT, UPDATE, DELETE ON well_assay_results TO "[% rw_role %]";
+
+--
+-- Premature optimization, hopefully redundant
+--
+CREATE TABLE tree_paths (
+       ancestor         INTEGER NOT NULL REFERENCES wells(well_id),
+       descendant       INTEGER NOT NULL REFERENCES wells(well_id),
+       path_length      INTEGER NOT NULL,
+       PRIMARY KEY( ancestor, descendant )
+);
+
+CREATE INDEX ON tree_paths(ancestor);
+CREATE INDEX ON tree_paths(descendant);
+
+GRANT SELECT ON tree_paths TO "[% ro_role %]";
+GRANT SELECT, INSERT, UPDATE, DELETE ON tree_paths TO "[% rw_role %]";
+
+--
+-- Extra data for specific processes
+--
+
+CREATE TABLE process_rearray (
+       process_id            INTEGER PRIMARY KEY REFERENCES processes(process_id)
+);       
+GRANT SELECT ON process_rearray TO "[% ro_role %]";
+GRANT SELECT, INSERT, UPDATE, DELETE ON process_rearray TO "[% rw_role %]";
+
+CREATE TABLE process_rearray_source_wells (
+       process_id            INTEGER PRIMARY KEY REFERENCES process_rearray(process_id),
+       source_well_id        INTEGER NOT NULL REFERENCES wells(well_id)
+);
+GRANT SELECT ON process_rearray_source_wells TO "[% ro_role %]";
+GRANT SELECT, INSERT, UPDATE, DELETE ON process_rearray_source_wells TO "[% rw_role %]";
+
+CREATE TABLE process_create_di (
+       process_id           INTEGER PRIMARY KEY REFERENCES processes(process_id),
+       design_id            INTEGER NOT NULL REFERENCES designs(design_id)
+);
+GRANT SELECT ON process_create_di TO "[% ro_role %]";
+GRANT SELECT, INSERT, UPDATE, DELETE ON process_create_di TO "[% rw_role %]";
+
+CREATE INDEX ON process_create_di(design_id);
+
+CREATE TABLE process_create_di_bacs (
+       process_id          INTEGER NOT NULL REFERENCES process_create_di(process_id),
+       bac_plate           TEXT NOT NULL,
+       bac_library         TEXT NOT NULL,
+       bac_name            TEXT NOT NULL,
+       UNIQUE(process_id, bac_plate),
+       FOREIGN KEY(bac_name, bac_library) REFERENCES bac_clones(bac_name, bac_library)
+);
+GRANT SELECT ON process_create_di_bacs TO "[% ro_role %]";
+GRANT SELECT, INSERT, UPDATE, DELETE ON process_create_di_bacs TO "[% rw_role %]";
+
+CREATE TABLE process_int_recom (
+       process_id        INTEGER PRIMARY KEY REFERENCES processes(process_id),
+       design_well_id    INTEGER NOT NULL REFERENCES wells(well_id),
+       cassette          TEXT NOT NULL,
+       backbone          TEXT NOT NULL
+);
+GRANT SELECT ON process_int_recom TO "[% ro_role %]";
+GRANT SELECT, INSERT, UPDATE, DELETE ON process_int_recom TO "[% rw_role %]";
+
+CREATE TABLE process_cre_bac_recom (
+       process_id        INTEGER PRIMARY KEY REFERENCES processes(process_id),
+       design_id         INTEGER NOT NULL REFERENCES designs(design_id),
+       bac_library       TEXT NOT NULL,
+       bac_name          TEXT NOT NULL,
+       cassette          TEXT NOT NULL,
+       backbone          TEXT NOT NULL,
+       FOREIGN KEY(bac_name, bac_library) REFERENCES bac_clones(bac_name,bac_library)
+);
+GRANT SELECT ON process_cre_bac_recom TO "[% ro_role %]";
+GRANT SELECT, INSERT, UPDATE, DELETE ON process_cre_bac_recom TO "[% rw_role %]";
+
+CREATE TABLE process_2w_gateway (
+       process_id               INTEGER PRIMARY KEY REFERENCES processes(process_id),
+       well_id                  INTEGER NOT NULL REFERENCES wells(well_id),
+       cassette                 TEXT,
+       backbone                 TEXT,
+       CHECK( (cassette IS NULL AND backbone IS NOT NULL) OR (cassette IS NOT NULL AND backbone IS NULL) )
+);
+GRANT SELECT ON process_2w_gateway TO "[% ro_role %]";
+GRANT SELECT, INSERT, UPDATE, DELETE ON process_2w_gateway TO "[% rw_role %]";
+
+CREATE TABLE process_3w_gateway (
+       process_id               INTEGER PRIMARY KEY REFERENCES processes(process_id),
+       well_id                  INTEGER NOT NULL REFERENCES wells(well_id),
+       cassette                 TEXT NOT NULL,
+       backbone                 TEXT NOT NULL
+);
+GRANT SELECT ON process_3w_gateway TO "[% ro_role %]";
+GRANT SELECT, INSERT, UPDATE, DELETE ON process_3w_gateway TO "[% rw_role %]";
+
+--
+-- Legacy sequencing QC results
+--
+
+CREATE TABLE well_legacy_qc_test_result (
+       well_id             INTEGER PRIMARY KEY REFERENCES wells(well_id),
+       qc_test_result_id   INTEGER NOT NULL,
+       valid_primers       TEXT NOT NULL DEFAULT '',
+       pass_level          TEXT NOT NULL
+);
+GRANT SELECT ON well_legacy_qc_test_result TO "[% ro_role %]";
+GRANT SELECT, INSERT, UPDATE, DELETE ON well_legacy_qc_test_result TO "[% rw_role %]";
+
+--
+-- Data for sequencing QC
+--
+
+CREATE TABLE synthetic_constructs (
+       synthetic_construct_id       SERIAL PRIMARY KEY,
+       synthetic_construct_genbank  TEXT NOT NULL
+);
+GRANT SELECT ON synthetic_constructs TO "[% ro_role %]";
+GRANT SELECT, INSERT, UPDATE, DELETE ON synthetic_constructs TO "[% rw_role %]";
+GRANT USAGE ON SEQUENCE synthetic_constructs_synthetic_construct_id_seq TO "[% rw_role %]";
+
+CREATE TABLE process_synthetic_construct (
+       process_id                   INTEGER PRIMARY KEY REFERENCES processes(process_id),
+       synthetic_construct_id       INTEGER NOT NULL REFERENCES synthetic_constructs(synthetic_construct_id)
+);
+GRANT SELECT ON process_synthetic_construct TO "[% ro_role %]";
+GRANT SELECT, INSERT, UPDATE, DELETE ON process_synthetic_construct TO "[% rw_role %]";
+
+CREATE TABLE qc_templates (
+       qc_template_id     SERIAL PRIMARY KEY,
+       qc_template_name   TEXT NOT NULL
+);
+GRANT SELECT ON qc_templates TO "[% ro_role %]";
+GRANT SELECT, INSERT, UPDATE, DELETE ON qc_templates TO "[% rw_role %]";
+GRANT USAGE ON SEQUENCE qc_templates_qc_template_id_seq TO "[% rw_role %]";
+
+CREATE TABLE qc_template_wells (
+       qc_template_id     INTEGER NOT NULL REFERENCES qc_templates(qc_template_id),
+       well_name          TEXT NOT NULL CHECK (well_name ~ '^[A-O](0[1-9]|1[0-9]|2[0-4])$'),
+       process_id         INTEGER NOT NULL REFERENCES processes(process_id),
+       PRIMARY KEY(qc_template_id, well_name)
+);
+GRANT SELECT ON qc_template_wells TO "[% ro_role %]";
+GRANT SELECT, INSERT, UPDATE, DELETE ON qc_template_wells TO "[% rw_role %]";
+
+CREATE TABLE qc_runs (
+       qc_run_id              CHAR(36) PRIMARY KEY,
+       qc_run_date            TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+       sequencing_project     TEXT NOT NULL,
+       profile                TEXT NOT NULL,
+       qc_template_id         INTEGER NOT NULL REFERENCES qc_templates(qc_template_id),
+       software_version       TEXT NOT NULL
+);       
+GRANT SELECT ON qc_runs TO "[% ro_role %]";
+GRANT SELECT, INSERT, UPDATE, DELETE ON qc_runs TO "[% rw_role %]";
+
+CREATE TABLE qc_seq_reads (
+       qc_seq_read_id     TEXT PRIMARY KEY,
+       comment            TEXT NOT NULL DEFAULT '',
+       fasta              TEXT NOT NULL
+);
+GRANT SELECT ON qc_seq_reads TO "[% ro_role %]";
+GRANT SELECT, INSERT, UPDATE, DELETE ON qc_seq_reads TO "[% rw_role %]";
+
+CREATE TABLE qc_test_results (
+       qc_test_result_id       SERIAL PRIMARY KEY,
+       qc_run_id               CHAR(36) NOT NULL REFERENCES qc_runs(qc_run_id),
+       synthetic_construct_id  INTEGER NOT NULL REFERENCES synthetic_constructs(synthetic_construct_id),
+       well_name               TEXT NOT NULL,
+       score                   INTEGER NOT NULL DEFAULT 0,
+       pass                    BOOLEAN NOT NULL DEFAULT FALSE,
+       UNIQUE(qc_run_id, synthetic_construct_id, well_name)
+);
+GRANT SELECT ON qc_test_results TO "[% ro_role %]";
+GRANT SELECT, INSERT, UPDATE, DELETE ON qc_test_results TO "[% rw_role %]";
+GRANT USAGE ON SEQUENCE qc_test_results_qc_test_result_id_seq TO "[% rw_role %]";
+
+CREATE TABLE qc_test_result_alignments (
+       qc_test_result_alignment_id SERIAL PRIMARY KEY,
+       qc_seq_read_id              TEXT NOT NULL REFERENCES qc_seq_reads(qc_seq_read_id),
+       primer_name                 TEXT NOT NULL,
+       query_start                 INTEGER NOT NULL,
+       query_end                   INTEGER NOT NULL,
+       query_strand                INTEGER NOT NULL CHECK (query_strand IN (1, -1)),
+       target_start                INTEGER NOT NULL,
+       target_end                  INTEGER NOT NULL,
+       target_strand               INTEGER NOT NULL CHECK (target_strand IN (1, -1)),
+       score                       INTEGER NOT NULL,
+       pass                        BOOLEAN NOT NULL DEFAULT FALSE
+);
+GRANT SELECT ON qc_test_result_alignments TO "[% ro_role %]";
+GRANT SELECT, INSERT, UPDATE, DELETE ON qc_test_result_alignments TO "[% rw_role %]";
+GRANT USAGE ON SEQUENCE qc_test_result_alignments_qc_test_result_alignment_id_seq TO "[% rw_role %]";
+
+CREATE TABLE qc_test_result_alignment_map (
+       qc_test_result_id                  INTEGER NOT NULL REFERENCES qc_test_results(qc_test_result_id),
+       qc_test_result_alignment_id        INTEGER NOT NULL REFERENCES qc_test_result_alignments(qc_test_result_alignment_id),
+       PRIMARY KEY(qc_test_result_id, qc_test_result_alignment_id)
+);
+GRANT SELECT ON qc_test_result_alignment_map TO "[% ro_role %]";
+GRANT SELECT, INSERT, UPDATE, DELETE ON qc_test_result_alignment_map TO "[% rw_role %]";
+
+CREATE TABLE qc_test_result_align_regions (
+       qc_test_result_alignment_id        INTEGER NOT NULL REFERENCES qc_test_result_alignments(qc_test_result_alignment_id),
+       name                               TEXT NOT NULL,
+       length                             INTEGER NOT NULL,
+       match_count                        INTEGER NOT NULL,
+       query_str                          TEXT NOT NULL,
+       target_str                         TEXT NOT NULL,
+       match_str                          TEXT NOT NULL,
+       pass                               BOOLEAN NOT NULL DEFAULT FALSE
+);
+GRANT SELECT ON qc_test_result_align_regions TO "[% ro_role %]";
+GRANT SELECT, INSERT, UPDATE, DELETE ON qc_test_result_align_regions TO "[% rw_role %]";

@@ -38,3 +38,37 @@ VALUES ('GF1'), ('GF2'), ('GF3'), ('GF4'),
        ('LR1'), ('LR2'), ('LR3'),
        ('PNFLR1'), ('PNFLR2'), ('PNFLR3'),
        ('EX3'), ('EX32'), ('EX5'), ('EX52');
+
+INSERT INTO plate_types (plate_type) VALUES ('design'), ('pcs');
+
+[% FOR assay IN [ 'rec_u', 'rec_d', 'rec_g', 'rec_ns', 'pcr_u', 'pcr_d', 'pcr_g', 'postcre' ] %]
+INSERT INTO assay_result(assay,result)
+VALUES ( '[% assay %]', 'pass' ), ( '[% assay %]', 'fail' ), ( '[% assay %]', 'weak' );
+[% END %]
+
+INSERT INTO assay_result(assay,result)
+VALUES ( 'rec_result', 'pass' ), ( 'rec_result', 'fail' ),
+       ( 'sequencing_qc', 'pass' ), ( 'sequencing_qc', 'fail' );
+      
+INSERT INTO process_types (process_type, process_description)
+VALUES ( 'create_di', 'Instantiate Design' ),
+       ( 'int_recom', 'Intermediate recombineering' ),
+       ( 'bac_recom', 'BAC recombineering' ),
+       ( '2w_gateway', 'Two-way gateway' ),
+       ( '3w_gateway', 'Three-way gateway' ),
+       ( 'rmce', 'Recombinase-mediated cassette exchange' ),
+       ( '1st_ep', 'First allele electroporation' ),
+       ( '2nd_ep', 'Second allele electroporation' ),
+       ( 'flp', 'Flp recombinase' ),
+       ( 'cre', 'Cre recombinase' ),
+       ( 'dre', 'Dre recombinase' );
+
+INSERT INTO pipelines (pipeline_name)
+VALUES ( 'komp_csd' ),
+       ( 'eucomm' ),
+       ( 'eucomm_tools' ),
+       ( 'eucomm_tools_cre' ),
+       ( 'eucomm_tools_cre_bac' ),
+       ( 'switch' );
+       
+       
