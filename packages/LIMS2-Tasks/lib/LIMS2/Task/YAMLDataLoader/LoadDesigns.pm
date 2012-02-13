@@ -20,6 +20,12 @@ override create => sub {
     $self->model->create_design( $datum );
 };
 
+override record_key => sub {
+    my ( $self, $datum ) = @_;
+
+    return $datum->{design_id} || '<undef>';
+};
+
 override wanted => sub {
     my ( $self, $datum ) = @_;
 

@@ -18,10 +18,24 @@ has continue_on_error => (
     cmd_flag => 'continue-on-error'
 );
 
+has dump_fail_params => (
+    is       => 'ro',
+    isa      => 'Bool',
+    default  => 0,
+    traits   => [ 'Getopt' ],
+    cmd_flag => 'dump-fail-params'
+);
+
 sub create {
     my ( $self, $datum ) = @_;
 
     confess "create() method must be overridden in a subclass";
+}
+
+sub record_key {
+    my ( $self, $datum ) = @_;
+
+    confess "record_key() method must be overridden in a subclass";
 }
 
 sub wanted {
@@ -72,7 +86,10 @@ sub load_data_from_file {
             );
         }
         catch {
-            $self->log->error( "Failed to process record: $_:\n" . YAML::Any::Dump( $datum ) );
+            $self->log->error( "Failed to process record: " . $self->record_key( $datum ) . ": $_" );
+            if ( $self->dump_fail_params ) {
+                print YAML::Any::Dump( $datum );
+            }
             die "Aborting\n" unless $self->continue_on_error;
             $file_err++;
         };

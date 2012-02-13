@@ -31,6 +31,12 @@ override wanted => sub {
     return 1;
 };
 
+override record_key => sub {
+    my ( $self, $datum ) = @_;
+
+    return $datum->{plate_name} || '<undef>';
+};
+
 __PACKAGE__->meta->make_immutable;
 
 1;

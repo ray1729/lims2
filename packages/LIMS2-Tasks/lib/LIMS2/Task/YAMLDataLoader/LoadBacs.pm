@@ -19,6 +19,12 @@ override create => sub {
     $self->model->create_bac_clone( $datum );
 };
 
+override record_key => sub {
+    my ( $self, $datum ) = @_;
+
+    return $datum->{bac_name} || '<undef>';
+};
+
 __PACKAGE__->meta->make_immutable;
 
 1;
