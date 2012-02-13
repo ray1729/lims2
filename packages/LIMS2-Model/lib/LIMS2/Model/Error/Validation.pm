@@ -9,6 +9,12 @@ use namespace::autoclean;
 
 extends qw( LIMS2::Model::Error );
 
+class_has show_params => (
+    is      => 'ro',
+    isa     => 'Bool', 
+    default => 1
+);
+
 has '+message' => (
     default => 'Parameter validation failed'
 );
@@ -53,7 +59,9 @@ override as_string => sub {
         $str = join "\n\t", $str, @errors;
     }
 
-    $str .= "\n\n" . pp( $self->params );    
+    if ( $self->show_params ) {        
+        $str .= "\n\n" . pp( $self->params );
+    }    
 
     if ( $self->show_stack_trace ) {
         $str .= "\n\n" . $self->stack_trace->as_string;
