@@ -54,7 +54,12 @@ sub constraint_method {
 sub post_filter {
     my ( $self, $method, $value ) = @_;
 
-    $self->model->$method( $value );
+    if ( defined $value ) {
+        return $self->model->$method( $value );
+    }
+    else {
+        return undef;
+    }    
 }
 
 sub check_params {
