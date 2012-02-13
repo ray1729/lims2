@@ -13,6 +13,7 @@ use Sub::Exporter -setup => {
               is_consistent_design_instance
               trim
               parse_oracle_date
+              sponsor2pipeline
       )
     ]
 };
@@ -53,6 +54,34 @@ use Const::Fast;
     }
 }
 
+{
+    const my %PIPELINE_FOR => (
+        'KOMP'             => 'komp_csd',
+        'EUCOMM'           => 'eucomm',
+        'EUCOMM-Tools'     => 'eucomm_tools',
+        'EUCOMM-Tools-Cre' => 'eucomm_tools_cre',
+        'SWITCH'           => 'switch',
+        'REGENERON'        => undef,
+        'EUTRACC'          => undef,
+        'NORCOMM'          => undef,
+        'MGP'              => undef,
+        'MGP-Bespoke'      => undef,
+        'TPP'              => undef,
+    );
+
+    sub sponsor2pipeline {
+        my $sponsor = shift;
+
+        my $pipeline = $PIPELINE_FOR{$sponsor};
+
+        unless ( defined $pipeline ) {
+            WARN "Unrecognized sponsor: $sponsor";
+            return undef;
+        }
+        
+        return $pipeline;
+    }
+}
 
 sub format_well_name {
     my $well_name = shift;
