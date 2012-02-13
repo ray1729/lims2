@@ -16,7 +16,6 @@ has '+message' => (
 has results => (
     is       => 'ro',
     isa      => 'Data::FormValidator::Results',
-    required => 1
 );
 
 has params => (
@@ -28,28 +27,31 @@ has params => (
 override as_string => sub {
     my $self = shift;
 
-    my @errors;
-    my $res = $self->results;
+    my $str = $self->message;
     
-    if ( $res->has_missing ) {
-        for my $f ( $res->missing ) {
-            push @errors, "$f, is missing";
+    if ( my $res = $self->results ) {
+        my @errors;
+            
+        if ( $res->has_missing ) {
+            for my $f ( $res->missing ) {
+                push @errors, "$f, is missing";
+            }
         }
-    }
 
-    if ( $res->has_invalid ) {
-        for my $f ( $res->invalid ) {
-            push @errors, "$f, is invalid: " . join q{,}, @{ $res->invalid( $f ) };
+        if ( $res->has_invalid ) {
+            for my $f ( $res->invalid ) {
+                push @errors, "$f, is invalid: " . join q{,}, @{ $res->invalid( $f ) };
+            }
         }
-    }
 
-    if ( $res->has_unknown ) {
-        for my $f ( $res->unknown ) {
-            push @errors, "$f, is unknown";
+        if ( $res->has_unknown ) {
+            for my $f ( $res->unknown ) {
+                push @errors, "$f, is unknown";
+            }
         }
-    }
 
-    my $str = join "\n\t", $self->message, @errors;
+        $str = join "\n\t", $str, @errors;
+    }
 
     $str .= "\n\n" . pp( $self->params );    
 
