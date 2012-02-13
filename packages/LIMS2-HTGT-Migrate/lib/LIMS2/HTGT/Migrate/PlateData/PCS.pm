@@ -48,7 +48,7 @@ override well_data => sub {
 
     my $first_qc_date = $self->get_htgt_plate_data_value( 'first_qc_date' );
     if ( $first_qc_date ) {
-        $data->{assay_pending} = $self->parse_oracle_date( $first_qc_date->data_value )->iso8601;
+        $data->{assay_pending} = $self->parse_oracle_date( $first_qc_date )->iso8601;
     }
 
     my $qc_done = $self->get_htgt_plate_data( 'qc_done' );
