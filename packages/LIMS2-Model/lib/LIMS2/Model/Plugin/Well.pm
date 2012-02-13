@@ -33,7 +33,7 @@ sub pspec_create_well {
         accepted       => { optional => 1 },
         parent_wells   => { optional => 1, default => [] },
         assay_results  => { optional => 1, default => [] },
-        pipeline       => { optional => 1, validate => 'existing_pipeline' }
+        pipeline       => { optional => 1, validate => 'existing_pipeline', post_filter => 'pipeline_id_for' }
     }
 }
 
@@ -107,10 +107,8 @@ sub _create_well {
 
     if ( $validated_params->{pipeline} ) {
         $process->create_related(
-            process_pipeline => {
-                pipeline_id => $self->pipeline_id_for( $validated_params->{pipeline} )
-            }
-        )
+            process_pipeline => { pipeline_id => $validated_params->{pipeline} }
+        );        
     }
 
     for my $assay_result ( @{ $validated_params->{assay_results} } ) {

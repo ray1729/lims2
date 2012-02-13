@@ -7,7 +7,7 @@ use Moose::Role;
 use Hash::MoreUtils qw( slice_def );
 use namespace::autoclean;
 
-requires qw( schema check_params throw );
+requires qw( schema check_params throw _instantiate_well );
 
 sub pspec_create_pcs_well {
     my $self = shift;
@@ -23,23 +23,64 @@ sub pspec_create_pcs_well {
     return $pspec;
 }
 
+sub _create_pcs_well_process {
+    my ( $self, $validated_params ) = @_;
+
+    my @parent_wells = @{ $validated_params->{parent_wells} || [] };
+    if ( @parent_wells != 1 ) {        
+        $self->throw(
+            Validation => {
+                params  => $validated_params,
+                message => 'PCS well must have exactly one parent well'
+            }
+        )
+    }
+
+    my $pw = $self->_instantiate_well( $parent_wells[0] );
+
+    my $process;
+    
+    if ( $pw->plate->plate_type eq 'design' ) {
+        $process = $self->schema->resultset( 'Process' )->new( { process_type => 'int_recom' } );
+        $process->create_related(
+            process_int_recom => {
+                desgin_well_id => $pw->well_id,
+                cassette       => $validated_params->{cassette},
+                backbone       => $validated_params->{backbone}
+            }
+        );        
+    }
+    elsif ( $pw->plate->plate_type eq 'pcs' ) {
+        $process = $self->schema->resultset( 'Process' )->new( { process_type => 'rearray' } );
+        $process->create_related(
+            process_rearray => {}
+        )->create_related(
+            process_rearray_source_wells => { source_well_id => $pw->well_id }
+        );
+    }
+    else {
+        $self->throw(
+            Validation => {
+                params  => $validated_params,
+                message => 'Invalid parent plate type (parent of a PCS well must be a DESIGN or PCS well)'
+            }
+        );
+    }
+
+    return $process;
+}
+
 sub create_pcs_well {
     my ( $self, $params, $plate ) = @_;
 
     $plate ||= $self->_instantiate_plate( $params );    
     
-    my $validated_params = $self->check_params( $params, $self->pspec_create_pcs_well );   
+    my $validated_params = $self->check_params( $params, $self->pspec_create_pcs_well );
 
-    my $well = $self->_create_well( $validated_params, $plate );
-
-    $well->create_related( well_backbone => { slice_def( $validated_params, 'backbone' ) } );
-
-    $well->create_related( well_cassette => { slice_def( $validated_params, 'cassette' ) } );
+    my $process = $self->_create_pcs_well_process( $params );    
     
-    if ( $validated_params->{clone_name} ) {
-        $well->create_related( well_clone_name => { slice_def( $validated_params, 'clone_name' ) } );
-    }
-    
+    my $well = $self->_create_well( $validated_params, $process, $plate );
+
     if ( my $legacy_qc = $validated_params->{legacy_qc_result} ) {
         $well->create_related( well_legacy_qc_test_result => $legacy_qc );
     }
