@@ -142,6 +142,11 @@ sub existing_design_oligo_type {
     in_resultset( $model, 'DesignOligoType', 'design_oligo_type' );
 }
 
+sub existing_pipeline {
+    my ( $class, $model ) = @_;
+    in_resultset( $model, 'Pipeline', 'pipeline_name' );
+}
+
 sub existing_plate_type {
     my ( $class, $model ) = @_;
     in_resultset( $model, 'PlateType', 'plate_type' );
@@ -207,7 +212,7 @@ sub existing_final_backbone {
 }
 
 sub design_parent_plate_type {
-    in_set( 'design' );
+    in_set();
 }
 
 sub pcs_parent_plate_type {
