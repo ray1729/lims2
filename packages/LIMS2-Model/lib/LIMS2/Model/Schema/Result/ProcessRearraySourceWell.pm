@@ -65,11 +65,13 @@ __PACKAGE__->add_columns(
 
 =item * L</process_id>
 
+=item * L</source_well_id>
+
 =back
 
 =cut
 
-__PACKAGE__->set_primary_key("process_id");
+__PACKAGE__->set_primary_key("process_id", "source_well_id");
 
 =head1 RELATIONS
 
@@ -104,8 +106,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-02-10 15:16:54
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:VENkrPUJQCDrtzUCYXzRQw
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-02-13 13:25:31
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:99Z8e4gmjY2OsbexmZNMTA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

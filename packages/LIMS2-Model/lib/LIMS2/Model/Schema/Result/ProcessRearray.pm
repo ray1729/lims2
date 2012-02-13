@@ -80,24 +80,24 @@ __PACKAGE__->belongs_to(
   { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
-=head2 process_rearray_source_well
+=head2 process_rearray_source_wells
 
-Type: might_have
+Type: has_many
 
 Related object: L<LIMS2::Model::Schema::Result::ProcessRearraySourceWell>
 
 =cut
 
-__PACKAGE__->might_have(
-  "process_rearray_source_well",
+__PACKAGE__->has_many(
+  "process_rearray_source_wells",
   "LIMS2::Model::Schema::Result::ProcessRearraySourceWell",
   { "foreign.process_id" => "self.process_id" },
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-02-10 15:16:54
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:d2v2Ysri3ABegP8RTi9B2w
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-02-13 13:25:31
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:COkL+PqqocXgimUBDpVz1Q
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
