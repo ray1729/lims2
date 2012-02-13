@@ -32,7 +32,8 @@ sub pspec_create_well {
         assay_complete => { validate => 'date_time', optional => 1, post_filter => 'parse_date_time' },
         accepted       => { optional => 1 },
         parent_wells   => { optional => 1, default => [] },
-        assay_results  => { optional => 1, default => [] }
+        assay_results  => { optional => 1, default => [] },
+        pipeline       => { optional => 1, validate => 'existing_pipeline' }
     }
 }
 
@@ -87,21 +88,30 @@ EOT
 
 # Internal function, returns LIMS2::Model::Schema::Result::Well object
 sub _create_well {
-    my ( $self, $validated_params, $plate ) = @_;
+    my ( $self, $validated_params, $process, $plate ) = @_;
 
     $plate ||= $self->_instantiate_plate( $validated_params );
 
     $self->log->debug( '_create_well: ' . $plate->plate_name . '_' . $validated_params->{well_name} );
-    
+
     my $well = $plate->create_related(
         wells => {
-            slice_def( $validated_params, qw( well_name created_by created_at assay_pending ) )
+            slice_def( $validated_params, qw( well_name created_by created_at assay_pending ) ),
+            process_id => $process->process_id
         }
     );
 
     $self->log->debug( 'created well with id: ' . $well->well_id );
 
     $self->_create_tree_paths( $well, map { $self->_instantiate_well( $_ ) } @{ $validated_params->{parent_wells} } );
+
+    if ( $validated_params->{pipeline} ) {
+        $process->create_related(
+            process_pipeline => {
+                pipeline_id => $self->pipeline_id_for( $validated_params->{pipeline} )
+            }
+        )
+    }
 
     for my $assay_result ( @{ $validated_params->{assay_results} } ) {
         $self->add_well_assay_result( $assay_result, $well );

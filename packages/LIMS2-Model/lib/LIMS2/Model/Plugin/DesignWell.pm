@@ -21,7 +21,7 @@ sub pspec_create_design_well {
     return $pspec;
 }
 
-sub pspec_create_design_well_bac {
+sub pspec_create_di_bac {
     return {
         bac_plate   => { validate => 'bac_plate' },
         bac_library => { validate => 'existing_bac_library' },
@@ -34,16 +34,22 @@ sub create_design_well {
 
     $plate ||= $self->_instantiate_plate( $params );
     
-    my $validated_params = $self->check_params( $params, $self->pspec_create_design_well );   
+    my $validated_params = $self->check_params( $params, $self->pspec_create_design_well );
 
-    my $well = $self->_create_well( $validated_params, $plate );
+    my $process = $self->schema->resultset( 'Process' )->create( { process_type => 'create_di' } );
 
-    $well->create_related( design_well_design => { design_id => $validated_params->{design_id} } );
+    my $process_create_di = $process->create_related(
+        process_create_di => {
+            design_id => $validated_params->{design_id}
+        }
+    );
 
     for my $b ( @{ $validated_params->{bac_clones} || [] } ) {
-        my $validated_b = $self->check_params( $b, $self->pspec_create_design_well_bac );
-        $well->create_related( design_well_bacs => $validated_b );
+        my $validated_bac_data = $self->check_params( $b, $self->pspec_create_di_bac );
+        $process_create_di->create_related( process_create_di_bacs => $validated_bac_data );
     }
+
+    my $well = $self->_create_well( $validated_params, $process, $plate );
 
     return $well->as_hash;
 }
