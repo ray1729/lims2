@@ -10,6 +10,14 @@ use namespace::autoclean;
 
 extends 'LIMS2::Task';
 
+has continue_on_error => (
+    is       => 'ro',
+    isa      => 'Bool',
+    default  => 1,
+    traits   => [ 'Getopt' ],
+    cmd_flag => 'continue-on-error'
+);
+
 sub create {
     my ( $self, $datum ) = @_;
 
@@ -65,6 +73,7 @@ sub load_data_from_file {
         }
         catch {
             $self->log->error( "Failed to process record: $_:\n" . YAML::Any::Dump( $datum ) );
+            die "Aborting\n" unless $self->continue_on_error;
             $file_err++;
         };
         if ( $file_seen % 100 == 0 ) {
