@@ -448,11 +448,15 @@ GRANT SELECT ON process_rearray TO "[% ro_role %]";
 GRANT SELECT, INSERT, UPDATE, DELETE ON process_rearray TO "[% rw_role %]";
 
 CREATE TABLE process_rearray_source_wells (
-       process_id            INTEGER PRIMARY KEY REFERENCES process_rearray(process_id),
-       source_well_id        INTEGER NOT NULL REFERENCES wells(well_id)
+       process_id            INTEGER NOT NULL REFERENCES process_rearray(process_id),
+       source_well_id        INTEGER NOT NULL REFERENCES wells(well_id),
+       PRIMARY KEY(process_id, source_well_id)
 );
 GRANT SELECT ON process_rearray_source_wells TO "[% ro_role %]";
 GRANT SELECT, INSERT, UPDATE, DELETE ON process_rearray_source_wells TO "[% rw_role %]";
+
+CREATE INDEX ON process_rearray_source_wells(process_id);
+CREATE INDEX ON process_rearray_source_wells(source_well_id);
 
 CREATE TABLE process_create_di (
        process_id           INTEGER PRIMARY KEY REFERENCES processes(process_id),
