@@ -24,7 +24,7 @@ override well_data => sub {
             = $self->recombineering_results_for( $well );
         $data->{assay_pending}          = $assay_pending ? $assay_pending->iso8601 : undef;
         $data->{assay_complete}         = $assay_complete ? $assay_complete->iso8601 : undef;
-        $data->{recombineering_results} = $rec_results;       
+        $data->{assay_results}          = $rec_results;       
     }
     
     return $data;
