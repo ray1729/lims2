@@ -5,6 +5,7 @@ use LIMS2::HTGT::Migrate::Utils qw( htgt_plate_types
                                     lims2_plate_type
                                     format_well_name
                                     is_consistent_design_instance
+                                    sponsor2pipeline
                               );
 use DateTime;
 use DateTime::Format::Oracle;
@@ -229,10 +230,22 @@ sub well_data {
         created_at   => $self->created_date->iso8601,
         comments     => $self->well_comments( $well ),
         accepted     => $self->accepted_override( $well ),
-        parent_wells => $self->parent_wells( $well )
+        parent_wells => $self->parent_wells( $well ),
+        pipeline     => $self->pipeline_for( $well )
     );
             
     return \%data;
+}
+
+sub pipeline_for {
+    my ( $self, $well ) = @_;
+
+    my $sponsor = ( $self->get_htgt_well_data_value( 'sponsor' )
+                        || $self->get_htgt_plate_data_value( 'sponsor' ) );
+
+    return undef unless defined $sponsor;
+
+    return sponsor2pipeline( $sponsor );    
 }
 
 sub well_comments {
@@ -240,7 +253,7 @@ sub well_comments {
 
     my @comments;
     for my $c ( grep { $_->data_type =~ m/comments?/i } $self->htgt_well_data ) {
-        my $created_at = $self->parse_oracle_data( $c->edit_date ) || $self->created_date;        
+        my $created_at = $self->parse_oracle_date( $c->edit_date ) || $self->created_date;        
         push @comments, {
             created_at => $created_at->iso8601,
             created_by => $c->edit_user || $self->migrate_user,
