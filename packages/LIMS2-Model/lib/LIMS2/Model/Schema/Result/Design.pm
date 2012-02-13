@@ -77,10 +77,10 @@ __PACKAGE__->table("designs");
   data_type: 'text'
   is_nullable: 0
 
-=head2 targeted_transcript
+=head2 target_transcript
 
   data_type: 'text'
-  is_nullable: 0
+  is_nullable: 1
 
 =cut
 
@@ -104,8 +104,8 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_nullable => 0 },
   "validated_by_annotation",
   { data_type => "text", is_nullable => 0 },
-  "targeted_transcript",
-  { data_type => "text", is_nullable => 0 },
+  "target_transcript",
+  { data_type => "text", is_nullable => 1 },
 );
 
 =head1 PRIMARY KEY
@@ -228,8 +228,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-02-10 15:16:54
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:lkKboPrBaYGlsinuoA0nfQ
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-02-13 09:58:35
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:BflcXdWvm8dicPI9W4CS/g
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
