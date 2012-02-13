@@ -41,22 +41,26 @@ sub _create_pcs_well_process {
     my $process;
     
     if ( $pw->plate->plate_type eq 'design' ) {
-        $process = $self->schema->resultset( 'Process' )->new( { process_type => 'int_recom' } );
+        $process = $self->schema->resultset( 'Process' )->create( { process_type => 'int_recom' } );
+        $self->log->debug( "Created int_recom process with id " . $process->process_id );
         $process->create_related(
             process_int_recom => {
-                desgin_well_id => $pw->well_id,
+                design_well_id => $pw->well_id,
                 cassette       => $validated_params->{cassette},
                 backbone       => $validated_params->{backbone}
             }
-        );        
+        );
+        $self->log->debug( "Created auxiliary process_int_recom data for process " . $process->process_id );
     }
     elsif ( $pw->plate->plate_type eq 'pcs' ) {
-        $process = $self->schema->resultset( 'Process' )->new( { process_type => 'rearray' } );
+        $process = $self->schema->resultset( 'Process' )->create( { process_type => 'rearray' } );
+        $self->log->debug( "Created rearray process with id " . $process->process_id );
         $process->create_related(
             process_rearray => {}
         )->create_related(
             process_rearray_source_wells => { source_well_id => $pw->well_id }
         );
+        $self->log->debug( "Created auxiliary process_rearray data for process " . $process->process_id );
     }
     else {
         $self->throw(
@@ -77,7 +81,7 @@ sub create_pcs_well {
     
     my $validated_params = $self->check_params( $params, $self->pspec_create_pcs_well );
 
-    my $process = $self->_create_pcs_well_process( $params );    
+    my $process = $self->_create_pcs_well_process( $validated_params );    
     
     my $well = $self->_create_well( $validated_params, $process, $plate );
 
