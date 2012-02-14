@@ -24,7 +24,7 @@ sub check_parent_plate_type {
 
 sub pspec_create_well {
     return {
-        plate_name     => { optional => 1 },
+        plate_name     => { validate => 'plate_name' },
         well_name      => { validate => 'well_name' },
         created_by     => { validate => 'existing_user', post_filter => 'user_id_for' },
         created_at     => { validate => 'date_time', optional => 1, post_filter => 'parse_date_time' },

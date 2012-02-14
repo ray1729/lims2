@@ -61,6 +61,7 @@ sub create_plate {
 
     while ( my ( $well_name, $well_params ) = each %{ $validated_params->{wells} || {} } ) {
         next unless defined $well_params and keys %{$well_params};
+        $well_params->{plate_name}   = $validated_params->{plate_name};
         $well_params->{well_name}    = $well_name;
         $well_params->{created_by} ||= $params->{created_by};
         $well_params->{created_at} ||= $params->{created_at};
