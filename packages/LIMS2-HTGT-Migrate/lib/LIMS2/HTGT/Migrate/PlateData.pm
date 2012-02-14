@@ -233,7 +233,11 @@ sub well_data {
         parent_wells => $self->parent_wells( $well ),
         pipeline     => $self->pipeline_for( $well )
     );
-            
+
+    if ( $data{accepted} ) {
+        $data{assay_complete} = $data{accepted}->{created_at};
+    }    
+    
     return \%data;
 }
 
