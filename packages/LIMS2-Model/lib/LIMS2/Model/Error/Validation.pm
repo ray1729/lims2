@@ -35,8 +35,11 @@ override as_string => sub {
     my $self = shift;
 
     my $str = $self->message;
+
+    my $res = $self->results;
     
-    if ( my $res = $self->results ) {
+    if ( defined $res ) {        
+
         my @errors;
             
         if ( $res->has_missing ) {
@@ -60,7 +63,7 @@ override as_string => sub {
         $str = join "\n\t", $str, @errors;
     }
 
-    if ( $self->show_params ) {        
+    if ( $self->show_params ) {
         $str .= "\n\n" . pp( $self->params );
     }    
 
