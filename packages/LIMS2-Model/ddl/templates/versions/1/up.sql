@@ -18,7 +18,8 @@ GRANT SELECT ON schema_versions TO "[% ro_role %]", "[% rw_role %]";
 --
 CREATE TABLE users (
        user_id   SERIAL PRIMARY KEY,
-       user_name TEXT NOT NULL UNIQUE CHECK (user_name <> '')
+       user_name TEXT NOT NULL UNIQUE CHECK (user_name <> ''),
+       password  TEXT
 );
 
 GRANT SELECT ON users TO "[% ro_role %]";
