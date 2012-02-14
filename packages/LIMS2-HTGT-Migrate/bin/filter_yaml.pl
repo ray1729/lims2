@@ -33,9 +33,12 @@ my $it = iyaml( $file->openr );
 
 while ( my $plate = $it->next ) {
     while ( my ( $well_name, $well ) = each %{ $plate->{wells} } ) {
-        if ( $well->{parent_wells} and @{ $well->{parent_wells} }  and $well->{parent_wells}[0]{plate_name} eq 'PCS00157_A' ) {
-            delete $plate->{wells}{$well_name};            
-        }    
+        for my $bac ( @{ $well->{bac_clones} || [] } ) {
+            unless ( $bac->{bac_plate} and $bac->{bac_plate} =~ m/^[abcd]$/ ) {
+                delete $well->{bac_clones};
+                last;
+            }
+        }
     }
     $ofh->print( Dump( $plate ) );
 }
