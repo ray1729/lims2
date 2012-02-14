@@ -4,6 +4,7 @@ use strict;
 use warnings FATAL => 'all';
 
 use Moose;
+use MooseX::ClassAttribute;
 use Data::Dump qw( pp );
 use namespace::autoclean;
 
