@@ -27,7 +27,11 @@ sub _create_pcs_well_process {
     my ( $self, $validated_params ) = @_;
 
     my @parent_wells = @{ $validated_params->{parent_wells} || [] };
-    if ( @parent_wells != 1 ) {        
+    if ( @parent_wells == 0 ) {
+        $self->log->warn( sprintf 'Skipping %s[%s] - no parent well', @{$validated_params}{qw( plate_name well_name ) } );        
+        return;
+    }
+    elsif ( @parent_wells > 1 ) {
         $self->throw(
             Validation => {
                 params  => $validated_params,
@@ -80,8 +84,9 @@ sub create_pcs_well {
     $plate ||= $self->_instantiate_plate( $params );    
     
     my $validated_params = $self->check_params( $params, $self->pspec_create_pcs_well );
-
-    my $process = $self->_create_pcs_well_process( $validated_params );    
+    
+    my $process = $self->_create_pcs_well_process( $validated_params )
+        or return;
     
     my $well = $self->_create_well( $validated_params, $process, $plate );
 
