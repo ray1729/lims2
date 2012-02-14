@@ -33,11 +33,8 @@ my $it = iyaml( $file->openr );
 
 while ( my $plate = $it->next ) {
     while ( my ( $well_name, $well ) = each %{ $plate->{wells} } ) {
-        for my $bac ( @{ $well->{bac_clones} || [] } ) {
-            unless ( $bac->{bac_plate} and $bac->{bac_plate} =~ m/^[abcd]$/ ) {
-                delete $well->{bac_clones};
-                last;
-            }
+        if ( $well->{accepted} and not $well->{assay_complete} ) {
+            $well->{assay_complete} = $well->{accepted}->{created_at};
         }
     }
     $ofh->print( Dump( $plate ) );
