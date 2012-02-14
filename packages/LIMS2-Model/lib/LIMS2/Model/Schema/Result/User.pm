@@ -50,6 +50,11 @@ __PACKAGE__->table("users");
   data_type: 'text'
   is_nullable: 0
 
+=head2 password
+
+  data_type: 'text'
+  is_nullable: 1
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -62,6 +67,8 @@ __PACKAGE__->add_columns(
   },
   "user_name",
   { data_type => "text", is_nullable => 0 },
+  "password",
+  { data_type => "text", is_nullable => 1 },
 );
 
 =head1 PRIMARY KEY
@@ -228,8 +235,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-01-18 11:04:35
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:lm23HrcmnZjkSU8wrUoi0g
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-02-13 17:08:15
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:5LjYZHoU/Wq/V3Cwp9gmLw
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
