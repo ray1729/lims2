@@ -225,7 +225,7 @@ CREATE TABLE designs (
 GRANT SELECT ON designs TO "[% ro_role %]";
 GRANT SELECT, INSERT, UPDATE, DELETE ON designs TO "[% rw_role %]";
 
-CREATE INDEX ON designs(targeted_transcript);
+CREATE INDEX ON designs(target_transcript);
 
 CREATE TABLE design_oligo_types (
        design_oligo_type TEXT PRIMARY KEY
