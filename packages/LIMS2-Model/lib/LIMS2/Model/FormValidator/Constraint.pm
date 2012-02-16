@@ -100,6 +100,24 @@ sub bac_name {
     regexp_matches( qr/^[\w()-]+$/ );
 }
 
+# More restrictive values  for Cre Bac recombineering
+sub cre_bac_recom_bac_library {
+    in_set( 'black6' );
+}
+
+sub cre_bac_recom_bac_name {
+    regexp_matches( qr/^RP2[34]/ );
+}
+
+sub cre_bac_recom_cassette {
+    in_set( 'pGTK_En2_eGFPo_T2A_CreERT_Kan' );
+}
+
+sub cre_bac_recom_backbone {
+    in_set( 'pBACe3.6 (RP23) with HPRT3-9 without PUC Linker',
+            'pTARBAC1(RP24) with HPRT3-9 without PUC Linker' );
+}
+
 sub plate_name {
     regexp_matches( qr/^[A-Z0-9_]+$/ );
 }
