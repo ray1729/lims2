@@ -86,6 +86,12 @@ sub retrieve_plate {
     $self->retrieve( Plate => $validated_params );
 }
 
+sub list_plate_types {
+    my $self = shift;
+
+    [ $self->schema->resultset( 'PlateType' )->all ];
+}
+
 1;
 
 __END__
