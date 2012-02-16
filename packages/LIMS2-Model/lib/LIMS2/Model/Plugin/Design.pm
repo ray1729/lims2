@@ -173,6 +173,41 @@ sub retrieve_design {
     return $design->as_hash;
 }
 
+sub _list_designs_for_gene {
+    my ( $self, $gene_name ) = @_;
+    
+    my %search_params = ( name => $gene_name, raw => 1 );
+
+    my $genes = $self->get_genes_by_name( \%search_params );
+
+    unless ( @{$genes} ) {
+        $self->throw( 'NotFound' => { entity_class => 'Gene', search_params => \%search_params } );
+    }    
+
+    my @transcripts = map { $_->stable_id } map { @{ $_->get_all_Transcripts } } @{$genes};
+
+    my @design_ids = map { $_->design_id }
+        $self->schema->resultset( 'Design' )->search( { target_transcript => { -in => \@transcripts } } );
+
+    return \@design_ids;
+}
+
+# XXX Should we support other search criteria?
+
+sub pspec_list_designs {
+    return {
+        gene => { validate => 'non_empty_string' }
+    }
+}
+
+sub list_designs {
+    my ( $self, $params ) = @_;
+
+    my $validated_params = $self->check_params( $params, $self->pspec_list_designs );
+
+    return $self->_list_designs_for_gene( $validated_params->{gene} );
+}
+
 1;
 
 __END__
