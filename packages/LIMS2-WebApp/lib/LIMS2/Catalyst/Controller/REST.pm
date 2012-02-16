@@ -58,13 +58,14 @@ sub handle_lims2_model_error {
     }
     
     if ( $error->isa( 'LIMS2::Model::Error::Validation' ) ) {
-        my $results = $error->results;
-        $entity{missing} = [ $results->missing ]
-            if $results->has_missing;
-        $entity{invalid} = { map { $_ => $results->invalid($_) } $results->invalid }
-            if $results->has_invalid;
-        $entity{unknown} = [ $results->unknown ]
-            if $results->has_unknown;
+        if ( my $results = $error->results ) {            
+            $entity{missing} = [ $results->missing ]
+                if $results->has_missing;
+            $entity{invalid} = { map { $_ => $results->invalid($_) } $results->invalid }
+                if $results->has_invalid;
+            $entity{unknown} = [ $results->unknown ]
+                if $results->has_unknown;
+        }        
         return $self->error_status( $c, HTTP_BAD_REQUEST, \%entity );
     }
     
