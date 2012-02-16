@@ -39,7 +39,10 @@ VALUES ('GF1'), ('GF2'), ('GF3'), ('GF4'),
        ('PNFLR1'), ('PNFLR2'), ('PNFLR3'),
        ('EX3'), ('EX32'), ('EX5'), ('EX52');
 
-INSERT INTO plate_types (plate_type) VALUES ('design'), ('pcs');
+INSERT INTO plate_types (plate_type, plate_type_desc)
+VALUES ('design', 'Design'),
+       ('pcs', 'PCS'),
+       ('cre_bac_recom', 'Cre BAC Recombineering');
 
 [% FOR assay IN [ 'rec_u', 'rec_d', 'rec_g', 'rec_ns', 'pcr_u', 'pcr_d', 'pcr_g', 'postcre' ] %]
 INSERT INTO assay_result(assay,result)
