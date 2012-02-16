@@ -15,6 +15,11 @@ sub end :Private {
         $c->forward( 'handle_error' );
     }
 
+    my $entity = $c->stash->{ $self->{stash_key} };
+    if ( blessed( $entity ) and $entity->can( 'as_hash' ) ) {
+        $c->stash->{ $self->{stash_key} } = $entity->as_hash;
+    }
+    
     $c->forward( 'do_serialize' );
 }
 
