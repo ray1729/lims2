@@ -10,8 +10,8 @@ use namespace::autoclean;
 
 extends qw( LIMS2::Model::Error );
 
-class_has show_params => (
-    is      => 'ro',
+has show_params => (
+    is      => 'rw',
     isa     => 'Bool', 
     default => 1
 );
