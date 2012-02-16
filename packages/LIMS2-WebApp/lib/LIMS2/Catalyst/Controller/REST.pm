@@ -13,14 +13,32 @@ sub end :Private {
 
     if ( @{$c->error} ) {
         $c->forward( 'handle_error' );
-    }
-
+    }    
+    
     my $entity = $c->stash->{ $self->{stash_key} };
-    if ( blessed( $entity ) and $entity->can( 'as_hash' ) ) {
-        $c->stash->{ $self->{stash_key} } = $entity->as_hash;
-    }
+    $c->stash->{ $self->{stash_key} } = $self->_recursive_to_hash( $entity );
     
     $c->forward( 'do_serialize' );
+}
+
+sub _recursive_to_hash {
+    my ( $self, $entity ) = @_;
+
+    if ( blessed( $entity ) and $entity->can( 'as_hash' ) ) {
+        return $entity->as_hash;
+    }
+    elsif ( ref $entity eq 'ARRAY' ) {
+        for ( @{$entity} ) {
+            $_ = $self->_recursive_to_hash( $_ );
+        }
+    }
+    elsif ( ref $entity eq 'HASH' ) {
+        for ( values %{$entity} ) {
+            $_ = $self->recursive_to_hash( $_ );
+        }
+    }
+    
+    return $entity;
 }
 
 sub handle_error :Private {
