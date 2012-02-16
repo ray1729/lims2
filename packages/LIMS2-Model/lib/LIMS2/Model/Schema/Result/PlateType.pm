@@ -93,5 +93,12 @@ __PACKAGE__->has_many(
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
+
+sub as_hash {
+    my $self = shift;
+
+    return { map { $_ => $self->$_ } qw( plate_type plate_type_desc ) };
+}
+        
 __PACKAGE__->meta->make_immutable;
 1;
