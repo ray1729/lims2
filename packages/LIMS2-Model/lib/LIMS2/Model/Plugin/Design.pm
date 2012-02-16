@@ -184,7 +184,7 @@ sub _list_designs_for_gene {
         $self->throw( 'NotFound' => { entity_class => 'Gene', search_params => \%search_params } );
     }    
 
-    my @transcripts = map { $_->stable_id } map { @{ $_->get_all_Transcripts } } @{$genes};
+    my @transcripts = map { $_->stable_id } map { @{ $_->ensembl_gene->get_all_Transcripts } } @{$genes};
 
     my @design_ids = map { $_->design_id }
         $self->schema->resultset( 'Design' )->search( { target_transcript => { -in => \@transcripts } } );
