@@ -82,6 +82,21 @@ sub _build_eng_seq_builder {
     return EngSeqBuilder->new( configfile => $ENV{ENG_SEQ_BUILDER_CONFIG} );
 }
 
+has ensembl_util => (
+    isa        => 'LIMS2::Util::EnsEMBL',
+    lazy_build => 1,
+    handles => {
+        map { 'ensembl_' . $_ => $_ }
+            qw( db_adaptor gene_adaptor slice_adaptor transcript_adaptor constrained_element_adaptor repeat_feature_adaptor )
+    }
+);
+
+sub _build_ensembl_util {
+    require LIMS2::Util::EnsEMBL;
+    # Could specify species in constructor, default species => 'mouse'
+    return LIMS2::Util::EnsEMBL->new;
+}
+
 sub throw {
     my ( $self, $error_class, $args ) = @_;
 
