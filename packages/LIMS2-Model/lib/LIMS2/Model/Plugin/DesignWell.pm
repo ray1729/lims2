@@ -51,7 +51,7 @@ sub create_design_well {
 
     my $well = $self->_create_well( $validated_params, $process, $plate );
 
-    return $well->as_hash;
+    return $well;
 }
 
 1;

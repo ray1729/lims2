@@ -20,14 +20,17 @@ can_ok $model, 'get_genes_by_name';
 for my $name ( qw( Cbx1 ENSMUSG00000018666 MGI:105369 OTTMUSG00000001636 ) ) {
     my $genes = $model->get_genes_by_name( { name => $name } );
     ok @{$genes} > 0, "Fetch $name";
-    is_deeply $genes, [ { ensembl_gene_id => 'ENSMUSG00000018666', external_name => 'Cbx1' } ], '...it has the expected structure';    
-}
-
-for my $name ( qw( Cbx1 ENSMUSG00000018666 MGI:105369 OTTMUSG00000001636 ) ) {
-    my $genes = $model->get_genes_by_name( { name => $name, raw => 1 } );
-    ok @{$genes} > 0, "Fetch $name (raw)";
-    isa_ok $genes->[0], 'Bio::EnsEMBL::Gene';
-    is $genes->[0]->stable_id, 'ENSMUSG00000018666', '...it has the expected stable id';
+    isa_ok $genes->[0], 'LIMS2::Model::Entity::Gene';
+    is_deeply [ map $_->as_hash, @{$genes} ], [
+        {
+            ensembl_gene_id => 'ENSMUSG00000018666',
+            marker_symbol    => 'Cbx1',
+            chr_name         => '11',
+            chr_start        => 96650441,
+            chr_end          => 96669954,
+            chr_strand       => 1
+        }
+    ], '...it has the expected structure';    
 }
 
 done_testing;

@@ -24,7 +24,7 @@ can_ok $model, 'create_assembly';
 
 ok my $assembly = $model->create_assembly( { assembly => 'NCBIM35' } ), 'create_assembly suceeeds';
 
-cmp_deeply $assembly, { assembly => 'NCBIM35' }, 'create_assembly returns the expected data';
+cmp_deeply $assembly->as_hash, { assembly => 'NCBIM35' }, 'create_assembly returns the expected data';
 
 cmp_deeply $model->list_assemblies, bag( @ASSEMBLIES, 'NCBIM35' ),
     'list_assemblies includes the new assembly';

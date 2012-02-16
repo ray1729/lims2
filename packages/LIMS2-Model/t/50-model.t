@@ -40,7 +40,7 @@ ok my $model = LIMS2::Model->new( schema => $schema ), 'instantiate model';
 
     ok my $bac_clone = $model->create_bac_clone( \%params ), 'create_bac_clone should succeed';
 
-    is_deeply $bac_clone, \%params, 'create_bac_clone returns expected data';
+    is_deeply $bac_clone->as_hash, \%params, 'create_bac_clone returns expected data';
 
     can_ok $model, 'delete_bac_clone';
 

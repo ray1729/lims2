@@ -63,7 +63,7 @@ sub create_user {
         }
     }
 
-    return $user->as_hash;
+    return $user;
 }
 
 sub pspec_delete_user {

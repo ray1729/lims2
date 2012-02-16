@@ -113,7 +113,7 @@ sub create_design {
         $design->create_related( genotyping_primers => $validated );
     }
 
-    return $design->as_hash;
+    return $design;
 }
 
 sub pspec_delete_design {
@@ -170,7 +170,7 @@ sub retrieve_design {
     
     my $design = $self->retrieve( Design => $validated_params );
 
-    return $design->as_hash;
+    return $design;
 }
 
 sub _list_designs_for_gene {

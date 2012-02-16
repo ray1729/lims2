@@ -20,9 +20,7 @@ sub create_assembly {
 
     my $validated_params = $self->check_params( $params, $self->pspec_create_assembly );
 
-    my $assembly = $self->schema->resultset( 'Assembly' )->create( $validated_params );
-
-    return $assembly->as_hash;
+    return $self->schema->resultset( 'Assembly' )->create( $validated_params );
 }
 
 sub pspec_delete_assembly {

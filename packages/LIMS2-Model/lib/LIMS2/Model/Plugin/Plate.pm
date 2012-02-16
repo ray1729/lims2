@@ -69,7 +69,7 @@ sub create_plate {
     }
 
     # XXX Should this return profile-specific data?
-    return $plate->as_hash;
+    return $plate;
 }
 
 1;

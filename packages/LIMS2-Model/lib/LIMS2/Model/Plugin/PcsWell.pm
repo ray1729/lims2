@@ -98,7 +98,7 @@ sub create_pcs_well {
         $self->add_well_qc_result( $qc, $well );
     }
 
-    return $well->as_hash;
+    return $well;
 }
 
 1;

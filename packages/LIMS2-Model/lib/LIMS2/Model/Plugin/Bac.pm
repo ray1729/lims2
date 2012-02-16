@@ -19,9 +19,7 @@ sub create_bac_library {
 
     my $validated_params = $self->check_params( $params, $self->pspec_create_bac_library );
 
-    my $bac_library = $self->schema->resultset( 'BacLibrary' )->create( $validated_params );
-
-    return $bac_library->as_hash;
+    return $self->schema->resultset( 'BacLibrary' )->create( $validated_params );
 }
 
 sub list_bac_libraries {
@@ -94,7 +92,7 @@ sub create_bac_clone {
         $bac_clone->create_related( loci => $validated_locus );
     }
 
-    return $bac_clone->as_hash;
+    return $bac_clone;
 }
 
 sub pspec_delete_bac_clone {

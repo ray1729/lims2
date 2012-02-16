@@ -175,7 +175,7 @@ sub set_well_accepted_override {
 
     my $accepted_override = $well->create_related( well_accepted_override => $validated_params );
 
-    return $accepted_override->as_hash;
+    return $accepted_override;
 }
 
 # XXX These validations do not check that assay/result is a valid combination, only the
@@ -209,7 +209,7 @@ sub add_well_assay_result {
         $well->update( { assay_pending => $assay_result->created_at } );
     }
 
-    return $assay_result->as_hash;
+    return $assay_result;
 }
 
 sub pspec_add_well_qc_result {
@@ -230,7 +230,7 @@ sub add_well_qc_result {
 
     my $qc_result = $well->create_related( well_qc_test_result => $validated_params );
 
-    return $qc_result->as_hash;
+    return $qc_result;
 }
 
 1;
