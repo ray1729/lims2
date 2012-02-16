@@ -72,6 +72,20 @@ sub create_plate {
     return $plate;
 }
 
+sub pspec_retrieve_plate {
+    return {
+        plate_id => { validate => 'integer' }
+    }
+}
+
+sub retrieve_plate {
+    my ( $self, $params ) = @_;
+
+    my $validated_params = $self->check_params( $params, $self->pspec_retrieve_plate );
+
+    $self->retrieve( Plate => $validated_params );
+}
+
 1;
 
 __END__
