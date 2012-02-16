@@ -60,7 +60,7 @@ sub create_cre_bac_recom_well {
     
     my $validated_params = $self->check_params( $params, $self->pspec_create_cre_bac_recom_well );
 
-    my $process = $self->create_cre_bac_recom_process( { slice_def $validated_params, qw( design_id bac_name ) } );
+    my $process = $self->create_cre_bac_recom_process( { slice_def $validated_params, qw( design_id bac_library bac_name cassette backbone ) } );
     
     my $well = $self->_create_well( $validated_params, $process, $plate );
 
