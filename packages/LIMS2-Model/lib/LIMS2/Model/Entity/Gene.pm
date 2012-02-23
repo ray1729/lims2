@@ -7,8 +7,6 @@ use Moose;
 use Scalar::Util qw( blessed );
 use namespace::autoclean;
 
-with qw( LIMS2::Model::Entity );
-
 has ensembl_gene => (
     is       => 'ro',
     isa      => 'Bio::EnsEMBL::Gene',
