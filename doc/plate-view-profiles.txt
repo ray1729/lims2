@@ -1,0 +1,71 @@
+
+We want to do something like:
+
+GET /ui/view_plate/CREBACP1?profile=cre_bac_recom
+
+my $data = $c->model('Golgi')->retrieve_plate( plate_name => 'CREBACP1', profile => 'cre_bac_recom' )
+
+The retrieve_plate() method should accept either a plate name or a
+plate id.
+
+The profile controls which data are returned for the plate and for
+each well. This implies some sort of class hierarchy so that common
+data are handled by the superclass, and the subclass pulls in extra
+data for a given profile. It might also be desirable to implement a
+number of roles to provide shared functionality across profiles. For
+example, Sequencing QC will be required by many profiles, but should
+not be in the default profile (handled by the superclass).
+
+If we follow the pattern of all LIMS2::Model methods returning an
+object that implements the LIMS2::Model::Entity role, $data has to be
+some object that implements an as_hash() method. Then the next row in
+the Catalyst controller will do:
+
+$c->stash( data => $data->as_hash );
+
+It might be an idea to add an optional 'linkify' role to the
+LIMS2::Model::Entity. This would descend into the data and
+automatically linkify items that refer to other LIMS2 entities. The
+linkify method would have to be passed a Catalyst object so it can
+call uri_for().
+
+Maybe LIMS2::Model::Entity should implement both as_hash() and
+as_linkified_hash(). It might be an idea to move the recursive hash
+construction out of LIMS2::Catalyst::Controller::REST into the entity
+role.
+
+Should we add the LIMS2::Model::Entity role to
+LIMS2::Model::Schema::Result classes at run-time?
+
+Should we create LIMS2::Model::Entity::Foo classes as subclasses of
+LIMS2::Model::Schema::Result::Foo ?
+
+Should we introduce LIMS2::Model::Entity::ARRAY and LIMS2::Model::Entity::HASH ?
+
+The idea here is that all model methods will return something that isa
+LIMS2::Model::Entity, hence has as_hash() and as_linkified_hash() methods.
+
+Should we put the paths for actions in a config file?
+
+Ideally, we'd have a common template for all plate profiles. This
+implies that we carry around some sort of metadata with each profile,
+e.g. so the template can determine column headers for the grid. The
+metadata could also control which columns are linkified. 
+
+The profile class hierarchy might look something like:
+
+LIMS2::Model::Profile::Plate
+
+ - data common to all plate types
+
+LIMS2::Model::Profile::Plate::CreBacRecom
+
+ - data for Cre BAC recombineering plates
+
+LIMS2::Model::Profile::Design
+
+ - default view for designs
+
+LIMS2::Model::Profile::Design::CreBac
+
+ - extra data for Cre BAC designs
