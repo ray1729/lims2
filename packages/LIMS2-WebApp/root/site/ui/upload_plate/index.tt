@@ -1,0 +1,27 @@
+[% META title = "Upload Plate" %]
+<div class="upload_plate_form">
+  <form method="POST" action="[% c.uri_for( '/ui/process_upload_plate' ) %]" enctype="multipart/form-data">
+    <fieldset>
+      <legend>Upload Plate</legend>
+      <label for="plate_name_field">Plate name</label>
+      <input name="plate_name" id="plate_name_field" type="text" value="[% c.req.param('plate_name') %]" />
+      <br />
+      <label for="plate_desc_field">Plate description</label>
+      <input name="plate_desc" id="plate_desc_field" type="text" value="[% c.req.param('plate_desc') %]" />
+      <br />
+      <label for="plate_type_field">Plate type</label>
+      <select name="plate_type" id="plate_type_field" type="select">
+        <option value="">-</option>
+        [%- FOR pt IN plate_types %]
+        <option value="[% pt.plate_type | html %]" [%- IF c.req.param( 'plate_type' ) == pt.plate_type %] selected="selected" [% END %]/>
+          [% pt.plate_type_desc || pt.plate_type | html %]
+        </option>
+        [%- END %]
+      </select>
+      <br />
+      <input name="plate_data" id="plate_data_field" type="file" />
+      <br />
+      <input name="next" id="next_button" type="submit" value="Next" />
+    </fieldset>  
+  </form>
+</div>
