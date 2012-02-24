@@ -88,7 +88,7 @@ sub retrieve_plate {
 
     my $validated_params = $self->check_params( $params, $self->pspec_retrieve_plate );
 
-    my $profile = delete $validated_params{profile};
+    my $profile = delete $validated_params->{profile};
 
     my $plate = $self->retrieve( Plate => $validated_params );
 
