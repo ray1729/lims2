@@ -21,7 +21,12 @@ sub retrieve_synthetic_construct {
 
     my $validated_params = $self->check_params( $params, $self->pspec_retrieve_synthetic_construct );
 
-    my $well = $self->retrieve( Well => $validated_params, { prefetch => { 'process' => [ 'process_type', 'process_synthetic_construct' ] } } );
+    my $well = $self->retrieve( Well => $validated_params,
+                                {
+                                    join     => 'plate',
+                                    prefetch => { 'process' => [ 'process_type', 'process_synthetic_construct' ] }
+                                }
+                            );
 
     my $process = $well->process;
     
