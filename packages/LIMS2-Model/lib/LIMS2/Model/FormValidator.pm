@@ -94,6 +94,9 @@ sub dfv_profile {
     # Add the 'trim' filter for every profile
     push @filters, 'trim';
 
+    my $dependencies      = delete $spec->{DEPENDENCIES};
+    my $dependency_groups = delete $spec->{DEPENDENCY_GROUPS};
+    
     while ( my ( $field, $f_spec ) = each %{$spec} ) {
         if ( $f_spec->{optional} ) {
             push @optional, $field;
@@ -118,7 +121,9 @@ sub dfv_profile {
         optional           => \@optional,
         defaults           => \%defaults,
         field_filters      => \%field_filters,
-        constraint_methods => \%constraint_methods
+        constraint_methods => \%constraint_methods,
+        dependencies       => $dependencies,
+        dependency_groups  => $dependency_groups,
     };    
 }
 
