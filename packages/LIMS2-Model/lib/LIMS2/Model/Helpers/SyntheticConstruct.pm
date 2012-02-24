@@ -19,7 +19,7 @@ use IO::String;
 use Data::Compare qw( Compare );
 
 sub bio_seq_to_genbank {
-    my ( $self, $bio_seq ) = @_;
+    my $bio_seq = shift;
 
     my $genbank;
     my $seq_io = Bio::SeqIO->new( -fh => IO::String->new( $genbank ), -format => 'genbank' );
@@ -29,7 +29,7 @@ sub bio_seq_to_genbank {
 }
 
 sub genbank_to_bio_seq {
-    my ( $self, $genbank ) = @_;
+    my $genbank = shift;
 
     my $seq_io = Bio::SeqIO->new( -fh => IO::String->new( $genbank ), -format => 'genbank' );
     return $seq_io->next_seq;
