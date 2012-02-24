@@ -74,7 +74,12 @@ sub create_plate {
 
 sub pspec_retrieve_plate {
     return {
-        plate_id => { validate => 'integer' }
+        plate_id     => { validate => 'integer', optional => 1 },
+        plate_name   => { validate => 'existing_plate_name', optional => 1 },
+        profile      => { validate => 'plate_profile', optional => 1, default => 'Default' },
+        DEPENDENCIES => {
+            plate_id => [ 'plate_name' ], # plate_name must be specified if plate_id is missing
+        }
     }
 }
 
@@ -83,7 +88,16 @@ sub retrieve_plate {
 
     my $validated_params = $self->check_params( $params, $self->pspec_retrieve_plate );
 
-    $self->retrieve( Plate => $validated_params );
+    my $profile = delete $validated_params{profile};
+
+    my $plate = $self->retrieve( Plate => $validated_params );
+
+    my $class = 'LIMS2::Model::Profile::Plate::' . $profile;
+    eval "require $class"
+        or $self->throw( "Failed to load $class: $@" );
+
+    # The profile class *must* implement as_hash()
+    return $class->new( plate => $plate );
 }
 
 sub list_plate_types {
