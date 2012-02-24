@@ -5,8 +5,6 @@ use warnings FATAL => 'all';
 
 use Moose::Role;
 use LIMS2::Model::Helpers::SyntheticConstruct;
-use IO::String;
-use Bio::SeqIO;
 use namespace::autoclean;
 
 requires qw( schema check_params throw );
@@ -37,13 +35,9 @@ sub retrieve_synthetic_construct {
 
     my $bio_seq = $self->eng_seq_builder->$eng_seq_method( %{$eng_seq_params} );
 
-    my $genbank_str;    
-    my $seq_io = Bio::SeqIO->new( -fh => IO::String->new( $genbank_str ), -format => 'genbank' );
-    $seq_io->write_seq( $bio_seq );
-    
     my $synthetic_construct = $self->schema->resultset( 'SyntheticConstruct' )->create(
         {
-            synthetic_construct_genbank => $genbank_str
+            synthetic_construct_genbank => LIMS2::Model::Helpers::SyntheticConstruct::bio_seq_to_genbank( $bio_seq )
         }
     );
 

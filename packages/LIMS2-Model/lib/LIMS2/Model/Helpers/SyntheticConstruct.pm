@@ -4,14 +4,36 @@ use strict;
 use warnings FATAL => 'all';
 
 use Sub::Exporter -setup => {
-    exports => [ qw( synthetic_construct_params ) ]
+    exports => [ qw( synthetic_construct_params
+                     bio_seq_to_genbank
+                     genbank_to_bio_seq
+               ) ]
 };
 
 use LIMS2::Model::Constants qw( $DEFAULT_ASSEMBLY );
 use LIMS2::Model::Error::Database;
 use LIMS2::Model::Error::Implementation;
 use LIMS2::Util::EnsEMBL;
+use Bio::SeqIO;
+use IO::String;
 use Data::Compare qw( Compare );
+
+sub bio_seq_to_genbank {
+    my ( $self, $bio_seq ) = @_;
+
+    my $genbank;
+    my $seq_io = Bio::SeqIO->new( -fh => IO::String->new( $genbank ), -format => 'genbank' );
+    $seq_io->write_seq( $bio_seq );
+
+    return $genbank;
+}
+
+sub genbank_to_bio_seq {
+    my ( $self, $genbank ) = @_;
+
+    my $seq_io = Bio::SeqIO->new( -fh => IO::String->new( $genbank ), -format => 'genbank' );
+    return $seq_io->next_seq;
+}
 
 sub synthetic_construct_params {
     my $process = shift;
