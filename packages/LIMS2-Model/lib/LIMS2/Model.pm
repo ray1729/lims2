@@ -79,7 +79,10 @@ sub _build_eng_seq_builder {
     my $self = shift;
 
     require EngSeqBuilder;
-    return EngSeqBuilder->new( configfile => $ENV{ENG_SEQ_BUILDER_CONFIG} );
+    return EngSeqBuilder->new(
+        configfile            => $ENV{ENG_SEQ_BUILDER_CONFIG},
+        max_vector_seq_length => 250000
+    );
 }
 
 has ensembl_util => (
