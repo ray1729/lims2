@@ -20,13 +20,13 @@ Catalyst Controller.
 
 =cut
 
-sub eng_seq :Path( '/api/eng_seq' ) :Args(2) {
+sub eng_seq :Path( '/api/eng_seq' ) :Args(2) :ActionClass('REST') {
 }
 
 sub eng_seq_GET {
     my ( $self, $c, $plate_name, $well_name ) = @_;
 
-    my $synvec = $c->model( 'Golgi' )->retrieve_synthetic_vector( { plate_name => $plate_name, well_name => $well_name } );
+    my $synvec = $c->model( 'Golgi' )->retrieve_synthetic_construct( { plate_name => $plate_name, well_name => $well_name } );
 
     my $format = $c->request->param( 'format' ) || 'genbank';
     
@@ -57,7 +57,7 @@ sub eng_seqs_GET {
     my %seen;
     
     for my $well ( $plate->wells ) {
-        my $synvec  = $c->model( 'Golgi' )->retrieve_synthetic_vector( { plate_name => $plate->plate_name, well_name => $well->well_name } );
+        my $synvec  = $c->model( 'Golgi' )->retrieve_synthetic_construct( { plate_name => $plate->plate_name, well_name => $well->well_name } );
         next if $seen{ $synvec->display_id }++;
         my $outfile = $outdir->file( $synvec->display_id . '.gbk' );
         my $seq_io = Bio::SeqIO->new( -file => $outfile, -format => $format );
