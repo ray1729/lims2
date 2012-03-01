@@ -17,6 +17,10 @@ Catalyst Controller.
 
 =cut
 
+sub begin :Private {
+    my ( $self, $c ) = @_;
+    $c->assert_user_roles( 'read' );
+}
 
 sub index :Path( '/ui/view_plate' ) :Args(0) {
     my ( $self, $c ) = @_;
