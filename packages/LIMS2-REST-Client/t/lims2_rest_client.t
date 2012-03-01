@@ -25,6 +25,6 @@ my $uri = $c->uri_for( 'designs', { gene => 'Cbx1' } );
 is $uri, "$API_URL/designs?gene=Cbx1",
     'uri_for designs for Cbx1';
 
-lives_ok { my $data = $c->GET( $uri ); dd $data } 'GET designs for Cbx1';
+lives_ok { my $data = $c->GET( 'designs', { gene => 'Cbx1' } ); dd $data } 'GET designs for Cbx1';
 
 done_testing;
