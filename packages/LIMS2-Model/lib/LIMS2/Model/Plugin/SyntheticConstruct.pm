@@ -53,6 +53,28 @@ sub retrieve_synthetic_construct {
     return $synthetic_construct;
 }
 
+sub pspec_retrieve_synthetic_construct_params {
+    return {
+        plate_name => { validate => 'existing_plate_name' },
+        well_name  => { validate => 'well_name' }
+    }
+}
+
+sub retrieve_synthetic_construct_params {
+    my ( $self, $params ) = @_;
+
+    my $validated_params = $self->check_params( $params, $self->pspec_retrieve_synthetic_construct_params );
+
+    my $well = $self->retrieve( Well => $validated_params,
+                                {
+                                    join     => 'plate',
+                                    prefetch => { 'process' => [ 'process_type', 'process_synthetic_construct' ] }
+                                }
+                            );
+
+    return LIMS2::Model::Helpers::SyntheticConstruct::synthetic_construct_params( $well->process );
+}
+
 1;
 
 __END__
