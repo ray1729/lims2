@@ -34,7 +34,7 @@ sub _recursive_to_hash {
     }
     elsif ( ref $entity eq 'HASH' ) {
         for ( values %{$entity} ) {
-            $_ = $self->recursive_to_hash( $_ );
+            $_ = $self->_recursive_to_hash( $_ );
         }
     }
     
