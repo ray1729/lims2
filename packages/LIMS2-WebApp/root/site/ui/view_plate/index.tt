@@ -1,0 +1,42 @@
+[% META title = "View Plate" %]
+<h2>Plate Details</h2>
+<strong>Plate Name:</strong> [% plate.plate_name %]<br>
+<strong>Plate Type:</strong> [% plate.plate_type %]<br>
+<strong>Created By:</strong> [% plate.created_by %]<br>
+<strong>Description:</strong> [% plate.description %]<br>
+
+[% IF plate.comments %]
+    <p>
+    <strong>Comments:</strong>
+    <table border = "1">
+    <tr>
+        <th>Comment</th>
+        <th>User</th>
+        <th>Time</th>
+    </tr>
+    [% FOR comment IN plate.comments %]
+        <tr>
+            <td>[% comment.plate_comment %]</td>
+            <td>[% comment.created_by %]</td>
+            <td>[% comment.created_at %]</td>
+        </tr>
+    [% END %]
+    </table>
+    </p>
+[% END %]
+
+<h2>Wells</h2>
+<table border = "1">
+<tr>
+    [% FOR well_data_type IN plate.well_data %]
+        <th>[% well_data_type %]</th>
+    [% END %]
+</tr>
+[%- FOR well IN plate.wells %]
+    <tr>
+        [% FOR well_data_type IN plate.well_data %]
+            <td>[% well.$well_data_type %]</td>
+        [% END %]
+    </tr>
+[%- END %]
+</table>

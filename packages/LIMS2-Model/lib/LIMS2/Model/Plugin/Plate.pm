@@ -76,9 +76,9 @@ sub pspec_retrieve_plate {
     return {
         plate_id     => { validate => 'integer', optional => 1 },
         plate_name   => { validate => 'existing_plate_name', optional => 1 },
-        profile      => { validate => 'plate_profile', optional => 1, default => 'Default' },
-        DEPENDENCIES => {
-            plate_id => [ 'plate_name' ], # plate_name must be specified if plate_id is missing
+        profile      => { validate => 'alphanumeric_string', optional => 1, default => 'Default' },
+        REQUIRE_SOME => {
+            plate_id_or_plate_name => [ 1, qw/plate_name plate_id/ ], # plate_id or plate_name must be specified
         }
     }
 }

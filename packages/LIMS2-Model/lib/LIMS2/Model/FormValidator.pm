@@ -96,6 +96,7 @@ sub dfv_profile {
 
     my $dependencies      = delete $spec->{DEPENDENCIES};
     my $dependency_groups = delete $spec->{DEPENDENCY_GROUPS};
+    my $require_some      = delete $spec->{REQUIRE_SOME};
     
     while ( my ( $field, $f_spec ) = each %{$spec} ) {
         if ( $f_spec->{optional} ) {
@@ -124,6 +125,7 @@ sub dfv_profile {
         constraint_methods => \%constraint_methods,
         dependencies       => $dependencies,
         dependency_groups  => $dependency_groups,
+        require_some       => $require_some,
     };    
 }
 

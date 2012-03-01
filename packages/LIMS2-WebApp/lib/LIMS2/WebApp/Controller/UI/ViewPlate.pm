@@ -1,6 +1,7 @@
 package LIMS2::WebApp::Controller::UI::ViewPlate;
 use Moose;
 use namespace::autoclean;
+use Try::Tiny;
 
 BEGIN {extends 'Catalyst::Controller'; }
 
@@ -16,13 +17,36 @@ Catalyst Controller.
 
 =cut
 
+sub begin :Private {
+    my ( $self, $c ) = @_;
+    $c->assert_user_roles( 'read' );
+}
 
-sub view_plate :Path( '/ui/view_plate' ) :Args(1) {
+sub index :Path( '/ui/view_plate' ) :Args(0) {
     my ( $self, $c ) = @_;
 
+    my $params = $c->request->params();
+    my $golgi = $c->model( 'Golgi' );
+    my $plate;
+
+    try {
+        $plate = $golgi->retrieve_plate( $params );
+    }
+    catch {
+        if ( blessed( $_ ) and $_->isa( 'LIMS2::Model::Error' ) ) {
+            $_->show_params( 0 );
+            $c->stash( error_msg => $_->as_string );
+            $c->detach( 'index' );
+        }
+        else {
+            die $_;
+        }   
+    };
     
-    
-    $c->response->body('Matched LIMS2::WebApp::Controller::UI::ViewPlate in UI::ViewPlate.');
+    $c->stash(
+        plate    => $plate->as_hash,
+        template => 'ui/view_plate/index.tt'
+    );
 }
 
 
