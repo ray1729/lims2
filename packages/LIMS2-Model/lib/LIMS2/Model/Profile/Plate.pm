@@ -11,14 +11,14 @@ use Smart::Comments;
 requires qw( as_hash );
 
 has plate => (
-    is => 'ro',
-    isa => 'LIMS2::Model::Schema::Result::Plate',
+    is       => 'ro',
+    isa      => 'LIMS2::Model::Schema::Result::Plate',
     required => 1,
 );
 
 has plate_name => (
-    is  => 'ro',
-    isa => 'Str',
+    is         => 'ro',
+    isa        => 'Str',
     lazy_build => 1,
 );
 
@@ -29,8 +29,8 @@ sub _build_plate_name {
 }
 
 has plate_created_by => (
-    is    => 'ro',
-    isa     => 'Str',
+    is         => 'ro',
+    isa        => 'Str',
     lazy_build => 1,
 );
 
@@ -40,9 +40,35 @@ sub _build_plate_created_by {
     return $self->plate->created_by->user_name;
 }
 
+has plate_type => (
+    is         => 'ro',
+    isa        => 'Str',
+    lazy_build => 1,
+);
+
+sub _build_plate_type {
+    my $self = shift;
+
+    return $self->plate->plate_type;
+}
+
+has plate_comments => (
+    is         => 'ro',
+    isa        => 'ArrayRef',
+    lazy_build => 1,
+    traits     => ['Array'],
+    handles    => { have_plate_comments => 'count' },
+);
+
+sub _build_plate_comments {
+    my $self = shift;
+
+    return [ map { $_->as_hash } $self->plate->plate_comments ];
+}
+
 has plate_description => (
-    is    => 'ro',
-    isa   => 'Str',
+    is         => 'ro',
+    isa        => 'Str',
     lazy_build => 1,
 );
 
@@ -53,8 +79,8 @@ sub _build_plate_description {
 }
 
 has wells => (
-    is => 'ro',
-    isa  => 'ArrayRef[LIMS2::Model::Schema::Result::Well]',
+    is         => 'ro',
+    isa        => 'ArrayRef[LIMS2::Model::Schema::Result::Well]',
     lazy_build => 1,
 );
 
@@ -71,6 +97,8 @@ sub _get_plate_data {
     $plate_data{plate_name}  = $self->plate_name;
     $plate_data{created_by}  = $self->plate_created_by;
     $plate_data{description} = $self->plate_description;
+    $plate_data{plate_type}  = $self->plate_type; 
+    $plate_data{comments}    = $self->plate_comments if $self->have_plate_comments;
 
     return \%plate_data;
 }
@@ -89,7 +117,7 @@ sub get_well_assay_results {
     my ( $self, $well ) = @_;
     my $assay_results;
     for my $assay_result ( $well->well_assay_results->all ) {
-        $assay_results .= $assay_result->assay . ' - ' . $assay_result->result . "\n";
+        $assay_results .= $assay_result->assay . ' = ' . $assay_result->result . " | ";
     }
     return $assay_results;
 }
