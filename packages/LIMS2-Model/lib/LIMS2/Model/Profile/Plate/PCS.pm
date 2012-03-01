@@ -1,7 +1,6 @@
 package LIMS2::Model::Profile::Plate::PCS;
 use Moose;
 use namespace::autoclean;
-use Smart::Comments;
 use Const::Fast;
 
 const my @PCS_WELL_DATA => qw(
