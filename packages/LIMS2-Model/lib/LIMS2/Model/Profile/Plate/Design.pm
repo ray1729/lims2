@@ -35,11 +35,11 @@ sub process_well_design_profile {
     my $create_di_process = $self->get_process_of_type( $process, 'create_di' );
     return $well_data unless $create_di_process; 
 
-    my $design = $well->process->process_create_di->design;
+    my $design                = $create_di_process->design;
     $well_data->{design_id}   = $design->design_id;
     $well_data->{design_type} = $design->design_type;
 
-    $well_data->{assay_results} = $self->get_well_assay_results( $well ); 
+    $well_data->{assay_results}     = $self->get_well_assay_results( $well ); 
     $well_data->{legacy_qc_results} = $self->get_legacy_qc_results( $well );
 
     return $well_data;

@@ -46,12 +46,11 @@ sub process_well_pcs_profile {
     $well_data->{cassette}    = $int_recom_process->cassette;
     $well_data->{backbone}    = $int_recom_process->backbone;
 
-    $well_data->{assay_results} = $self->get_well_assay_results( $well ); 
+    $well_data->{assay_results}     = $self->get_well_assay_results( $well ); 
     $well_data->{legacy_qc_results} = $self->get_legacy_qc_results( $well );
 
     return $well_data;
 }
-
 
 __PACKAGE__->meta->make_immutable;
 
