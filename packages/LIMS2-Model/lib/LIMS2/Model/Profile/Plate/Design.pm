@@ -1,35 +1,38 @@
 package LIMS2::Model::Profile::Plate::Design;
 use Moose;
+use MooseX::ClassAttribute;
 use namespace::autoclean;
 use Const::Fast;
 
-const my @DESIGN_WELL_DATA => qw(
-well_name
-pipeline
-design_id
-design_type
-assay_results
-legacy_qc_results
-assay_pending
-assay_complete
-accepted
+class_has 'well_data_fields' => (
+    is         => 'ro',
+    isa        => 'ArrayRef',
+    lazy_build => 1,
 );
 
-with qw( LIMS2::Model::Profile::Plate );
-
-sub as_hash {
+sub _build_well_data_fields {
     my $self = shift;
 
-    my $plate_data = $self->_get_plate_data;
-    $plate_data->{wells} = [ map { $self->process_well_design_profile( $_ ) } @{ $self->wells } ];
-    $plate_data->{well_data} =\@DESIGN_WELL_DATA;
+    const my @WELL_DATA_FIELDS => qw(
+    well_name
+    pipeline
+    design_id
+    design_type
+    assay_results
+    legacy_qc_results
+    assay_pending
+    assay_complete
+    accepted
+    );
 
-    return $plate_data;
+    return \@WELL_DATA_FIELDS
 }
 
-sub process_well_design_profile {
+extends qw( LIMS2::Model::Profile::Plate );
+
+sub get_well_data {
     my ( $self, $well ) = @_;
-    my $well_data = $self->process_default_well( $well );
+    my $well_data = $self->SUPER::get_well_data($well);
 
     my $process = $well->process;
     my $create_di_process = $self->get_process_of_type( $process, 'create_di' );
@@ -43,7 +46,7 @@ sub process_well_design_profile {
     $well_data->{legacy_qc_results} = $self->get_legacy_qc_results( $well );
 
     return $well_data;
-}
+};
 
 
 __PACKAGE__->meta->make_immutable;

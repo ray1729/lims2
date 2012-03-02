@@ -1,82 +1,14 @@
 package LIMS2::Model::Profile::Plate;
-use strict;
-use warnings FATAL => 'all';
-
-use Moose::Role;
+use Moose;
 use Hash::MoreUtils qw( slice slice_def );
 use Scalar::Util qw( blessed );
 use namespace::autoclean;
-use Smart::Comments;
-
-requires qw( as_hash );
 
 has plate => (
     is       => 'ro',
     isa      => 'LIMS2::Model::Schema::Result::Plate',
     required => 1,
 );
-
-has plate_name => (
-    is         => 'ro',
-    isa        => 'Str',
-    lazy_build => 1,
-);
-
-sub _build_plate_name {
-    my $self = shift;
-
-    return $self->plate->plate_name;
-}
-
-has plate_created_by => (
-    is         => 'ro',
-    isa        => 'Str',
-    lazy_build => 1,
-);
-
-sub _build_plate_created_by {
-    my $self = shift;
-
-    return $self->plate->created_by->user_name;
-}
-
-has plate_type => (
-    is         => 'ro',
-    isa        => 'Str',
-    lazy_build => 1,
-);
-
-sub _build_plate_type {
-    my $self = shift;
-
-    return $self->plate->plate_type;
-}
-
-has plate_comments => (
-    is         => 'ro',
-    isa        => 'ArrayRef',
-    lazy_build => 1,
-    traits     => ['Array'],
-    handles    => { have_plate_comments => 'count' },
-);
-
-sub _build_plate_comments {
-    my $self = shift;
-
-    return [ map { $_->as_hash } $self->plate->plate_comments ];
-}
-
-has plate_description => (
-    is         => 'ro',
-    isa        => 'Str',
-    lazy_build => 1,
-);
-
-sub _build_plate_description {
-    my $self = shift;
-
-    return $self->plate->plate_desc;
-}
 
 has wells => (
     is         => 'ro',
@@ -90,24 +22,21 @@ sub _build_wells {
     return [ sort { $a->well_name cmp $b->well_name } $self->plate->wells->all ];
 }
 
-sub _get_plate_data {
+sub as_hash {
     my $self = shift;
-    my %plate_data;
 
-    $plate_data{plate_name}  = $self->plate_name;
-    $plate_data{created_by}  = $self->plate_created_by;
-    $plate_data{description} = $self->plate_description;
-    $plate_data{plate_type}  = $self->plate_type; 
-    $plate_data{comments}    = $self->plate_comments if $self->have_plate_comments;
+    my $plate_data           = $self->plate->as_hash;
+    $plate_data->{wells}     = [ map { $self->get_well_data( $_ ) } @{ $self->wells } ];
+    $plate_data->{well_data} = $self->well_data_fields;
 
-    return \%plate_data;
+    return $plate_data;
 }
 
-sub process_default_well {
+sub get_well_data {
     my ( $self, $well ) = @_;
 
-    my $well_data = $well->as_hash;
-    my $process_pipeline = $well->process->process_pipeline;
+    my $well_data          = $well->as_hash;
+    my $process_pipeline   = $well->process->process_pipeline;
     $well_data->{pipeline} = $process_pipeline ? $process_pipeline->pipeline->pipeline_name : '';
 
     return $well_data;
@@ -135,11 +64,13 @@ sub get_legacy_qc_results {
     return $legacy_qc_results;
 }
 
+# move this function somewhere more sensible
 sub get_process_of_type {
     my ( $self, $process, $type ) = @_;
 
     if ( $process->process_type->process_type eq $type ) {
         my $process_type = 'process_' . $type;
+        $process_type = 'process_cre_bac_recom' if $process_type eq 'process_bac_recom';
         return $process->$process_type;
     }
 
