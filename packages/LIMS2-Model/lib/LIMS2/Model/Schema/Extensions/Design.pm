@@ -6,6 +6,7 @@ use warnings FATAL => 'all';
 use Moose::Role;
 use LIMS2::Model::Constants qw( $DEFAULT_ASSEMBLY );
 use LIMS2::Model::Error::Database;
+use LIMS2::Util::EnsEMBL;
 use namespace::autoclean;
 
 has chr_name => (
@@ -44,6 +45,43 @@ has synthetic_vector_params => (
     init_arg   => undef,
     lazy_build => 1
 );
+
+has gene => (
+    is         => 'ro',
+    isa        => 'Bio::EnsEMBL::Gene',
+    lazy_build => 1,
+);
+
+sub _build_gene {
+    my $self = shift;
+
+    my $gene = LIMS2::Util::EnsEMBL->new->gene_adaptor->fetch_by_transcript_stable_id( 
+        $self->target_transcript );
+}
+
+has marker_symbol => (
+    is => 'ro',
+    isa => 'Str',
+    lazy_build => 1,
+);
+
+sub _build_marker_symbol {
+    my $self = shift;
+
+    return $self->gene->external_name;
+}
+
+has ensembl_gene_id => (
+    is    => 'ro',
+    isa     => 'Str',
+    lazy_build => 1,
+);
+
+sub _build_ensembl_gene_id{
+    my $self = shift;
+    return $self->gene->stable_id;
+}
+
 
 sub has_oligo {
     my ( $self, $oligo_type ) = @_;
