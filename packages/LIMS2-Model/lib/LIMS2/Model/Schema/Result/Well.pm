@@ -366,5 +366,12 @@ sub as_hash {
     };
 }
 
+use overload '""' => \&stringify;
+
+sub stringify {
+    my ( $self ) = @_;
+    sprintf( '%s[%s]', $self->plate->plate_name || 'UNKNOWN PLATE', $self->well_name || 'UNNAMED WELL' );
+}
+
 __PACKAGE__->meta->make_immutable;
 1;
