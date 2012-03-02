@@ -3,9 +3,10 @@
 <strong>Plate Name:</strong> [% plate.plate_name %]<br>
 <strong>Plate Type:</strong> [% plate.plate_type %]<br>
 <strong>Created By:</strong> [% plate.created_by %]<br>
-<strong>Description:</strong> [% plate.description %]<br>
+<strong>Created At:</strong> [% plate.created_at %]<br>
+<strong>Description:</strong> [% plate.plate_desc %]<br>
 
-[% IF plate.comments %]
+[% IF plate.comments.size %]
     <p>
     <strong>Comments:</strong>
     <table border = "1">
