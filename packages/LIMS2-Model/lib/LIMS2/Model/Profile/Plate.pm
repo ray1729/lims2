@@ -16,6 +16,12 @@ has wells => (
     lazy_build => 1,
 );
 
+has schema => (
+    is       => 'ro',
+    isa      => 'LIMS2::Model::Schema',
+    required => 1,
+);
+
 sub _build_wells {
     my $self = shift;
 
@@ -44,11 +50,11 @@ sub get_well_data {
 
 sub get_well_assay_results {
     my ( $self, $well ) = @_;
-    my $assay_results;
+    my %assay_results;
     for my $assay_result ( $well->well_assay_results->all ) {
-        $assay_results .= $assay_result->assay . ' = ' . $assay_result->result . " | ";
+        $assay_results{$assay_result->assay} = $assay_result->result;
     }
-    return $assay_results;
+    return \%assay_results;
 }
 
 sub get_legacy_qc_results {
@@ -69,9 +75,7 @@ sub get_process_of_type {
     my ( $self, $process, $type ) = @_;
 
     if ( $process->process_type->process_type eq $type ) {
-        my $process_type = 'process_' . $type;
-        $process_type = 'process_cre_bac_recom' if $process_type eq 'process_bac_recom';
-        return $process->$process_type;
+        return $process->get_process;
     }
 
     if ( $process->process_type->process_type eq 'rearray' ) {
