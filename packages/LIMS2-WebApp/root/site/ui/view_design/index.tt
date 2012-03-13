@@ -1,0 +1,62 @@
+[% META title = "View Design" %]
+<h2>Design: [% design.design_id %] </h2>
+<strong>Name:</strong> [% design.design_name %]<br>
+<strong>Type:</strong> [% design.design_type %]<br>
+<strong>Phase:</strong> [% design.phase %]<br>
+<strong>Created By:</strong> [% design.created_by %]<br>
+<strong>Created At:</strong> [% design.created_at %]<br>
+
+[% IF design.comments.count %]
+<h3>Comments</h3>
+    <p>
+    <strong>Comments:</strong>
+    <table border = "1">
+    <tr>
+        <th>Category</th>
+        <th>Comment</th>
+        <th>User</th>
+        <th>Time</th>
+    </tr>
+    [% FOR comment IN design.comments %]
+        <tr>
+            <td>[% comment.design_comment_category %]</td>
+            <td>[% comment.design_comment %]</td>
+            <td>[% comment.created_by %]</td>
+            <td>[% comment.created_at %]</td>
+        </tr>
+    [% END %]
+    </table>
+    </p>
+[% END %]
+
+[% IF design.genotyping_primers %]
+<h3>Genotyping Primers</h3>
+    <table border = "1">
+    <tr>
+        <th>Type</th>
+        <th>Sequence</th>
+    </tr>
+    [%- FOR primer IN design.genotyping_primers %]
+        <tr>
+            <td>[% primer.genotyping_primer_type %]</td>
+            <td>[% primer.genotyping_primer_seq %]</td>
+        </tr>
+    [%- END %]
+    </table>
+[% END %]
+
+[% IF design.oligos %]
+<h3>Oligos</h3>
+    <table border = "1">
+    <tr>
+        <th>Type</th>
+        <th>Sequence</th>
+    </tr>
+    [%- FOR oligo IN design.oligos %]
+        <tr>
+            <td>[% oligo.design_oligo_type %]</td>
+            <td>[% oligo.design_oligo_seq %]</td>
+        </tr>
+    [%- END %]
+    </table>
+[% END %]
