@@ -97,7 +97,7 @@ sub retrieve_plate {
         or $self->throw( "Failed to load $class: $@" );
 
     # The profile class *must* implement as_hash()
-    return $class->new( plate => $plate );
+    return $class->new( plate => $plate, schema => $self->schema );
 }
 
 sub list_plate_types {
@@ -106,6 +106,26 @@ sub list_plate_types {
     [ $self->schema->resultset( 'PlateType' )->all ];
 }
 
+sub pspec_delete_plate {
+    return {
+        plate_id   => { validate => 'integer', optional => 1 },
+        plate_name => { validate => 'plate_name' },
+        REQUIRE_SOME => {
+            plate_id_or_plate_name => [ 1, qw/plate_name plate_id/ ],
+        }
+    };
+}
+
+sub delete_plate {
+    my ( $self, $params ) = @_;
+
+    my $validated_params = $self->check_params( $params, $self->pspec_delete_plate );
+
+    my $plate = $self->schema->resultset( 'Plate' )->find( { plate_name => $validated_params->{plate_name} } );
+    $self->throw( 'Plate does not exist: ' . $validated_params->{plate_name} ) unless $plate;
+
+    $plate->delete_this_plate;
+}
 1;
 
 __END__
