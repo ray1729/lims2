@@ -18,7 +18,6 @@ sub pspec_create_pcs_well {
     $pspec->{cassette}              = { validate => 'existing_intermediate_cassette' };
     $pspec->{clone_name}            = { validate => 'non_empty_string', optional => 1 };
     $pspec->{legacy_qc_test_result} = { optional => 1 };
-    $pspec->{qc_test_result}        = { optional => 1 };
     
     return $pspec;
 }
@@ -92,10 +91,6 @@ sub create_pcs_well {
 
     if ( my $legacy_qc = $validated_params->{legacy_qc_test_result} ) {
         $well->create_related( well_legacy_qc_test_result => $legacy_qc );
-    }
-
-    if ( my $qc = $validated_params->{qc_test_result} ) {
-        $self->add_well_qc_result( $qc, $well );
     }
 
     return $well;
