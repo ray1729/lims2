@@ -18,19 +18,30 @@ Log::Log4perl->easy_init(
     }
 );
 
-const my @PROFILES => qw(
-eucomm-tools-cre-post-gateway
-artificial-intron-post-cre
-eucomm-promoter-driven-pre-escell
-L3L4-2w-gateway-no-loc
-promoter-homozygous-second-allele-post-2w-gateway
-promoterless-homozygous-first-allele-post-gateway
-homozygous-post-cre
-eucomm-tools-cre-post-cre
-eucomm-promoter-driven-post-gateway
-eucomm-post-cre
-artificial-intron-post-gateway
-artificial-intron-pre-escell
+const my @ALIGNMENT_FIELDS => qw(
+qc_seq_read_id
+primer_name
+query_start
+query_end
+query_strand
+target_start
+target_end
+target_strand
+op_str
+score
+pass
+features
+cigar
+);
+
+const my @ALIGN_REGION_FIELDS => qw(
+name
+length
+match_count
+query_str
+target_str
+match_str
+pass
 );
 
 my $schema = HTGT::DBFactory->connect( 'eucomm_vector' );
@@ -41,18 +52,14 @@ if ( @ARGV ) {
     $qc_rs = $schema->resultset( 'QCRun' )->search( { qc_run_id => \@ARGV } );
 }
 else {
-    $qc_rs = $schema->resultset( 'QCRun' )->search(
-        { },
-        {
-            join => [ 'test_results' ],
-            distinct => 1
-        }
-    );
+    $qc_rs = $schema->resultset( 'QCRun' )->search( { } );
 }
 
 while ( my $qc_run = $qc_rs->next ) {
     Log::Log4perl::NDC->push( $qc_run->qc_run_id );
+
     try {
+        my ( $seq_read_ids, $seq_reads ) = get_qc_seq_reads( $qc_run );
         my $qc_run_date = parse_oracle_date( $qc_run->qc_run_date );
         my %qc_run = (
             qc_run_id          => $qc_run->qc_run_id,
@@ -61,7 +68,8 @@ while ( my $qc_run = $qc_rs->next ) {
             template_plate     => get_template_plate_name( $qc_run->template_plate_id ),
             profile            => $qc_run->profile,
             software_version   => $qc_run->software_version,
-            #qc_test_results    => get_qc_test_results( $qc_run ),
+            qc_test_results    => get_qc_test_results( $qc_run, $seq_read_ids ),
+            qc_seq_reads       => $seq_reads, 
         );
         print YAML::Any::Dump( \%qc_run );
     }
@@ -71,6 +79,28 @@ while ( my $qc_run = $qc_rs->next ) {
     finally {        
         Log::Log4perl::NDC->pop;        
     };    
+}
+
+sub get_qc_seq_reads {
+    my $qc_run = shift;
+    my %seq_read_ids;
+    my @seq_reads;
+
+    my $seq_reads_rs = $qc_run->seq_reads;
+
+    while ( my $seq_read = $seq_reads_rs->next ) {
+        my %seq_read = (
+            qc_seq_read_id => $seq_read->qc_seq_read_id,
+            description    => $seq_read->description,
+            length         => $seq_read->length,
+            seq            => $seq_read->seq,
+        );
+        $seq_read_ids{ $seq_read->qc_seq_read_id } = 1;
+        
+        push @seq_reads, \%seq_read;
+    }
+
+    return ( \%seq_read_ids, \@seq_reads );
 }
 
 sub get_template_plate_name {
@@ -84,8 +114,55 @@ sub get_template_plate_name {
 }
 
 sub get_qc_test_results {
-    my $qc_run = shift;
+    my ( $qc_run, $seq_read_ids ) = @_;
+    my @qc_test_results;
+
+    my $qc_test_results_rs = $qc_run->test_results;
+
+    while ( my $qc_test_result = $qc_test_results_rs->next ) {
+        push @qc_test_results, {
+            well_name  => $qc_test_result->well_name,
+            score      => $qc_test_result->score,
+            pass       => $qc_test_result->pass,
+            plate_name => $qc_test_result->plate_name, 
+            synvec_id  => $qc_test_result->qc_synvec_id,
+            alignments => get_test_result_alignments( $qc_test_result, $seq_read_ids ),
+         };
+    }
+    return \@qc_test_results;
 }
 
+sub get_test_result_alignments {
+    my ( $qc_test_result, $seq_read_ids ) = @_;
+    my @test_result_alignments;
+
+    my $alignments_rs = $qc_test_result->alignments;
+
+    while ( my $alignment = $alignments_rs->next ) {
+        my %alignment = map { $_ => $alignment->$_ } @ALIGNMENT_FIELDS;
+
+        die( 'unknown seq read: ' . $alignment{qc_seq_read_id} ) 
+            unless exists $seq_read_ids->{ $alignment{qc_seq_read_id} };
+
+        $alignment{align_regions} = get_align_regions( $alignment );
+        push @test_result_alignments, \%alignment;
+    }
+
+    return \@test_result_alignments;
+}
+
+sub get_align_regions {
+    my $alignment = shift;
+    my @align_regions;
+
+    my $align_regions_rs = $alignment->align_regions;
+
+    while ( my $align_region = $align_regions_rs->next ) {
+        my %align_region = map{ $_ => $align_region->$_ } @ALIGN_REGION_FIELDS; 
+        push @align_regions, \%align_region;
+    }
+
+    return \@align_regions;
+}
 
 __END__
