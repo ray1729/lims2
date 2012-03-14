@@ -96,27 +96,29 @@ sub uri_for {
 }
 
 sub GET {
-    my ( $self, $uri ) = @_;
+    my $self = shift;
 
-    $self->_wrap_request( 'GET', $uri, [ content_type => 'application/json' ] );
+    $self->_wrap_request( 'GET', $self->uri_for( @_ ), [ content_type => 'application/json' ] );
 }
 
 sub DELETE {
-    my ( $self, $uri ) = @_;
+    my $self = shift;
 
-    $self->_wrap_request( 'DELETE', $uri, [ content_type => 'application/json' ] );
+    $self->_wrap_request( 'DELETE', $self->uri_for( @_ ), [ content_type => 'application/json' ] );
 }
 
 sub POST {
-    my ( $self, $uri, $data ) = @_;
+    my $self = shift;
+    my $data = pop;
 
-    $self->_wrap_request(  'POST', $uri, [ content_type => 'application/json' ], to_json( $data ) );
+    $self->_wrap_request( 'POST', $self->uri_for( @_ ), [ content_type => 'application/json' ], to_json( $data ) );
 }    
 
 sub PUT {
-    my ( $self, $uri, $data ) = @_;
+    my $self = shift;
+    my $data = pop;
 
-    $self->_wrap_request(  'PUT', $uri, [ content_type => 'application/json' ], to_json( $data ) );
+    $self->_wrap_request( 'PUT', $self->uri_for( @_ ), [ content_type => 'application/json' ], to_json( $data ) );
 }    
 
 sub _wrap_request {

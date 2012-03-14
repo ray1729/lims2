@@ -108,6 +108,21 @@ __PACKAGE__->set_primary_key("qc_run_id");
 
 =head1 RELATIONS
 
+=head2 qc_run_seqs_reads
+
+Type: has_many
+
+Related object: L<LIMS2::Model::Schema::Result::QcRunSeqReads>
+
+=cut
+
+__PACKAGE__->has_many(
+  "qc_run_seqs_reads",
+  "LIMS2::Model::Schema::Result::QcRunSeqReads",
+  { "foreign.qc_run_id" => "self.qc_run_id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
 =head2 qc_template
 
 Type: belongs_to
@@ -139,8 +154,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-02-10 15:16:54
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:mI5qhUjRZeDn6nvWYntxRA
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-03-13 14:17:30
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:UPbcTG+YAe5CUdFQ8yJfIA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
