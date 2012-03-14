@@ -21,14 +21,13 @@ sub _build_well_data_fields {
     design_id
     design_type
     design_well
-    assay_results
     legacy_qc_results
     assay_pending
     assay_complete
     accepted
     );
 
-    return \@WELL_DATA_FIELDS
+    return [ @WELL_DATA_FIELDS, @{ $self->assay_result_fields } ];
 }
 
 extends qw( LIMS2::Model::Profile::Plate );

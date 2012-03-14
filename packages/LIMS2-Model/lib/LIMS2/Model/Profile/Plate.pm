@@ -22,6 +22,26 @@ has schema => (
     required => 1,
 );
 
+has assay_result_fields => (
+    is         => 'ro',
+    isa        => 'ArrayRef',
+    lazy_build => 1
+);
+
+sub _build_assay_result_fields {
+    my $self = shift;
+
+    my @assay_results = $self->schema->resultset('AssayResult')->search( 
+        {}, 
+        { 
+            columns  => [ 'assay' ],
+            distinct => 1,
+        }
+    );
+
+    return [ map{ $_->assay } @assay_results ];
+}
+
 sub _build_wells {
     my $self = shift;
 
@@ -59,15 +79,11 @@ sub get_well_assay_results {
 
 sub get_legacy_qc_results {
     my ( $self, $well ) = @_;
-    my $legacy_qc_resultset = $well->well_legacy_qc_test_result;
-    return unless $legacy_qc_resultset;
+    my $legacy_qc_result = $well->well_legacy_qc_test_result;
+    return unless $legacy_qc_result;
 
-    my $legacy_qc_results;
-    for my $qc_result ( $legacy_qc_resultset->all ) {
-        $legacy_qc_results .= $qc_result->valid_primers . ' - ' . $qc_result->pass_level . "\n";
-    }
+    return $legacy_qc_result->valid_primers . ' - ' . $legacy_qc_result->pass_level;
 
-    return $legacy_qc_results;
 }
 
 # move this function somewhere more sensible
