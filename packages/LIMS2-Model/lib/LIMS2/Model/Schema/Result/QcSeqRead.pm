@@ -43,15 +43,20 @@ __PACKAGE__->table("qc_seq_reads");
   data_type: 'text'
   is_nullable: 0
 
-=head2 comment
+=head2 description
 
   data_type: 'text'
   default_value: (empty string)
   is_nullable: 0
 
-=head2 fasta
+=head2 seq
 
   data_type: 'text'
+  is_nullable: 0
+
+=head2 length
+
+  data_type: 'integer'
   is_nullable: 0
 
 =cut
@@ -59,10 +64,12 @@ __PACKAGE__->table("qc_seq_reads");
 __PACKAGE__->add_columns(
   "qc_seq_read_id",
   { data_type => "text", is_nullable => 0 },
-  "comment",
+  "description",
   { data_type => "text", default_value => "", is_nullable => 0 },
-  "fasta",
+  "seq",
   { data_type => "text", is_nullable => 0 },
+  "length",
+  { data_type => "integer", is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -110,8 +117,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-03-13 14:17:30
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:NoADZsQ5ZD6LY3vYpkhong
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-03-15 11:56:35
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:SsM0joX0KfCJbFts9P6CaA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

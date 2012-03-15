@@ -38,13 +38,20 @@ __PACKAGE__->table("qc_template_wells");
 
 =head1 ACCESSORS
 
+=head2 qc_template_well_id
+
+  data_type: 'integer'
+  is_auto_increment: 1
+  is_nullable: 0
+  sequence: 'qc_template_wells_qc_template_well_id_seq'
+
 =head2 qc_template_id
 
   data_type: 'integer'
   is_foreign_key: 1
   is_nullable: 0
 
-=head2 well_name
+=head2 qc_template_well_name
 
   data_type: 'text'
   is_nullable: 0
@@ -58,9 +65,16 @@ __PACKAGE__->table("qc_template_wells");
 =cut
 
 __PACKAGE__->add_columns(
+  "qc_template_well_id",
+  {
+    data_type         => "integer",
+    is_auto_increment => 1,
+    is_nullable       => 0,
+    sequence          => "qc_template_wells_qc_template_well_id_seq",
+  },
   "qc_template_id",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
-  "well_name",
+  "qc_template_well_name",
   { data_type => "text", is_nullable => 0 },
   "process_id",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
@@ -70,15 +84,32 @@ __PACKAGE__->add_columns(
 
 =over 4
 
-=item * L</qc_template_id>
-
-=item * L</well_name>
+=item * L</qc_template_well_id>
 
 =back
 
 =cut
 
-__PACKAGE__->set_primary_key("qc_template_id", "well_name");
+__PACKAGE__->set_primary_key("qc_template_well_id");
+
+=head1 UNIQUE CONSTRAINTS
+
+=head2 C<qc_template_wells_qc_template_id_qc_template_well_name_key>
+
+=over 4
+
+=item * L</qc_template_id>
+
+=item * L</qc_template_well_name>
+
+=back
+
+=cut
+
+__PACKAGE__->add_unique_constraint(
+  "qc_template_wells_qc_template_id_qc_template_well_name_key",
+  ["qc_template_id", "qc_template_well_name"],
+);
 
 =head1 RELATIONS
 
@@ -112,9 +143,24 @@ __PACKAGE__->belongs_to(
   { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
+=head2 qc_test_results
 
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-02-10 15:16:54
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:gUgvlO1pxxPp8Rjds9UXMw
+Type: has_many
+
+Related object: L<LIMS2::Model::Schema::Result::QcTestResult>
+
+=cut
+
+__PACKAGE__->has_many(
+  "qc_test_results",
+  "LIMS2::Model::Schema::Result::QcTestResult",
+  { "foreign.qc_template_well_id" => "self.qc_template_well_id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-03-15 11:56:35
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:MAPNCA7c1nxaz8g3BZu/sA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

@@ -97,6 +97,21 @@ __PACKAGE__->table("qc_test_result_alignments");
   default_value: false
   is_nullable: 0
 
+=head2 features
+
+  data_type: 'text'
+  is_nullable: 0
+
+=head2 cigar
+
+  data_type: 'text'
+  is_nullable: 0
+
+=head2 op_str
+
+  data_type: 'text'
+  is_nullable: 0
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -127,6 +142,12 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_nullable => 0 },
   "pass",
   { data_type => "boolean", default_value => \"false", is_nullable => 0 },
+  "features",
+  { data_type => "text", is_nullable => 0 },
+  "cigar",
+  { data_type => "text", is_nullable => 0 },
+  "op_str",
+  { data_type => "text", is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -193,8 +214,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-02-10 15:25:41
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:K27shzotAgIy2HRtuHv8Iw
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-03-15 11:56:35
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:DYBoxM5Z8cO9yzCtdKHTvQ
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

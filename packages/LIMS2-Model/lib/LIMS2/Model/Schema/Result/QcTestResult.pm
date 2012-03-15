@@ -52,12 +52,6 @@ __PACKAGE__->table("qc_test_results");
   is_nullable: 0
   size: 36
 
-=head2 synthetic_construct_id
-
-  data_type: 'integer'
-  is_foreign_key: 1
-  is_nullable: 0
-
 =head2 well_name
 
   data_type: 'text'
@@ -75,6 +69,17 @@ __PACKAGE__->table("qc_test_results");
   default_value: false
   is_nullable: 0
 
+=head2 plate_name
+
+  data_type: 'text'
+  is_nullable: 0
+
+=head2 qc_template_well_id
+
+  data_type: 'integer'
+  is_foreign_key: 1
+  is_nullable: 0
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -87,14 +92,16 @@ __PACKAGE__->add_columns(
   },
   "qc_run_id",
   { data_type => "char", is_foreign_key => 1, is_nullable => 0, size => 36 },
-  "synthetic_construct_id",
-  { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
   "well_name",
   { data_type => "text", is_nullable => 0 },
   "score",
   { data_type => "integer", default_value => 0, is_nullable => 0 },
   "pass",
   { data_type => "boolean", default_value => \"false", is_nullable => 0 },
+  "plate_name",
+  { data_type => "text", is_nullable => 0 },
+  "qc_template_well_id",
+  { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -108,27 +115,6 @@ __PACKAGE__->add_columns(
 =cut
 
 __PACKAGE__->set_primary_key("qc_test_result_id");
-
-=head1 UNIQUE CONSTRAINTS
-
-=head2 C<qc_test_results_qc_run_id_synthetic_construct_id_well_name_key>
-
-=over 4
-
-=item * L</qc_run_id>
-
-=item * L</synthetic_construct_id>
-
-=item * L</well_name>
-
-=back
-
-=cut
-
-__PACKAGE__->add_unique_constraint(
-  "qc_test_results_qc_run_id_synthetic_construct_id_well_name_key",
-  ["qc_run_id", "synthetic_construct_id", "well_name"],
-);
 
 =head1 RELATIONS
 
@@ -147,6 +133,21 @@ __PACKAGE__->belongs_to(
   { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
+=head2 qc_template_well
+
+Type: belongs_to
+
+Related object: L<LIMS2::Model::Schema::Result::QcTemplateWell>
+
+=cut
+
+__PACKAGE__->belongs_to(
+  "qc_template_well",
+  "LIMS2::Model::Schema::Result::QcTemplateWell",
+  { qc_template_well_id => "qc_template_well_id" },
+  { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
+);
+
 =head2 qc_test_result_alignment_maps
 
 Type: has_many
@@ -162,24 +163,9 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
-=head2 synthetic_construct
 
-Type: belongs_to
-
-Related object: L<LIMS2::Model::Schema::Result::SyntheticConstruct>
-
-=cut
-
-__PACKAGE__->belongs_to(
-  "synthetic_construct",
-  "LIMS2::Model::Schema::Result::SyntheticConstruct",
-  { synthetic_construct_id => "synthetic_construct_id" },
-  { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
-);
-
-
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-02-10 15:16:54
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:/4rTfBInG+SpDP5KA5xflg
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-03-15 11:56:35
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:NteDlUwQ3rplmK3t9UFLGg
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
