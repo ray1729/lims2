@@ -560,13 +560,15 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON qc_templates TO "[% rw_role %]";
 GRANT USAGE ON SEQUENCE qc_templates_qc_template_id_seq TO "[% rw_role %]";
 
 CREATE TABLE qc_template_wells (
-       qc_template_id     INTEGER NOT NULL REFERENCES qc_templates(qc_template_id),
-       well_name          TEXT NOT NULL CHECK (well_name ~ '^[A-O](0[1-9]|1[0-9]|2[0-4])$'),
-       process_id         INTEGER NOT NULL REFERENCES processes(process_id),
-       PRIMARY KEY(qc_template_id, well_name)
+       qc_template_well_id    SERIAL PRIMARY KEY,
+       qc_template_id         INTEGER NOT NULL REFERENCES qc_templates(qc_template_id),
+       qc_template_well_name  TEXT NOT NULL CHECK (qc_template_well_name ~ '^[A-O](0[1-9]|1[0-9]|2[0-4])$'),
+       process_id             INTEGER NOT NULL REFERENCES processes(process_id),
+       UNIQUE(qc_template_id, qc_template_well_name)
 );
 GRANT SELECT ON qc_template_wells TO "[% ro_role %]";
 GRANT SELECT, INSERT, UPDATE, DELETE ON qc_template_wells TO "[% rw_role %]";
+GRANT USAGE ON SEQUENCE qc_template_wells_qc_template_well_id_seq TO "[% rw_role %]";
 
 CREATE TABLE qc_runs (
        qc_run_id              CHAR(36) PRIMARY KEY,
@@ -581,20 +583,30 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON qc_runs TO "[% rw_role %]";
 
 CREATE TABLE qc_seq_reads (
        qc_seq_read_id     TEXT PRIMARY KEY,
-       comment            TEXT NOT NULL DEFAULT '',
-       fasta              TEXT NOT NULL
+       description        TEXT NOT NULL DEFAULT '',
+       seq                TEXT NOT NULL,
+       length             INTEGER NOT NULL
 );
 GRANT SELECT ON qc_seq_reads TO "[% ro_role %]";
 GRANT SELECT, INSERT, UPDATE, DELETE ON qc_seq_reads TO "[% rw_role %]";
 
+CREATE TABLE qc_run_seq_reads (
+       qc_run_id          CHAR(36) NOT NULL REFERENCES qc_runs(qc_run_id),
+       qc_seq_read_id     TEXT NOT NULL REFERENCES qc_seq_reads(qc_seq_read_id),
+       PRIMARY KEY(qc_run_id, qc_seq_read_id)
+);
+GRANT SELECT ON qc_run_seq_reads TO "[% ro_role %]";
+GRANT SELECT, INSERT, UPDATE, DELETE ON qc_run_seq_reads TO "[% rw_role %]";
+
 CREATE TABLE qc_test_results (
        qc_test_result_id       SERIAL PRIMARY KEY,
        qc_run_id               CHAR(36) NOT NULL REFERENCES qc_runs(qc_run_id),
-       synthetic_construct_id  INTEGER NOT NULL REFERENCES synthetic_constructs(synthetic_construct_id),
+       qc_template_well_id     INTEGER NOT NULL REFERENCES qc_template_wells(qc_template_well_id),
+       plate_name              TEXT NOT NULL,
        well_name               TEXT NOT NULL,
        score                   INTEGER NOT NULL DEFAULT 0,
-       pass                    BOOLEAN NOT NULL DEFAULT FALSE,
-       UNIQUE(qc_run_id, synthetic_construct_id, well_name)
+       pass                    BOOLEAN NOT NULL DEFAULT FALSE,       
+       UNIQUE(qc_run_id, qc_template_well_id, well_name)
 );
 GRANT SELECT ON qc_test_results TO "[% ro_role %]";
 GRANT SELECT, INSERT, UPDATE, DELETE ON qc_test_results TO "[% rw_role %]";
@@ -611,7 +623,10 @@ CREATE TABLE qc_test_result_alignments (
        target_end                  INTEGER NOT NULL,
        target_strand               INTEGER NOT NULL CHECK (target_strand IN (1, -1)),
        score                       INTEGER NOT NULL,
-       pass                        BOOLEAN NOT NULL DEFAULT FALSE
+       pass                        BOOLEAN NOT NULL DEFAULT FALSE,
+       features                    TEXT NOT NULL,
+       cigar                       TEXT NOT NULL,
+       op_str                      TEXT NOT NULL
 );
 GRANT SELECT ON qc_test_result_alignments TO "[% ro_role %]";
 GRANT SELECT, INSERT, UPDATE, DELETE ON qc_test_result_alignments TO "[% rw_role %]";
@@ -637,3 +652,11 @@ CREATE TABLE qc_test_result_align_regions (
 );
 GRANT SELECT ON qc_test_result_align_regions TO "[% ro_role %]";
 GRANT SELECT, INSERT, UPDATE, DELETE ON qc_test_result_align_regions TO "[% rw_role %]";
+
+CREATE TABLE well_qc_test_result (
+       well_id                   INTEGER NOT NULL REFERENCES wells(well_id),
+       qc_test_result_id         INTEGER NOT NULL REFERENCES qc_test_results(qc_test_result_id),
+       PRIMARY KEY(well_id, qc_test_result_id)
+);
+GRANT SELECT ON well_qc_test_result TO "[% ro_role %]";
+GRANT SELECT, INSERT, UPDATE, DELETE ON well_qc_test_result TO "[% rw_role %]";

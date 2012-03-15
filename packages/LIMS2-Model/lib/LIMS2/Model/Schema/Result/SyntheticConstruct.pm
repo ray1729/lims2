@@ -95,26 +95,9 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
-=head2 qc_test_results
 
-Type: has_many
-
-Related object: L<LIMS2::Model::Schema::Result::QcTestResult>
-
-=cut
-
-__PACKAGE__->has_many(
-  "qc_test_results",
-  "LIMS2::Model::Schema::Result::QcTestResult",
-  {
-    "foreign.synthetic_construct_id" => "self.synthetic_construct_id",
-  },
-  { cascade_copy => 0, cascade_delete => 0 },
-);
-
-
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-02-10 15:16:54
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Y3yNhTjbvGB/+RqCcnZCtw
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-03-15 11:56:35
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:NidAZgocb0cWeTEvXVbzVA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
