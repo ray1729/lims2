@@ -12,6 +12,7 @@ use Pod::Usage;
 const my %CLASS_FOR => (
     design => 'LIMS2::HTGT::Migrate::PlateData::Design',
     pcs    => 'LIMS2::HTGT::Migrate::PlateData::PCS',
+    vtp    => 'LIMS2::HTGT::Migrate::PlateData::VTP',
 );
 
 my $log_level = $WARN;
