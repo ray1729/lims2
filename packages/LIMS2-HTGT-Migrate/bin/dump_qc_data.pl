@@ -1,15 +1,14 @@
 #!/usr/bin/env perl
-
 use strict;
 use warnings FATAL => 'all';
 
 use HTGT::DBFactory;
 use YAML::Any;
-use DateTime;
 use Log::Log4perl qw( :easy );
 use Try::Tiny;
 use Const::Fast;
-use LIMS2::HTGT::Migrate::Utils qw( trim parse_oracle_date );
+use LIMS2::HTGT::Migrate::Utils qw( parse_oracle_date );
+use List::MoreUtils qw( firstval );
 
 Log::Log4perl->easy_init(
     {
@@ -45,7 +44,6 @@ pass
 );
 
 my $schema = HTGT::DBFactory->connect( 'eucomm_vector' );
-my $run_date = DateTime->now;
 
 my $qc_rs;
 if ( @ARGV ) {
@@ -60,15 +58,17 @@ while ( my $qc_run = $qc_rs->next ) {
 
     try {
         my ( $seq_read_ids, $seq_reads ) = get_qc_seq_reads( $qc_run );
-        my $qc_run_date = parse_oracle_date( $qc_run->qc_run_date );
+        my $qc_run_date    = parse_oracle_date( $qc_run->qc_run_date );
+        my $template_plate = $qc_run->template_plate;
+
         my %qc_run = (
             qc_run_id          => $qc_run->qc_run_id,
             qc_run_date        => $qc_run_date->iso8601,
             sequencing_project => $qc_run->sequencing_project,
-            template_plate     => get_template_plate_name( $qc_run->template_plate_id ),
+            template_plate     => $template_plate->name,
             profile            => $qc_run->profile,
             software_version   => $qc_run->software_version,
-            qc_test_results    => get_qc_test_results( $qc_run, $seq_read_ids ),
+            qc_test_results    => get_qc_test_results( $qc_run, $seq_read_ids, $template_plate ),
             qc_seq_reads       => $seq_reads, 
         );
         print YAML::Any::Dump( \%qc_run );
@@ -103,33 +103,46 @@ sub get_qc_seq_reads {
     return ( \%seq_read_ids, \@seq_reads );
 }
 
-sub get_template_plate_name {
-    my $template_plate_id = shift;
-
-    my $template_plate = $schema->resultset('Plate')->find(
-        { plate_id => $template_plate_id }, { columns => [ 'name' ] } );
-    die("Template plate id not found: $template_plate_id") unless $template_plate;
-
-    return $template_plate->name;
-}
-
 sub get_qc_test_results {
-    my ( $qc_run, $seq_read_ids ) = @_;
+    my ( $qc_run, $seq_read_ids, $template_plate ) = @_;
     my @qc_test_results;
 
     my $qc_test_results_rs = $qc_run->test_results;
+    my %template_wells = map { uc( substr( $_->well_name, -3 ) ) => $_ }
+        grep { defined $_->design_instance_id } $template_plate->wells;
+    my @template_wells = keys %template_wells;
 
     while ( my $qc_test_result = $qc_test_results_rs->next ) {
+        my $template_well = get_template_well( $qc_test_result, \%template_wells );
         push @qc_test_results, {
-            well_name  => $qc_test_result->well_name,
-            score      => $qc_test_result->score,
-            pass       => $qc_test_result->pass,
-            plate_name => $qc_test_result->plate_name, 
-            synvec_id  => $qc_test_result->qc_synvec_id,
-            alignments => get_test_result_alignments( $qc_test_result, $seq_read_ids ),
+            well_name     => $qc_test_result->well_name,
+            score         => $qc_test_result->score,
+            pass          => $qc_test_result->pass,
+            plate_name    => $qc_test_result->plate_name,
+            template_well => "$template_well",
+            alignments    => get_test_result_alignments( $qc_test_result, $seq_read_ids ),
          };
     }
     return \@qc_test_results;
+}
+
+sub get_template_well {
+    my ( $qc_test_result, $template_wells ) = @_;
+
+    my $design_id = $qc_test_result->synvec->design_id;
+    my $well_name = $qc_test_result->well_name;
+
+    # First try for a template well in the same location on the template plate
+    my $template_well = $template_wells->{$well_name};
+    unless ( $template_well
+                and $template_well->design_instance
+                    and $template_well->design_instance->design_id == $design_id ) {
+        # Fallback to considering any well on the template plate
+        $template_well = firstval { $_->design_instance->design_id == $design_id } values %{ $template_wells }
+            or die "Failed to retrieve template well for design $design_id\n";
+    }
+
+    return $template_well;
 }
 
 sub get_test_result_alignments {
