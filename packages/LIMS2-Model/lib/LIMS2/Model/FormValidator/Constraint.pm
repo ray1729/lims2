@@ -6,6 +6,7 @@ use warnings FATAL => 'all';
 use DateTime::Format::ISO8601;
 use Regexp::Common;
 use Try::Tiny;
+use LIMS2::Model::Constants qw( @QC_PROFILES @QC_PRIMER_NAMES @QC_ALIGN_REGIONS );
 
 sub in_set {
 
@@ -199,6 +200,16 @@ sub existing_plate_name {
     }
 }
 
+sub existing_qc_template_name {
+    my ( $class, $model ) = @_;
+
+    return sub {
+        my $qc_template_name = shift;
+        $model->schema->resultset( 'QcTemplate' )->search_rs(
+            { qc_template_name => $qc_template_name } )->count;
+    }
+}
+
 sub existing_assay {
     my ( $class, $model ) = @_;
     in_resultset( $model, 'AssayResult', 'assay' );
@@ -241,6 +252,11 @@ sub pgs_parent_plate_type {
     in_set( qw( design pcs pgs ) );
 }
 
+sub vtp_parent_plate_type {
+    # probably more plates types to add here
+    in_set( qw( design pcs pgs ) )
+}
+
 sub dna_parent_plate_type {
     in_set( qw( design pcs pgs dna ) );
 }
@@ -263,6 +279,46 @@ sub comma_separated_list {
 
 sub ensembl_transcript_id {
     regexp_matches( qr/^ENSMUST\d+$/ );
+}
+
+sub uuid {
+    regexp_matches( qr/^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$/ );
+}
+
+sub qc_profile {
+    in_set( @QC_PROFILES );
+}
+
+sub software_version {
+    regexp_matches( qr/^\d+\.\d+\.[\d_]+$/ );
+}
+
+sub qc_seq_read_id {
+    regexp_matches( qr/^[A-Za-o0-9_]+\.[A-Za-z0-9]+$/ );
+}
+
+sub cigar_string {
+    regexp_matches( qr/^cigar: .+/ );
+}
+
+sub op_str {
+    regexp_matches( qr/[MD0-9\s|]/ );
+}
+
+sub qc_primer_names {
+    in_set( @QC_PRIMER_NAMES );
+}
+
+sub qc_align_region_names {
+    in_set( @QC_ALIGN_REGIONS );
+}
+
+sub qc_match_str {
+    regexp_matches( qr/[|\s]+/ );
+}
+
+sub qc_alignment_seq {
+    regexp_matches( qr/^[ATGC-]+$/ );
 }
 
 1;
