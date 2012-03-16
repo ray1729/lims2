@@ -23,6 +23,7 @@ GetOptions(
     'type=s'          => \my $plate_type,
     'limit=i'         => \my $limit,
     'created-after=s' => \my $created_after,    
+    'plate_name=s'    => \my @plate_names,
 ) or pod2usage(2);
 
 pod2usage( "Plate type must be specified" )
@@ -45,7 +46,7 @@ Log::Log4perl->easy_init(
     }
 );
 
-my $worker = $class->new( limit => $limit, created_after => $created_after );
+my $worker = $class->new( limit => $limit, created_after => $created_after, plate_names => \@plate_names );
 
 $worker->dump_plate_data();
 

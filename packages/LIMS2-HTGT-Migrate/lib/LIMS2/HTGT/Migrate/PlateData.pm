@@ -31,6 +31,11 @@ has limit => (
     isa    => 'Maybe[Int]',
 );
 
+has plate_names => (
+    is => 'ro',
+    isa => 'Maybe[ArrayRef]',
+);
+
 has created_after => (
     is     => 'ro',
     isa    => 'Maybe[DateTime]',
@@ -130,6 +135,10 @@ sub plate_resultset {
         $search{'me.created_date'} = { '>', $self->created_after };
         
     }    
+
+    if ( $self->plate_names ) {
+        $search{'name'} = { 'IN', $self->plate_names };
+    }
     
     return $self->schema->resultset( 'Plate' )->search(
         \%search,
