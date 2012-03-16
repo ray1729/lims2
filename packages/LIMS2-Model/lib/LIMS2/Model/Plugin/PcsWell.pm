@@ -4,7 +4,6 @@ use strict;
 use warnings FATAL => 'all';
 
 use Moose::Role;
-use Hash::MoreUtils qw( slice_def );
 use namespace::autoclean;
 
 requires qw( schema check_params throw _instantiate_well );
@@ -18,8 +17,27 @@ sub pspec_create_pcs_well {
     $pspec->{cassette}              = { validate => 'existing_intermediate_cassette' };
     $pspec->{clone_name}            = { validate => 'non_empty_string', optional => 1 };
     $pspec->{legacy_qc_test_result} = { optional => 1 };
-    
+
     return $pspec;
+}
+
+sub create_pcs_well {
+    my ( $self, $params, $plate ) = @_;
+
+    $plate ||= $self->_instantiate_plate( $params );
+
+    my $validated_params = $self->check_params( $params, $self->pspec_create_pcs_well );
+
+    my $process = $self->_create_pcs_well_process( $validated_params )
+        or return;
+
+    my $well = $self->_create_well( $validated_params, $process, $plate );
+
+    if ( my $legacy_qc = $validated_params->{legacy_qc_test_result} ) {
+        $well->create_related( well_legacy_qc_test_result => $legacy_qc );
+    }
+
+    return $well;
 }
 
 sub _create_pcs_well_process {
@@ -27,7 +45,8 @@ sub _create_pcs_well_process {
 
     my @parent_wells = @{ $validated_params->{parent_wells} || [] };
     if ( @parent_wells == 0 ) {
-        $self->log->warn( sprintf 'Skipping %s[%s] - no parent well', @{$validated_params}{qw( plate_name well_name ) } );        
+        $self->log->warn( sprintf 'Skipping %s[%s] - no parent well',
+                          @{$validated_params}{qw( plate_name well_name ) } );
         return;
     }
     elsif ( @parent_wells > 1 ) {
@@ -36,34 +55,20 @@ sub _create_pcs_well_process {
                 params  => $validated_params,
                 message => 'PCS well must have exactly one parent well'
             }
-        )
+        );
     }
 
     my $pw = $self->_instantiate_well( $parent_wells[0] );
 
     my $process;
-    
+
     if ( $pw->plate->plate_type eq 'design' ) {
-        $process = $self->schema->resultset( 'Process' )->create( { process_type => 'int_recom' } );
-        $self->log->debug( "Created int_recom process with id " . $process->process_id );
-        $process->create_related(
-            process_int_recom => {
-                design_well_id => $pw->well_id,
-                cassette       => $validated_params->{cassette},
-                backbone       => $validated_params->{backbone}
-            }
-        );
-        $self->log->debug( "Created auxiliary process_int_recom data for process " . $process->process_id );
+        $process = $self->_instantiate_int_recom_process( $validated_params, $pw ) ;
+        $process ||= $self->_create_int_recom_process( $validated_params, $pw );
     }
     elsif ( $pw->plate->plate_type eq 'pcs' ) {
-        $process = $self->schema->resultset( 'Process' )->create( { process_type => 'rearray' } );
-        $self->log->debug( "Created rearray process with id " . $process->process_id );
-        $process->create_related(
-            process_rearray => {}
-        )->create_related(
-            process_rearray_source_wells => { source_well_id => $pw->well_id }
-        );
-        $self->log->debug( "Created auxiliary process_rearray data for process " . $process->process_id );
+        $process = $self->_instantiate_rearray_process( $validated_params, $pw ) ;
+        $process ||= $self->_create_rearray_process( $pw );
     }
     else {
         $self->throw(
@@ -76,26 +81,6 @@ sub _create_pcs_well_process {
 
     return $process;
 }
-
-sub create_pcs_well {
-    my ( $self, $params, $plate ) = @_;
-
-    $plate ||= $self->_instantiate_plate( $params );    
-    
-    my $validated_params = $self->check_params( $params, $self->pspec_create_pcs_well );
-    
-    my $process = $self->_create_pcs_well_process( $validated_params )
-        or return;
-    
-    my $well = $self->_create_well( $validated_params, $process, $plate );
-
-    if ( my $legacy_qc = $validated_params->{legacy_qc_test_result} ) {
-        $well->create_related( well_legacy_qc_test_result => $legacy_qc );
-    }
-
-    return $well;
-}
-
 
 1;
 
