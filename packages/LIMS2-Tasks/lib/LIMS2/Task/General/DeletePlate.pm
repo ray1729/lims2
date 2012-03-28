@@ -26,12 +26,12 @@ sub execute {
     $self->log->debug('Deleting plate: ' . $self->plate_name );
 
     $self->model->txn_do(
-        sub {   
+        sub {
             $self->model->delete_plate( { plate_name => $self->plate_name } );
             unless ( $self->commit ) {
                 warn "Rollback\n";
                 $self->model->txn_rollback;
-            }            
+            }
         }
     );
 }

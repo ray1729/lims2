@@ -6,7 +6,7 @@ use warnings FATAL => 'all';
 use DateTime::Format::ISO8601;
 use Regexp::Common;
 use Try::Tiny;
-use LIMS2::Model::Constants qw( @QC_PROFILES @QC_PRIMER_NAMES @QC_ALIGN_REGIONS );
+use JSON qw( decode_json );
 
 sub in_set {
 
@@ -285,10 +285,6 @@ sub uuid {
     regexp_matches( qr/^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$/ );
 }
 
-sub qc_profile {
-    in_set( @QC_PROFILES );
-}
-
 sub software_version {
     regexp_matches( qr/^\d+\.\d+\.[\d_]+$/ );
 }
@@ -305,20 +301,21 @@ sub op_str {
     regexp_matches( qr/[MD0-9\s|]/ );
 }
 
-sub qc_primer_names {
-    in_set( @QC_PRIMER_NAMES );
-}
-
-sub qc_align_region_names {
-    in_set( @QC_ALIGN_REGIONS );
-}
-
 sub qc_match_str {
     regexp_matches( qr/[|\s]+/ );
 }
 
 sub qc_alignment_seq {
     regexp_matches( qr/^[ATGC-]+$/ );
+}
+
+sub json {
+    return sub {
+        my $str = shift;
+        try {
+            decode_json( $str );
+        };
+    };
 }
 
 1;

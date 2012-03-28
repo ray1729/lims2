@@ -24,13 +24,13 @@ has cached_constraint_methods => (
         get_cached_constraint_method => 'get',
         set_cached_constraint_method => 'set'
     }
-);      
+);
 
 sub init_constraint_method {
     my ( $self, $constraint_name ) = @_;
 
     my $constraint = LIMS2::Model::FormValidator::Constraint->$constraint_name( $self->model );
-    
+
     return sub {
         my $dfv = shift;
         $dfv->name_this( $constraint_name );
@@ -59,14 +59,14 @@ sub post_filter {
     }
     else {
         return undef;
-    }    
+    }
 }
 
 sub check_params {
     my ( $self, $params, $spec ) = @_;
 
     my $results = Data::FormValidator->check( $params, $self->dfv_profile( $spec ) );
-    
+
     if ( ! $results->success ) {
         $self->throw( Validation => { params => $params, results => $results } );
     }
@@ -82,7 +82,7 @@ sub check_params {
             $validated_params->{ $f_spec->{rename} } = delete $validated_params->{ $field };
         }
     }
-    
+
     return $validated_params;
 }
 
@@ -97,7 +97,7 @@ sub dfv_profile {
     my $dependencies      = delete $spec->{DEPENDENCIES};
     my $dependency_groups = delete $spec->{DEPENDENCY_GROUPS};
     my $require_some      = delete $spec->{REQUIRE_SOME};
-    
+
     while ( my ( $field, $f_spec ) = each %{$spec} ) {
         if ( $f_spec->{optional} ) {
             push @optional, $field;
@@ -113,7 +113,7 @@ sub dfv_profile {
         }
         if ( defined $f_spec->{default} ) {
             $defaults{$field} = $f_spec->{default};
-        }        
+        }
     }
 
     return {
@@ -126,7 +126,7 @@ sub dfv_profile {
         dependencies       => $dependencies,
         dependency_groups  => $dependency_groups,
         require_some       => $require_some,
-    };    
+    };
 }
 
 __PACKAGE__->meta->make_immutable;

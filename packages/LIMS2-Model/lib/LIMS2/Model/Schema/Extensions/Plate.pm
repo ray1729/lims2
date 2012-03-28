@@ -21,7 +21,7 @@ sub as_hash {
         created_by => $self->created_by->user_name,
         comments   => [ map { $_->as_hash } $self->plate_comments ]
     };
-}        
+}
 
 # override plate->delete method?
 sub delete_this_plate {
@@ -46,7 +46,7 @@ sub delete_this_plate {
                                           $self->plate_name, join("\n", sort @errors) ) if @errors;
 
     $self->plate_comments->delete;
-    $self->delete; 
+    $self->delete;
 }
 
 1;

@@ -55,7 +55,7 @@ has gene => (
 sub _build_gene {
     my $self = shift;
 
-    my $gene = LIMS2::Util::EnsEMBL->new->gene_adaptor->fetch_by_transcript_stable_id( 
+    my $gene = LIMS2::Util::EnsEMBL->new->gene_adaptor->fetch_by_transcript_stable_id(
         $self->target_transcript );
 }
 
@@ -86,7 +86,7 @@ sub _build_ensembl_gene_id{
 sub has_oligo {
     my ( $self, $oligo_type ) = @_;
 
-    $self->search_related_rs( design_oligos => { design_oligo_type => $oligo_type } )->count > 0;    
+    $self->search_related_rs( design_oligos => { design_oligo_type => $oligo_type } )->count > 0;
 }
 
 sub locus_for {
@@ -121,7 +121,7 @@ sub as_hash {
         comments           => [ map { $_->as_hash } $self->design_comments ],
         oligos             => [ map { $_->as_hash } $self->design_oligos ],
         genotyping_primers => [ map { $_->as_hash } $self->genotyping_primers ],
-    };    
+    };
 }
 
 sub _build_chr_name {
@@ -159,7 +159,7 @@ sub _build_chr_strand {
             distinct => 1
         }
     );
-    
+
     if ( @loci == 1 ) {
         return $loci[0]->chr_strand;
     }
@@ -192,18 +192,18 @@ sub _build_five_arm_end {
     }
     else {
         $self->locus_for( 'G5' )->chr_end;
-    }   
+    }
 }
 
 sub _build_three_arm_start {
     my $self = shift;
-    
+
     if ( $self->chr_strand == 1 ) {
         $self->locus_for( 'D3' )->chr_start;
     }
     else {
         $self->locus_for( 'G3' )->chr_start;
-    }   
+    }
 
 }
 
@@ -215,7 +215,7 @@ sub _build_three_arm_end {
     }
     else {
         $self->locus_for( 'D3' )->chr_end;
-    }    
+    }
 }
 
 sub _build_target_region_start {

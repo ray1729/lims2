@@ -89,19 +89,12 @@ sub _check_tree_paths {
     my $self = shift;
 
     # check for well descendants
-    my $descendants_rs = $self->tree_paths_ancestors;
-    if ( $descendants_rs->count > 1 ) {
-        # this means that well has descendants, cannot delete it
-        LIMS2::Model::Error::Database->throw( sprintf 'Well %s (%d) has descendant wells, cannot delete',
-                                              $self->well_name, $self->well_id );
-    }
-    else {
-        #just adding this for sanity - can remove later
-        my $tree_path = $descendants_rs->next;
-        unless ( $tree_path->path_length == 0 ) {
-            LIMS2::Model::Error::Database->throw( sprintf 'Well %s (%d) has tree path with length > 0',
-                                                  $self->well_name, $self->well_id );
-        }
+    my $descendants_rs = $self->tree_paths_ancestors->search_rs( { path_length => { '>', 0 } } );
+    if ( $descendants_rs->count ) {
+        LIMS2::Model::Error::Database->throw(
+            sprintf 'Well %s (%d) has descendant wells, cannot delete',
+            $self->well_name, $self->well_id
+        );
     }
 }
 

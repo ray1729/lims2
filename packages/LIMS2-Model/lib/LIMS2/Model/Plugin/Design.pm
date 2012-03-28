@@ -101,7 +101,7 @@ sub create_design {
     for my $o ( @{ $validated_params->{oligos} || [] } ) {
         my $validated = $self->check_params( $o, $self->pspec_create_design_oligo );
         my $loci = delete $validated->{loci};
-        my $oligo = $design->create_related( design_oligos => $validated );        
+        my $oligo = $design->create_related( design_oligos => $validated );
         for my $l ( @{ $loci || [] } ) {
             my $validated = $self->check_params( $l, $self->pspec_create_design_oligo_locus );
             $oligo->create_related( loci => $validated );
@@ -145,7 +145,7 @@ sub delete_design {
              or $design->process_create_dis_rs->count > 0 ) {
         $self->throw( InvalidState => 'Design ' . $design->design_id . ' is used in one or more processes' );
     }
-    
+
     if ( $validated_params->{cascade} ) {
         $design->design_comments_rs->delete;
         $design->design_oligos_rs->delete;
@@ -167,7 +167,7 @@ sub retrieve_design {
     my ( $self, $params ) = @_;
 
     my $validated_params = $self->check_params( $params, $self->pspec_retrieve_design );
-    
+
     my $design = $self->retrieve( Design => $validated_params );
 
     return $design;
@@ -175,14 +175,14 @@ sub retrieve_design {
 
 sub _list_designs_for_gene {
     my ( $self, $gene_name ) = @_;
-    
+
     my %search_params = ( name => $gene_name, raw => 1 );
 
     my $genes = $self->get_genes_by_name( \%search_params );
 
     unless ( @{$genes} ) {
         $self->throw( 'NotFound' => { entity_class => 'Gene', search_params => \%search_params } );
-    }    
+    }
 
     my @transcripts = map { $_->stable_id } map { @{ $_->ensembl_gene->get_all_Transcripts } } @{$genes};
 
