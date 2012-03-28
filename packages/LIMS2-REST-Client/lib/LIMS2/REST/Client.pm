@@ -48,6 +48,12 @@ has proxy_url => (
     coerce   => 1
 );
 
+has timeout => (
+    is       => 'ro',
+    isa      => 'Int',
+    default  => 180
+);
+
 has ua => (
     is         => 'ro',
     isa        => 'LWP::UserAgent',
@@ -57,15 +63,18 @@ has ua => (
 sub _build_ua {
     my $self = shift;
 
-    # Set proxy
     my $ua = LWP::UserAgent->new();
-    $ua->proxy( http => $self->proxy_url )
-        if defined $self->proxy_url;
+    if ( defined $self->proxy_url ) {        
+        $ua->proxy( http => $self->proxy_url );
+    }
 
-    # Set credentials
-    if ( $self->username ) {
+    if ( defined $self->username ) {
         $ua->credentials( $self->api_url->host_port, $self->realm, $self->username, $self->password );
     }
+
+    if ( defined $self->timeout ) {
+        $ua->timeout( $self->timeout );
+    }    
 
     return $ua;
 }
