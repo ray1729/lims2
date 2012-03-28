@@ -56,10 +56,14 @@ __PACKAGE__->table("qc_template_wells");
   data_type: 'text'
   is_nullable: 0
 
-=head2 process_id
+=head2 eng_seq_method
 
-  data_type: 'integer'
-  is_foreign_key: 1
+  data_type: 'text'
+  is_nullable: 0
+
+=head2 eng_seq_params
+
+  data_type: 'text'
   is_nullable: 0
 
 =cut
@@ -76,8 +80,10 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
   "qc_template_well_name",
   { data_type => "text", is_nullable => 0 },
-  "process_id",
-  { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
+  "eng_seq_method",
+  { data_type => "text", is_nullable => 0 },
+  "eng_seq_params",
+  { data_type => "text", is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -113,21 +119,6 @@ __PACKAGE__->add_unique_constraint(
 
 =head1 RELATIONS
 
-=head2 process
-
-Type: belongs_to
-
-Related object: L<LIMS2::Model::Schema::Result::Process>
-
-=cut
-
-__PACKAGE__->belongs_to(
-  "process",
-  "LIMS2::Model::Schema::Result::Process",
-  { process_id => "process_id" },
-  { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
-);
-
 =head2 qc_template
 
 Type: belongs_to
@@ -159,8 +150,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-03-15 11:56:35
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:MAPNCA7c1nxaz8g3BZu/sA
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-03-28 13:04:46
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:RopVR+ICYs0Uu2labjG8jA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

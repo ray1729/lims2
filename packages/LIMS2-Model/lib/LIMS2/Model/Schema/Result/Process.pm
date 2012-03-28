@@ -214,21 +214,6 @@ __PACKAGE__->belongs_to(
   { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
-=head2 qc_template_wells
-
-Type: has_many
-
-Related object: L<LIMS2::Model::Schema::Result::QcTemplateWell>
-
-=cut
-
-__PACKAGE__->has_many(
-  "qc_template_wells",
-  "LIMS2::Model::Schema::Result::QcTemplateWell",
-  { "foreign.process_id" => "self.process_id" },
-  { cascade_copy => 0, cascade_delete => 0 },
-);
-
 =head2 wells
 
 Type: has_many
@@ -245,8 +230,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-02-10 15:16:54
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:SH8ViEv5lMVhmUtkYdJdFQ
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-03-28 13:04:45
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:C1O2ywmnb4HaDTVelNjnCw
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

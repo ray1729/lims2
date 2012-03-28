@@ -74,15 +74,12 @@ __PACKAGE__->table("qc_test_results");
   data_type: 'text'
   is_nullable: 0
 
-<<<<<<< HEAD
-=======
 =head2 qc_template_well_id
 
   data_type: 'integer'
   is_foreign_key: 1
   is_nullable: 0
 
->>>>>>> upstream/process_tracking
 =cut
 
 __PACKAGE__->add_columns(

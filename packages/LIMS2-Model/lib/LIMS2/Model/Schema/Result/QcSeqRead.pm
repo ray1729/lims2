@@ -59,6 +59,12 @@ __PACKAGE__->table("qc_seq_reads");
   data_type: 'integer'
   is_nullable: 0
 
+=head2 qc_sequencing_project
+
+  data_type: 'text'
+  is_foreign_key: 1
+  is_nullable: 0
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -70,6 +76,8 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 0 },
   "length",
   { data_type => "integer", is_nullable => 0 },
+  "qc_sequencing_project",
+  { data_type => "text", is_foreign_key => 1, is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -86,19 +94,19 @@ __PACKAGE__->set_primary_key("qc_seq_read_id");
 
 =head1 RELATIONS
 
-=head2 qc_run_seqs_reads
+=head2 qc_sequencing_project
 
-Type: has_many
+Type: belongs_to
 
-Related object: L<LIMS2::Model::Schema::Result::QcRunSeqReads>
+Related object: L<LIMS2::Model::Schema::Result::QcSequencingProject>
 
 =cut
 
-__PACKAGE__->has_many(
-  "qc_run_seqs_reads",
-  "LIMS2::Model::Schema::Result::QcRunSeqReads",
-  { "foreign.qc_seq_read_id" => "self.qc_seq_read_id" },
-  { cascade_copy => 0, cascade_delete => 0 },
+__PACKAGE__->belongs_to(
+  "qc_sequencing_project",
+  "LIMS2::Model::Schema::Result::QcSequencingProject",
+  { qc_sequencing_project => "qc_sequencing_project" },
+  { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
 =head2 qc_test_result_alignments
@@ -117,8 +125,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-03-15 11:56:35
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:SsM0joX0KfCJbFts9P6CaA
+# Created by DBIx::Class::Schema::Loader v0.07014 @ 2012-03-28 13:04:46
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:yLwz4b7RJrb2V8ruv1qO+g
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
