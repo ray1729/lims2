@@ -552,8 +552,10 @@ GRANT SELECT ON process_synthetic_construct TO "[% ro_role %]";
 GRANT SELECT, INSERT, UPDATE, DELETE ON process_synthetic_construct TO "[% rw_role %]";
 
 CREATE TABLE qc_templates (
-       qc_template_id     SERIAL PRIMARY KEY,
-       qc_template_name   TEXT NOT NULL
+       qc_template_id         SERIAL PRIMARY KEY,
+       qc_template_name       TEXT NOT NULL,
+       qc_template_created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+       UNIQUE (qc_template_name, qc_template_created_at)
 );
 GRANT SELECT ON qc_templates TO "[% ro_role %]";
 GRANT SELECT, INSERT, UPDATE, DELETE ON qc_templates TO "[% rw_role %]";
@@ -563,8 +565,9 @@ CREATE TABLE qc_template_wells (
        qc_template_well_id    SERIAL PRIMARY KEY,
        qc_template_id         INTEGER NOT NULL REFERENCES qc_templates(qc_template_id),
        qc_template_well_name  TEXT NOT NULL CHECK (qc_template_well_name ~ '^[A-O](0[1-9]|1[0-9]|2[0-4])$'),
-       process_id             INTEGER NOT NULL REFERENCES processes(process_id),
-       UNIQUE(qc_template_id, qc_template_well_name)
+       eng_seq_method         TEXT NOT NULL,
+       eng_seq_params         TEXT NOT NULL,
+       UNIQUE (qc_template_id, qc_template_well_name)
 );
 GRANT SELECT ON qc_template_wells TO "[% ro_role %]";
 GRANT SELECT, INSERT, UPDATE, DELETE ON qc_template_wells TO "[% rw_role %]";
@@ -582,21 +585,28 @@ GRANT SELECT ON qc_runs TO "[% ro_role %]";
 GRANT SELECT, INSERT, UPDATE, DELETE ON qc_runs TO "[% rw_role %]";
 
 CREATE TABLE qc_seq_reads (
-       qc_seq_read_id     TEXT PRIMARY KEY,
-       description        TEXT NOT NULL DEFAULT '',
-       seq                TEXT NOT NULL,
-       length             INTEGER NOT NULL
+       qc_seq_read_id           TEXT PRIMARY KEY,
+       description              TEXT NOT NULL DEFAULT '',
+       seq                      TEXT NOT NULL,
+       length                   INTEGER NOT NULL,
+       qc_sequencing_project    TEXT NOT NULL REFERENCES qc_sequencing_projects(qc_sequencing_project)
 );
 GRANT SELECT ON qc_seq_reads TO "[% ro_role %]";
 GRANT SELECT, INSERT, UPDATE, DELETE ON qc_seq_reads TO "[% rw_role %]";
 
-CREATE TABLE qc_run_seq_reads (
-       qc_run_id          CHAR(36) NOT NULL REFERENCES qc_runs(qc_run_id),
-       qc_seq_read_id     TEXT NOT NULL REFERENCES qc_seq_reads(qc_seq_read_id),
-       PRIMARY KEY(qc_run_id, qc_seq_read_id)
+CREATE TABLE qc_sequencing_projects (
+    qc_sequencing_project TEXT PRIMARY KEY
 );
-GRANT SELECT ON qc_run_seq_reads TO "[% ro_role %]";
-GRANT SELECT, INSERT, UPDATE, DELETE ON qc_run_seq_reads TO "[% rw_role %]";
+GRANT SELECT ON qc_sequencing_projects TO "[% ro_role %]";
+GRANT SELECT, INSERT, UPDATE, DELETE ON qc_sequencing_projects TO "[% rw_role %]";
+
+CREATE TABLE qc_run_sequencing_project (
+       qc_run_id                 CHAR(36) NOT NULL REFERENCES qc_runs(qc_run_id),
+       qc_sequencing_project     TEXT NOT NULL REFERENCES qc_sequencing_projects(qc_sequencing_project),
+       PRIMARY KEY(qc_run_id, qc_sequencing_project)
+);
+GRANT SELECT ON qc_run_sequencing_project TO "[% ro_role %]";
+GRANT SELECT, INSERT, UPDATE, DELETE ON qc_run_sequencing_project TO "[% rw_role %]";
 
 CREATE TABLE qc_test_results (
        qc_test_result_id       SERIAL PRIMARY KEY,
