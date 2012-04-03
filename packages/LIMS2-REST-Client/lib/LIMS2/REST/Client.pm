@@ -1,5 +1,7 @@
 package LIMS2::REST::Client;
 
+# ABSTRACT: Client library for accessing LIMS2 REST service
+
 use strict;
 use warnings FATAL => 'all';
 
