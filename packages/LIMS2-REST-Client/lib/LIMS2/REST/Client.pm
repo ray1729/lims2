@@ -16,7 +16,7 @@ use namespace::autoclean;
 with qw( MooseX::SimpleConfig MooseX::Log::Log4perl );
 
 has '+configfile' => (
-    default => $ENV{LIMS2_REST_CLIENT_CONFIG}
+    default => $ENV{LIMS2_REST_CLIENT_CONF}
 );
 
 has api_url => (
